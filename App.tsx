@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, Animated, SafeAreaView } from "react-native";
 import AppNavigation from "./src/navigation/Navigation";
 import { StatusBar } from "expo-status-bar";
+import { getFcmToken, registerListenerWithFCM } from "./src/utils/FCM";
 
 export default function App() {
   const [isSplashVisible, setSplashVisible] = useState(true);
@@ -14,6 +15,15 @@ export default function App() {
       duration: 3000,
       useNativeDriver: true,
     }).start(() => setSplashVisible(false));
+  }, []);
+
+  useEffect(() => {
+    getFcmToken();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = registerListenerWithFCM();
+    return unsubscribe;
   }, []);
 
   if (isSplashVisible) {
