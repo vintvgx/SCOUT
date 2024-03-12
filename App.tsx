@@ -1,20 +1,39 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+// App.tsx
+import React, { useState, useEffect } from "react";
+import { View, Text, Animated, SafeAreaView } from "react-native";
+import AppNavigation from "./src/navigation/Navigation";
+import { StatusBar } from "expo-status-bar";
 
 export default function App() {
+  const [isSplashVisible, setSplashVisible] = useState(true);
+  const fadeAnim = new Animated.Value(1); // Initial opacity for splash screen
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 3000,
+      useNativeDriver: true,
+    }).start(() => setSplashVisible(false));
+  }, []);
+
+  if (isSplashVisible) {
+    return (
+      <Animated.View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: fadeAnim,
+        }}>
+        <Text style={{ fontSize: 24 }}>DPD.STATS</Text>
+      </Animated.View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+      <StatusBar style="light" />
+      <AppNavigation />
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
