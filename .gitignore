@@ -2,7 +2,7 @@
 
 # dependencies
 node_modules/
-GoogleService-Info.plist
+# GoogleService-Info.plist
 
 # Expo
 .expo/

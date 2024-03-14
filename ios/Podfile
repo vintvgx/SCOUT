@@ -46,6 +46,9 @@ target 'dpdstats' do
   use_frameworks! :linkage => :static
   $RNFirebaseAsStaticFramework = true
 
+  permissions_path = '../node_modules/react-native-permissions/ios'
+  pod 'Permission-Microphone', :path => "#{permissions_path}/Microphone.podspec"
+  pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications.podspec"
 
   use_react_native!(
     :path => config[:reactNativePath],
