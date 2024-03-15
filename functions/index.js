@@ -15,18 +15,15 @@ const sentryToken = functions.config().sentry.token;
 exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
   const issue = req.body; // Assuming body-parser middleware is used
 
-  console.log("Received new issue:", issue);
+  // console.log("Received new issue:", issue);
 
   // Assuming 'projectName' is part of the issue object or determined some other way
   const projectName = issue.project || "defaultProject";
 
   // Define the message for Firebase Cloud Messaging
   const message = {
-    notification: {
-      title: "New Issue Detected",
-      body: issue.project || "A new issue has been reported.",
-    },
-    topic: "sentry-issues",
+    title: `New ${issue.project} Issue`,
+    body: issue.message || "A new issue has been reported.",
   };
 
   const post_data = {
@@ -62,11 +59,30 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
     );
 
     // Sending the notification
-    await admin.messaging().send(message);
-    console.log("Successfully sent message");
+    // await admin.messaging().send(message);
+    // console.log("Successfully sent message");
 
-    // Send response after all operations are successful
-    res.status(200).send(issue);
+    // Retrieve push tokens for the project
+    // console.log("ADMIN:", admin);
+    // console.log("DATABASE: ", db);
+    const tokens = await fetchTokens();
+    console.log(
+      "🚀 ~ exports.sentryWebhook=functions.https.onRequest ~ tokens:",
+      tokens
+    );
+    // const all_tokens = await fetchExpoPushTokens();
+    // console.log(
+    //   "🚀 ~ exports.sentryWebhook=functions.https.onRequest ~ all_tokens:",
+    //   all_tokens
+    // );
+
+    // Send notification
+    if (tokens.length > 0) {
+      await sendPushNotification(tokens, message);
+      res.status(200).send("Notification sent successfully");
+    } else {
+      res.status(404).send("No tokens found for project");
+    }
   } catch (error) {
     console.error("Error processing issue:", error);
     res.status(500).send("Error processing issue");
@@ -111,3 +127,68 @@ exports.fetchSentryIssues = functions.https.onCall(async (data, context) => {
     );
   }
 });
+
+async function sendPushNotification(tokens, message) {
+  console.log("🚀 ~ sendPushNotification ~ tokens:", tokens);
+
+  const messages = tokens.map((token) => ({
+    to: token.expoPushToken,
+    sound: "default",
+    ...message,
+  }));
+
+  try {
+    await axios.post("https://exp.host/--/api/v2/push/send", messages, {
+      headers: {
+        Accept: "application/json",
+        "Accept-Encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("Notifications sent successfully");
+  } catch (error) {
+    console.error("Push notification error:", error.message);
+  }
+}
+
+async function fetchTokens() {
+  const db = admin.firestore();
+  const tokens = [];
+
+  await db
+    .collection("user")
+    .get()
+    .then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data());
+        tokens.push(doc.data());
+      });
+    })
+    .catch((error) => {
+      console.log("Error getting documents: ", error);
+    });
+  return tokens;
+}
+
+async function fetchAllExpoPushTokens() {
+  const userCollectionRef = db.collection("user");
+  const snapshot = await userCollectionRef.get();
+  const tokens = [];
+
+  snapshot.forEach((doc) => {
+    const userData = doc.data();
+    // Assuming the expoPushToken field exists and it's either a string or an array of strings
+    if (userData.expoPushToken) {
+      if (Array.isArray(userData.expoPushToken)) {
+        // If it's an array, add all its elements
+        tokens.push(...userData.expoPushToken);
+      } else if (typeof userData.expoPushToken === "string") {
+        // If it's a string, add it directly
+        tokens.push(userData.expoPushToken);
+      }
+    }
+  });
+
+  console.log("Fetched tokens:", tokens);
+  return tokens;
+}

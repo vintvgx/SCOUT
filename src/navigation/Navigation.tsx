@@ -51,7 +51,7 @@ export default function AppNavigation() {
           headerShown: false,
         }}>
         <Tab.Screen
-          name="Home"
+          name="HomeStack"
           component={HomeStackScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
