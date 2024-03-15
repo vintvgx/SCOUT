@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Linking,
   RefreshControl,
+  Button,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -15,12 +16,23 @@ import IssueCard from "../components/IssueCard";
 import { useNavigation } from "@react-navigation/native";
 import { HomeStackParamList } from "../navigation/Navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { registerForPushNotificationsAsync } from "../utils/functions";
 
 const Home = () => {
   const [issues, setIssues] = useState<SentryIssue[]>([]);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [projects, setProjects] = useState([]);
+  const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
+
+  useEffect(() => {
+    registerForPushNotificationsAsync()
+      .then((token: string | undefined) => {
+        console.log(token);
+        setExpoPushToken(token);
+      })
+      .catch((err) => console.log(err));
+  }, []);
 
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
@@ -75,6 +87,28 @@ const Home = () => {
     fetchIssues(); // Call fetchIssues when the user initiates a refresh
   };
 
+  const sendNotification = async () => {
+    console.log("Sending notification");
+    console.log("Expo Push Token:", expoPushToken);
+    const message = {
+      to: expoPushToken,
+      sound: "default",
+      title: "Original Title2",
+      body: expoPushToken,
+    };
+    try {
+      await axios.post("https://exp.host/--/api/v2/push/send", message, {
+        headers: {
+          Accept: "application/json",
+          "Accept-Encoding": "gzip, deflate",
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (err: any) {
+      console.error("POST Push Notification err:", err.message);
+    }
+  };
+
   const openLink = (url: any) => {
     Linking.canOpenURL(url).then((supported: any) => {
       if (supported) {
@@ -107,6 +141,11 @@ const Home = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      <Button
+        title="Send Notification"
+        onPress={() => sendNotification()}
+        color="#1E90FF"
+      />
     </View>
   );
 };
