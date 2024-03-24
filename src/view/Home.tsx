@@ -16,7 +16,10 @@ import IssueCard from "../components/IssueCard";
 import { useNavigation } from "@react-navigation/native";
 import { HomeStackParamList } from "../navigation/Navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { registerForPushNotificationsAsync } from "../utils/functions";
+import {
+  registerForPushNotificationsAsync,
+  sendNotification,
+} from "../utils/functions";
 
 const Home = () => {
   const [issues, setIssues] = useState<SentryIssue[]>([]);
@@ -87,28 +90,6 @@ const Home = () => {
     fetchIssues(); // Call fetchIssues when the user initiates a refresh
   };
 
-  const sendNotification = async () => {
-    console.log("Sending notification");
-    console.log("Expo Push Token:", expoPushToken);
-    const message = {
-      to: expoPushToken,
-      sound: "default",
-      title: "Original Title2",
-      body: expoPushToken,
-    };
-    try {
-      await axios.post("https://exp.host/--/api/v2/push/send", message, {
-        headers: {
-          Accept: "application/json",
-          "Accept-Encoding": "gzip, deflate",
-          "Content-Type": "application/json",
-        },
-      });
-    } catch (err: any) {
-      console.error("POST Push Notification err:", err.message);
-    }
-  };
-
   const openLink = (url: any) => {
     Linking.canOpenURL(url).then((supported: any) => {
       if (supported) {
@@ -122,6 +103,7 @@ const Home = () => {
   return (
     <View style={{ flex: 1, backgroundColor: "#121212" }}>
       <ScrollView
+        style={{ marginTop: 50 }}
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -141,11 +123,11 @@ const Home = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
-      <Button
+      {/* <Button
         title="Send Notification"
-        onPress={() => sendNotification()}
+        onPress={() => sendNotification(expoPushToken)}
         color="#1E90FF"
-      />
+      /> */}
     </View>
   );
 };

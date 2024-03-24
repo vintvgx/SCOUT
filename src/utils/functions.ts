@@ -117,3 +117,25 @@ export async function registerForPushNotificationsAsync() {
 
   return token;
 }
+
+export const sendNotification = async (expoPushToken: string | undefined) => {
+  console.log("Sending notification");
+  console.log("Expo Push Token:", expoPushToken);
+  const message = {
+    to: expoPushToken,
+    sound: "default",
+    title: "Original Title2",
+    body: expoPushToken,
+  };
+  try {
+    await axios.post("https://exp.host/--/api/v2/push/send", message, {
+      headers: {
+        Accept: "application/json",
+        "Accept-Encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (err: any) {
+    console.error("POST Push Notification err:", err.message);
+  }
+};
