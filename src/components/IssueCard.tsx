@@ -1,9 +1,9 @@
 import React from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { SentryIssue } from "../model/issue";
+import { Issue, SentryIssue } from "../model/issue";
 
 interface IssueCardProps {
-  issue: SentryIssue;
+  issue: Issue;
   onPress: () => void;
 }
 
