@@ -11,90 +11,54 @@ import {
   TouchableOpacity,
 } from "react-native";
 import IssueCard from "../components/IssueCard";
-import { Issue } from "../model/issue";
+import { SentryItem } from "../model/issue";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { ErrorsScreen } from "../components/Errors";
+import { IssuesScreen } from "../components/Issues";
+import { AppDispatch, useAppSelector } from "../redux/store";
+import { useDispatch } from "react-redux";
+import { fetchIssues } from "../redux/slices/ProjectsSlice";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { HomeStackParamList } from "../navigation/Navigation";
+
+const Tab = createMaterialTopTabNavigator();
 
 const ProjectIssues = ({ route }: { route: any }) => {
   const { projectId, projectName } = route.params;
-  const [issues, setIssues] = useState<Issue[]>([]);
-  const [error, setError] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState("errors");
 
-  const fetchIssues = async () => {
-    setRefreshing(true); // Enable the refreshing indicator
-    try {
-      const response = await axios.get(
-        `https://sentry.io/api/0/projects/communite/${projectName}/issues/`,
-        {
-          headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
-          },
-        }
-      );
-      setIssues(response.data);
-    } catch (err: any) {
-      setError(err.message);
-      console.error(err.message);
-    } finally {
-      setRefreshing(false); // Disable the refreshing indicator
-    }
-  };
-
-  // const filteredIssues = (level: string) => {
-  //   // Convert both values to lowercase to ensure case-insensitive comparison
-  //   return issues.filter(
-  //     (issue: { level: string }) =>
-  //       issue.level.toLowerCase() === level.toLowerCase()
-  //   );
-  // };
+  const dispatch: AppDispatch = useDispatch();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
   useEffect(() => {
-    fetchIssues();
-  }, [projectId]);
-
-  const filteredIssues = (level: string) => {
-    return issues.filter((issue) => issue.level === level);
-  };
+    dispatch(fetchIssues(projectName));
+  }, [dispatch]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
-        <Text style={styles.header}>{projectName} - Issues</Text>
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "errors" && styles.activeTab]}
-            onPress={() => setActiveTab("errors")}>
-            <Text style={styles.tabText}>Errors</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "info" && styles.activeTab]}
-            onPress={() => setActiveTab("info")}>
-            <Text style={styles.tabText}>Info</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}>
+          <Ionicons name="chevron-back" size={15} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.header}>{projectName}</Text>
       </View>
-      <ScrollView style={styles.container}>
-        {error ? (
-          <Text style={styles.errorText}>Error fetching issues: {error}</Text>
-        ) : null}
-        {activeTab === "errors" &&
-          filteredIssues("error").map((issue, index) => (
-            <IssueCard
-              key={index}
-              issue={issue}
-              onPress={() => console.log("Pressed issue", issue)}
-            />
-          ))}
-        {activeTab === "info" &&
-          filteredIssues("info").map((issue, index) => (
-            <IssueCard
-              key={index}
-              issue={issue}
-              onPress={() => console.log("Pressed issue", issue)}
-            />
-          ))}
-      </ScrollView>
+      <Tab.Navigator
+        screenOptions={{
+          tabBarActiveTintColor: "#FFFFFF",
+          tabBarInactiveTintColor: "#555",
+          tabBarIndicatorStyle: {
+            backgroundColor: "#BB86FC",
+          },
+          tabBarPressColor: "#4A90E2",
+          tabBarStyle: { backgroundColor: "#121212" },
+        }}>
+        <Tab.Screen name="Issues" component={IssuesScreen} />
+        <Tab.Screen name="Errors" component={ErrorsScreen} />
+      </Tab.Navigator>
     </SafeAreaView>
   );
 };
@@ -105,13 +69,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#121212", // Ensures the background color fills the whole screen
   },
   headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center", // Center the title container
     padding: 20,
-    backgroundColor: "#121212", // Match the main background
+    backgroundColor: "#121212",
+    position: "relative", // Enable absolute positioning for children
+  },
+  backButton: {
+    position: "absolute", // Position absolutely to appear on the left
+    left: 20, // Distance from the left edge
+  },
+  header: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    textAlign: "center", // Ensure the text is centered
   },
   tabContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 20,
+    backgroundColor: "#fff", // Match the main background
   },
   tab: {
     backgroundColor: "#2D2D2D", // A slightly different background color for tabs
@@ -139,12 +118,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#121212", // Dark background for the main view
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#FFFFFF", // White text for contrast against the dark background
   },
   // Removed the issueContainer style as it seems to be unused in favor of IssueCard component
   issueTitle: {

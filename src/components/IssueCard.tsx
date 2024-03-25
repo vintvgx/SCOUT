@@ -1,24 +1,34 @@
 import React from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { Issue, SentryIssue } from "../model/issue";
+import { SentryItem, SentryIssue } from "../model/issue";
+import format from "pretty-format";
 
 interface IssueCardProps {
-  issue: Issue;
+  issue: SentryItem;
   onPress: () => void;
 }
 
 const IssueCard: React.FC<IssueCardProps> = ({ issue, onPress }) => {
+  // console.log("🚀 ~ issue:", format(issue));
+  const eventsCount = issue.events ? issue.events.length : "N/A";
+
+  console.log("IssueCard:", issue.events?.length);
+
   return (
     <TouchableOpacity onPress={onPress} style={styles.card}>
       <Text style={styles.title}>{issue.title}</Text>
-      <Text style={styles.detail}>Count: {issue.count}</Text>
+      <Text style={styles.detail}>Events: {issue.count}</Text>
       <Text style={styles.detail}>
         First Seen: {new Date(issue.firstSeen).toLocaleString()}
       </Text>
       <Text style={styles.detail}>
         Last Seen: {new Date(issue.lastSeen).toLocaleString()}
       </Text>
-      <Text style={styles.link}>View on Sentry</Text>
+      <View style={styles.footer}>
+        <Text style={styles.link}>View on Sentry</Text>
+
+        <Text style={styles.detail}>Events: {eventsCount}</Text>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -54,6 +64,11 @@ const styles = StyleSheet.create({
   link: {
     fontSize: 14,
     color: "#BB86FC", // Using a purple accent color for links, inspired by Material Design
+    marginTop: 8,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-between", // Positions the children at both ends
     marginTop: 8,
   },
 });
