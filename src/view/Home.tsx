@@ -6,32 +6,54 @@ import {
   TouchableOpacity,
   Linking,
   RefreshControl,
-  Button,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { format as prettyFormat } from "pretty-format";
+import { useDispatch } from "react-redux";
 import { Project, SentryIssue } from "../model/issue";
-import IssueCard from "../components/IssueCard";
 import { useNavigation } from "@react-navigation/native";
 import { HomeStackParamList } from "../navigation/Navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { registerForPushNotificationsAsync } from "../utils/functions";
+import { AppDispatch, useAppSelector } from "../redux/store";
 import {
-  registerForPushNotificationsAsync,
-  sendNotification,
-} from "../utils/functions";
+  checkServerStatus,
+  fetchIssues,
+  fetchProjects,
+} from "../redux/slices/ProjectsSlice";
 
 const Home = () => {
   const [issues, setIssues] = useState<SentryIssue[]>([]);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [projects, setProjects] = useState([]);
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
+
+  const dispatch: AppDispatch = useDispatch();
+  const { projects, projectsLoading } = useAppSelector((state) => state.issues);
+
+  useEffect(() => {
+    // Assuming fetchProjects action resolves when projects are successfully fetched
+    dispatch(fetchProjects())
+      .then((action) => {
+        // Check if action is successful before checking server status
+        if (fetchProjects.fulfilled.match(action)) {
+          // Now that projects are fetched, dispatch checkServerStatus
+          // Make sure checkServerStatus action is correctly implemented to handle an array of projects
+          dispatch(checkServerStatus(action.payload));
+        }
+      })
+      .catch((error) => {
+        console.error(
+          "Failed to fetch projects or check server status:",
+          error
+        );
+      });
+  }, [dispatch]);
 
   useEffect(() => {
     registerForPushNotificationsAsync()
       .then((token: string | undefined) => {
-        console.log(token);
+        // console.log(token);
         setExpoPushToken(token);
       })
       .catch((err) => console.log(err));
@@ -40,54 +62,8 @@ const Home = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
-  const fetchIssues = async () => {
-    setRefreshing(true); // Enable the refreshing indicator
-    try {
-      const response = await axios.get(
-        "https://sentry.io/api/0/projects/communite/portfolio/issues/",
-        {
-          headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
-          },
-        }
-      );
-      setIssues(response.data);
-      console.log("🚀 ~ fetchIssues ~ data:", prettyFormat(response.data));
-    } catch (err: any) {
-      setError(err.message);
-      console.error(err.message);
-    } finally {
-      setRefreshing(false); // Disable the refreshing indicator
-    }
-  };
-
-  const fetchProjects = async () => {
-    try {
-      const response = await axios.get(
-        "https://sentry.io/api/0/organizations/communite/projects/",
-        {
-          headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
-          },
-        }
-      );
-      setProjects(response.data);
-      console.log("Projects:", prettyFormat(response.data));
-    } catch (err: any) {
-      setError(err.message);
-      console.error("GET Projects err:", err.message);
-    }
-  };
-
-  useEffect(() => {
-    fetchIssues();
-    fetchProjects();
-  }, []);
-
   const onRefresh = () => {
-    fetchIssues(); // Call fetchIssues when the user initiates a refresh
+    dispatch(fetchProjects());
   };
 
   const openLink = (url: any) => {
@@ -106,10 +82,9 @@ const Home = () => {
         style={{ marginTop: 50 }}
         contentContainerStyle={styles.container}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={projectsLoading} onRefresh={onRefresh} />
         }>
-        {error ? <Text>Error fetching issues: {error}</Text> : null}
-        {projects.map((project: Project) => (
+        {projects.map((project) => (
           <TouchableOpacity
             key={project.id}
             onPress={() =>
@@ -119,15 +94,42 @@ const Home = () => {
               })
             }
             style={styles.projectContainer}>
-            <Text style={styles.projectName}>{project.name}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.projectName}>{project.name}</Text>
+              {/* Example of additional project information */}
+              <Text style={styles.projectInfo}>Description: {project.id}</Text>
+              <Text style={styles.projectInfo}>
+                Open Issues: {project.platform}
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              {project.serverStatus ? (
+                <>
+                  <Text
+                    style={{
+                      color: project.serverStatus === "live" ? "#FFF" : "#FFF",
+                      marginRight: 5,
+                    }}>
+                    {project.serverStatus === "live"
+                      ? "Server Live"
+                      : "Server Down"}
+                  </Text>
+                  <View
+                    style={[
+                      styles.light,
+                      project.serverStatus === "live"
+                        ? styles.liveLight
+                        : styles.downLight,
+                    ]}
+                  />
+                </>
+              ) : (
+                <ActivityIndicator size="small" color="#ffffff" />
+              )}
+            </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
-      {/* <Button
-        title="Send Notification"
-        onPress={() => sendNotification(expoPushToken)}
-        color="#1E90FF"
-      /> */}
     </View>
   );
 };
@@ -173,5 +175,22 @@ const styles = StyleSheet.create({
     fontWeight: "bold", // Text weight
     color: "#FFF", // White text color for readability
     flex: 1, // Take up available space
+  },
+  light: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  liveLight: {
+    backgroundColor: "green",
+  },
+  downLight: {
+    backgroundColor: "red",
+  },
+  projectInfo: {
+    color: "#B0B0B0", // Lighter text color for additional info
+    fontSize: 14, // Smaller font size than the project name
+    marginTop: 2, // Space out the information vertically
   },
 });

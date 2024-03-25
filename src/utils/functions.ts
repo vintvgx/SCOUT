@@ -101,7 +101,7 @@ export async function registerForPushNotificationsAsync() {
         projectId: "605ca6ac-8939-440c-baa7-0307f5f8d01d",
       })
     ).data;
-    console.log(token);
+    // console.log(token);
 
     try {
       const docRef = await addDoc(collection(db, "user"), {

@@ -6,6 +6,8 @@ import { StatusBar } from "expo-status-bar";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "./src/utils/functions";
+import { Provider } from "react-redux";
+import store, { AppDispatch } from "./src/redux/store";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -18,16 +20,6 @@ Notifications.setNotificationHandler({
 export default function App() {
   const [isSplashVisible, setSplashVisible] = useState(true);
   const fadeAnim = new Animated.Value(1);
-  // const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
-
-  // useEffect(() => {
-  //   registerForPushNotificationsAsync()
-  //     .then((token: string | undefined) => {
-  //       console.log(token);
-  //       setExpoPushToken(token);
-  //     })
-  //     .catch((err) => console.log(err));
-  // }, []);
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -52,9 +44,11 @@ export default function App() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#000" }}>
-      <StatusBar style="light" />
-      <AppNavigation />
-    </View>
+    <Provider store={store}>
+      <View style={{ flex: 1, backgroundColor: "#000" }}>
+        <StatusBar style="light" />
+        <AppNavigation />
+      </View>
+    </Provider>
   );
 }
