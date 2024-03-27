@@ -14,7 +14,7 @@ import IssueCard from "../components/IssueCard";
 import { SentryItem } from "../model/issue";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { ErrorsScreen } from "../components/Errors";
-import { IssuesScreen } from "../components/Issues";
+import { IssuesScreen } from "../components/IssuesScreen";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
 import { fetchIssues } from "../redux/slices/ProjectsSlice";
@@ -56,8 +56,14 @@ const ProjectIssues = ({ route }: { route: any }) => {
           tabBarPressColor: "#4A90E2",
           tabBarStyle: { backgroundColor: "#121212" },
         }}>
-        <Tab.Screen name="Issues" component={IssuesScreen} />
-        <Tab.Screen name="Errors" component={ErrorsScreen} />
+        <Tab.Screen
+          name="Issues"
+          children={() => <IssuesScreen projectId={projectId} />}
+        />
+        <Tab.Screen
+          name="Errors"
+          children={() => <ErrorsScreen projectId={projectId} />}
+        />
       </Tab.Navigator>
     </SafeAreaView>
   );

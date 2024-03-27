@@ -22,8 +22,16 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
 
   // Define the message for Firebase Cloud Messaging
   const message = {
-    title: `New ${issue.project} Issue`,
-    body: issue.message || "A new issue has been reported.",
+    notification: {
+      title: `New ${issue.project} Issue`,
+      body: issue.message || "A new issue has been reported.",
+    },
+    data: {
+      projectName: issue.project,
+      issueId: issue.event.event_id,
+      level: issue.event.level,
+      timestamp: issue.event.received,
+    },
   };
 
   const post_data = {
@@ -58,23 +66,11 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
       `Issue added to Firestore under projects/${projectName}/issues/${issue.id}`
     );
 
-    // Sending the notification
-    // await admin.messaging().send(message);
-    // console.log("Successfully sent message");
-
-    // Retrieve push tokens for the project
-    // console.log("ADMIN:", admin);
-    // console.log("DATABASE: ", db);
     const tokens = await fetchTokens();
     console.log(
       "🚀 ~ exports.sentryWebhook=functions.https.onRequest ~ tokens:",
       tokens
     );
-    // const all_tokens = await fetchExpoPushTokens();
-    // console.log(
-    //   "🚀 ~ exports.sentryWebhook=functions.https.onRequest ~ all_tokens:",
-    //   all_tokens
-    // );
 
     // Send notification
     if (tokens.length > 0) {

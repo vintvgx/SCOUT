@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
-import { SentryItem, SentryIssue } from "../model/issue";
+import { SentryItem } from "../model/issue";
 import format from "pretty-format";
 
 interface IssueCardProps {
@@ -11,8 +11,6 @@ interface IssueCardProps {
 const IssueCard: React.FC<IssueCardProps> = ({ issue, onPress }) => {
   // console.log("🚀 ~ issue:", format(issue));
   const eventsCount = issue.events ? issue.events.length : "N/A";
-
-  console.log("IssueCard:", issue.events?.length);
 
   return (
     <TouchableOpacity onPress={onPress} style={styles.card}>
