@@ -37,10 +37,8 @@ const issuesSlice = createSlice({
       const project = state.projects.find(
         (project) => project.id === projectId
       );
-      console.log("🚀 ~ project:", format(project));
+
       if (project) {
-        console.log("PROJECT:", project);
-        // console.log("PAYLOAD ITEM:", format(item));
         project.issues.push(item);
       }
     },
@@ -50,8 +48,6 @@ const issuesSlice = createSlice({
         (project) => project.id === projectId
       );
       if (project) {
-        console.log("PROJECT:", project);
-        console.log("PAYLOAD ITEM:", format(item));
         project.errors.push(item);
       }
     },
@@ -123,22 +119,10 @@ export const fetchIssues = createAsyncThunk<
       const eventActionResult = await thunkAPI.dispatch(
         fetchEvent({ issueId: issue.id, projectId: issue.project.id })
       );
-      // console.log(
-      //   "🚀 ~ response.data.forEach ~ eventActionResult:",
-      //   format(eventActionResult)
-      // );
-      // console.log(
-      //   "🚀 ~ response.data.forEach ~ eventActionResult:",
-      //   eventActionResult
-      // );
 
       if (fetchEvent.fulfilled.match(eventActionResult)) {
         const events = eventActionResult.payload.events;
         const issueWithEvents = { ...issue, events: events };
-        console.log(
-          "🚀 ~ response.data.forEach ~ issueWithEvents:",
-          format(issueWithEvents)
-        );
 
         // Dispatch action to add issue or error to the state
         try {

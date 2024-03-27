@@ -1,5 +1,5 @@
 import axios from "axios";
-import { format as prettyFormat } from "pretty-format";
+import format, { format as prettyFormat } from "pretty-format";
 import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
@@ -21,54 +21,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
-
-export const fetchIssues = async (
-  setRefreshing: (value: boolean) => void,
-  setIssues: (data: any) => void,
-  setError: (message: string) => void
-) => {
-  setRefreshing(true); // Enable the refreshing indicator
-  try {
-    const response = await axios.get(
-      "https://sentry.io/api/0/projects/communite/portfolio/issues/",
-      {
-        headers: {
-          Authorization:
-            "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
-        },
-      }
-    );
-    setIssues(response.data);
-    console.log("🚀 ~ fetchIssues ~ data:", prettyFormat(response.data));
-  } catch (err: any) {
-    setError(err.message);
-    console.error(err.message);
-  } finally {
-    setRefreshing(false); // Disable the refreshing indicator
-  }
-};
-
-export const fetchProjects = async (
-  setProjects: (data: any) => void,
-  setError: (message: string) => void
-) => {
-  try {
-    const response = await axios.get(
-      "https://sentry.io/api/0/organizations/communite/projects/",
-      {
-        headers: {
-          Authorization:
-            "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
-        },
-      }
-    );
-    setProjects(response.data);
-    console.log("Projects:", prettyFormat(response.data));
-  } catch (err: any) {
-    setError(err.message);
-    console.error("GET Projects err:", err.message);
-  }
-};
 
 export async function registerForPushNotificationsAsync() {
   let token;
@@ -107,7 +59,7 @@ export async function registerForPushNotificationsAsync() {
       const docRef = await addDoc(collection(db, "user"), {
         expoPushToken: token,
       });
-      console.log("Document written with ID: ", docRef.id);
+      // console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -118,24 +70,22 @@ export async function registerForPushNotificationsAsync() {
   return token;
 }
 
-export const sendNotification = async (expoPushToken: string | undefined) => {
-  console.log("Sending notification");
-  console.log("Expo Push Token:", expoPushToken);
-  const message = {
-    to: expoPushToken,
-    sound: "default",
-    title: "Original Title2",
-    body: expoPushToken,
-  };
+export const fetchLocationForIP = async (ipAddress: string) => {
+  console.log("FETCH LOCATION");
   try {
-    await axios.post("https://exp.host/--/api/v2/push/send", message, {
+    const response = await fetch(`https://api.radar.io/v1/geocode/ip`, {
+      method: "GET",
       headers: {
-        Accept: "application/json",
-        "Accept-Encoding": "gzip, deflate",
-        "Content-Type": "application/json",
+        Authorization: "prj_live_pk_feab46e3a831493a7a49d3294834b276bf5fd7b1",
       },
     });
-  } catch (err: any) {
-    console.error("POST Push Notification err:", err.message);
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    // Handle non-OK responses here
+  } catch (error) {
+    console.error("Failed to fetch location for IP:", error);
+    // Handle errors, such as network issues
   }
 };
