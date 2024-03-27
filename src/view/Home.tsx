@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { Project, SentryIssue } from "../model/issue";
 import { useNavigation } from "@react-navigation/native";
 import { HomeStackParamList } from "../navigation/Navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -21,15 +20,16 @@ import {
   fetchIssues,
   fetchProjects,
 } from "../redux/slices/ProjectsSlice";
+import format from "pretty-format";
 
 const Home = () => {
-  const [issues, setIssues] = useState<SentryIssue[]>([]);
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
 
   const dispatch: AppDispatch = useDispatch();
   const { projects, projectsLoading } = useAppSelector((state) => state.issues);
+  // console.log("🚀 ~ Home ~ projects:", format(projects));
 
   useEffect(() => {
     // Assuming fetchProjects action resolves when projects are successfully fetched
@@ -87,12 +87,17 @@ const Home = () => {
         {projects.map((project) => (
           <TouchableOpacity
             key={project.id}
-            onPress={() =>
+            onPress={() => {
+              // Log the project ID and project name here
+              console.log(
+                `Project ID: ${project.id}, Project Name: ${project.name}`
+              );
+
               navigation.navigate("ProjectIssues", {
                 projectId: project.id,
                 projectName: project.name,
-              })
-            }
+              });
+            }}
             style={styles.projectContainer}>
             <View style={{ flex: 1 }}>
               <Text style={styles.projectName}>{project.name}</Text>

@@ -1,36 +1,11 @@
 import { SentryEvent } from "./event";
 
-export interface SentryIssue {
-  id: string;
-  shortId: string;
-  title: string;
-  culprit: string;
-  firstSeen: string;
-  lastSeen: string;
-  count: string;
-  userCount: number;
-  level: string;
-  status: string;
-  isPublic: boolean;
-  isBookmarked: boolean;
-  isSubscribed: boolean;
-  hasSeen: boolean;
-  annotations: Array<any>;
-  assignedTo: null | object;
-  project: {
-    id: string;
-    name: string;
-    slug: string;
-    platform: string;
-  };
-  permalink: string;
-}
-
 export interface SentryItem {
   annotations: any[]; // Adjust the `any` type based on what `annotations` actually contains
   assignedTo: null | string; // Assuming assignedTo can be a string if it's not null
   count: string;
   culprit: string;
+  events?: SentryEvent[];
   firstSeen: string;
   hasSeen: boolean;
   id: string;
@@ -75,23 +50,4 @@ export interface SentryItem {
   type: string;
   userCount: number;
   user: string;
-  events?: SentryEvent[];
-}
-
-export interface Project {
-  id: string;
-  name: string;
-  slug: string;
-  platform: string;
-  serverStatus?: string | "live" | "down";
-}
-
-export interface SentryIssueResponse {
-  issues: Array<SentryIssue>;
-  projectName: string;
-}
-
-export interface Accumulator {
-  errors: SentryItem[];
-  issues: SentryItem[];
 }

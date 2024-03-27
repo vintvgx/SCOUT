@@ -1,10 +1,11 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
-import { Accumulator, SentryItem, Project } from "../../model/issue";
+import { SentryItem } from "../../model/issue";
+import { IssueErrorPayload, Project } from "../../model/project";
 import format from "pretty-format";
 
 interface ProjectsState {
-  data: { errors: SentryItem[]; issues: SentryItem[] };
+  // data: { errors: SentryIssue[]; issues: SentryIssue[] };
   projects: Project[];
   loading: boolean;
   projectsLoading: boolean;
@@ -13,7 +14,7 @@ interface ProjectsState {
 }
 
 const initialState: ProjectsState = {
-  data: { errors: [], issues: [] },
+  // data: { errors: [], issues: [] },
   projects: [],
   loading: false,
   projectsLoading: false,
@@ -31,14 +32,37 @@ const issuesSlice = createSlice({
   name: "issues",
   initialState,
   reducers: {
-    addIssue: (state, action) => {
-      state.data.issues.push(action.payload);
+    addIssue: (state, action: PayloadAction<IssueErrorPayload>) => {
+      const { projectId, item } = action.payload;
+      const project = state.projects.find(
+        (project) => project.id === projectId
+      );
+      console.log("🚀 ~ project:", format(project));
+      if (project) {
+        console.log("PROJECT:", project);
+        // console.log("PAYLOAD ITEM:", format(item));
+        project.issues.push(item);
+      }
     },
-    addError: (state, action) => {
-      state.data.errors.push(action.payload);
+    addError: (state, action: PayloadAction<IssueErrorPayload>) => {
+      const { projectId, item } = action.payload;
+      const project = state.projects.find(
+        (project) => project.id === projectId
+      );
+      if (project) {
+        console.log("PROJECT:", project);
+        console.log("PAYLOAD ITEM:", format(item));
+        project.errors.push(item);
+      }
     },
+    // addProjectIssue: (state, action) => {
+
+    // },
     clearData: (state) => {
-      state.data = { errors: [], issues: [] };
+      state.projects.forEach((project) => {
+        project.errors = [];
+        project.issues = [];
+      });
     },
   },
   extraReducers: (builder) => {
@@ -89,24 +113,52 @@ export const fetchIssues = createAsyncThunk<
     );
 
     // Ensure the initial accumulator matches the Accumulator interface
-    const initialAccumulator: Accumulator = { errors: [], issues: [] };
 
-    thunkAPI.dispatch(issuesSlice.actions.clearData());
+    // thunkAPI.dispatch(issuesSlice.actions.clearData());
 
     // Sequentially fetch events for each issue before categorizing
     response.data.forEach(async (issue: SentryItem) => {
+      // console.log("🚀 ~ response.data.forEach ~ issue:", format(issue));
+
       const eventActionResult = await thunkAPI.dispatch(
-        fetchEvent({ issueId: issue.id })
+        fetchEvent({ issueId: issue.id, projectId: issue.project.id })
       );
+      // console.log(
+      //   "🚀 ~ response.data.forEach ~ eventActionResult:",
+      //   format(eventActionResult)
+      // );
+      // console.log(
+      //   "🚀 ~ response.data.forEach ~ eventActionResult:",
+      //   eventActionResult
+      // );
+
       if (fetchEvent.fulfilled.match(eventActionResult)) {
         const events = eventActionResult.payload.events;
-        const issueWithEvents = { ...issue, events };
+        const issueWithEvents = { ...issue, events: events };
+        console.log(
+          "🚀 ~ response.data.forEach ~ issueWithEvents:",
+          format(issueWithEvents)
+        );
 
         // Dispatch action to add issue or error to the state
-        if (issue.level === "error") {
-          thunkAPI.dispatch(issuesSlice.actions.addError(issueWithEvents));
-        } else {
-          thunkAPI.dispatch(issuesSlice.actions.addIssue(issueWithEvents));
+        try {
+          if (issue.level === "error") {
+            thunkAPI.dispatch(
+              issuesSlice.actions.addError({
+                projectId: issue.project.id,
+                item: issueWithEvents,
+              })
+            );
+          } else {
+            thunkAPI.dispatch(
+              issuesSlice.actions.addIssue({
+                projectId: issue.project.id, // This should be dynamically determined based on your app's logic
+                item: issueWithEvents,
+              })
+            );
+          }
+        } catch (e) {
+          console.log(e);
         }
       }
     });
@@ -136,7 +188,15 @@ export const fetchProjects = createAsyncThunk(
           },
         }
       );
-      return response.data;
+
+      const projectsWithIssuesAndErrors = response.data.map(
+        (project: { issues: any; errors: any }) => ({
+          ...project,
+          issues: project.issues || [],
+          errors: project.errors || [],
+        })
+      );
+      return projectsWithIssuesAndErrors;
     } catch (error: any) {
       return rejectWithValue(error.response.data);
     }
@@ -145,7 +205,10 @@ export const fetchProjects = createAsyncThunk(
 
 export const fetchEvent = createAsyncThunk(
   "issues/fetchEvent",
-  async ({ issueId }: { issueId: string }, { rejectWithValue }) => {
+  async (
+    { issueId, projectId }: { issueId: string; projectId: string },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await axios.get(
         `https://sentry.io/api/0/organizations/communite/issues/${issueId}/events/`,
@@ -156,6 +219,8 @@ export const fetchEvent = createAsyncThunk(
           },
         }
       );
+      // console.log("🚀 ~ response:", format(response.data));
+      // console.log("EVENTS:", { issueId, events: response.data });
 
       return { issueId, events: response.data };
     } catch (error: any) {
