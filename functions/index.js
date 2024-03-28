@@ -156,7 +156,7 @@ async function fetchTokens() {
     .get()
     .then((querySnapshot) => {
       querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data());
+        // console.log(doc.id, " => ", doc.data());
         tokens.push(doc.data());
       });
     })

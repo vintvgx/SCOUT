@@ -21,11 +21,44 @@ export interface SentryEvent {
   eventID: string;
   groupID: string;
   id: string;
-  location: null | string;
+  location: LocationData | null;
   message: string;
   platform: string;
   projectID: string;
   tags: Tag[];
   title: string;
   user: User;
+}
+
+export interface LocationData {
+  address: Address;
+  ip: string;
+  meta: {
+    code: number;
+  };
+  proxy: boolean;
+}
+
+interface Address {
+  city: string;
+  country: string;
+  countryCode: string;
+  countryFlag: string;
+  dma: string;
+  dmaCode: string;
+  geometry: {
+    coordinates: [number, number]; // [longitude, latitude]
+    type: string;
+  };
+  latitude: number;
+  longitude: number;
+  layer: string;
+  postalCode: string;
+  state: string;
+  stateCode: string;
+}
+
+export interface Coordinates {
+  longitude: number;
+  latitude: number;
 }

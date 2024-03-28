@@ -33,11 +33,11 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
   );
 
   // Console log the issues after they have been fetched and the state is updated
-  useEffect(() => {
-    if (projectIssues) {
-      console.log("🚀 ~ Project Issues:", projectIssues);
-    }
-  }, [projectIssues]);
+  // useEffect(() => {
+  //   if (projectIssues) {
+  //     console.log("🚀 ~ Project Issues:", projectIssues);
+  //   }
+  // }, [projectIssues]);
 
   const handleIssuePress = (issue: SentryItem) => {
     setSelectedEvents(issue.events || []); // Assume 'events' is optionally part of SentryItem
