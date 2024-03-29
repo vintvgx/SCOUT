@@ -7,7 +7,6 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "./src/utils/functions";
 import { Provider } from "react-redux";
-import { NativeBaseProvider } from "native-base";
 import store, { AppDispatch } from "./src/redux/store";
 
 Notifications.setNotificationHandler({

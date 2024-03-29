@@ -9,8 +9,6 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
-import { Button } from "native-base";
 import { LocationData, SentryEvent } from "../model/event";
 import format from "pretty-format";
 import { fetchLocationForIP } from "../utils/functions";
@@ -42,36 +40,36 @@ const EventViewer: React.FC<EventViewerProps> = ({
     []
   );
 
-  useEffect(() => {
-    const fetchLocationsAndSetEvents = async () => {
-      const eventsWithLocationData = await Promise.all(
-        events.map(async (event) => {
-          if (event.user?.ip_address) {
-            try {
-              const locationResponse = await fetchLocationForIP(
-                event.user.ip_address
-              ); // Assume this returns the data in the format of the response above
-              const locationData: LocationData = locationResponse; // Assuming fetchLocationForIP returns the data directly
-              console.log(
-                "🚀 ~ events.map ~ locationData:",
-                format(locationData)
-              );
+  // useEffect(() => {
+  //   const fetchLocationsAndSetEvents = async () => {
+  //     const eventsWithLocationData = await Promise.all(
+  //       events.map(async (event) => {
+  //         if (event.user?.ip_address) {
+  //           try {
+  //             const locationResponse = await fetchLocationForIP(
+  //               event.user.ip_address
+  //             ); // Assume this returns the data in the format of the response above
+  //             const locationData: LocationData = locationResponse; // Assuming fetchLocationForIP returns the data directly
+  //             console.log(
+  //               "🚀 ~ events.map ~ locationData:",
+  //               format(locationData)
+  //             );
 
-              return { ...event, location: locationData };
-            } catch (error) {
-              console.error("Failed to fetch location:", error);
-              return event; // Return the event unchanged if location fetch fails
-            }
-          }
-          return event;
-        })
-      );
+  //             return { ...event, location: locationData };
+  //           } catch (error) {
+  //             console.error("Failed to fetch location:", error);
+  //             return event; // Return the event unchanged if location fetch fails
+  //           }
+  //         }
+  //         return event;
+  //       })
+  //     );
 
-      setEventsWithLocation(eventsWithLocationData);
-    };
+  //     setEventsWithLocation(eventsWithLocationData);
+  //   };
 
-    fetchLocationsAndSetEvents();
-  }, [events]);
+  //   fetchLocationsAndSetEvents();
+  // }, [events]);
 
   return (
     <Modal
@@ -85,7 +83,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
             horizontal={true}
             pagingEnabled={true}
             showsHorizontalScrollIndicator={false}>
-            {eventsWithLocation.map((event, index) => (
+            {events.map((event, index) => (
               <View key={index} style={styles.eventContainer}>
                 {/* Event title as header */}
                 <Text style={styles.header}>{event.title}</Text>
@@ -105,8 +103,10 @@ const EventViewer: React.FC<EventViewerProps> = ({
                 <View style={styles.section}>
                   <Text style={styles.sectionHeader}>Message</Text>
                   <Text style={styles.sectionContent}>{event.message}</Text>
-                  <Text>{event.location?.address?.latitude ?? "N/A"}</Text>
-                  <Text>{event.location?.address?.longitude ?? "N/A"}</Text>
+                  <Text style={styles.sectionContent}>
+                    {event.location?.address.city},{" "}
+                    {event.location?.address.state}
+                  </Text>
                 </View>
 
                 {event.tags.map((tag, tagIndex) => (
@@ -114,7 +114,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
                     {tag.key}: {tag.value}
                   </Text>
                 ))}
-                <View style={styles.mapContainer}>
+                {/* <View style={styles.mapContainer}>
                   {event.location?.address.latitude &&
                     event.location.address.longitude && (
                       <MapView
@@ -135,7 +135,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
                         />
                       </MapView>
                     )}
-                </View>
+                </View> */}
               </View>
             ))}
           </ScrollView>
