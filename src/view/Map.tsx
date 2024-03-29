@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, SafeAreaView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { Project } from "../model/project";
 import { SentryItem } from "../model/issue";
 import { SentryEvent } from "../model/event";
-import { useAppSelector } from "../redux/store";
+import { useAppSelector, AppDispatch } from "../redux/store";
+import { useDispatch } from "react-redux";
+import { fetchIssues } from "../redux/slices/ProjectsSlice";
 
 const Map = () => {
   const INITIAL_REGION = {
@@ -16,6 +18,14 @@ const Map = () => {
   };
 
   const { projects } = useAppSelector((state) => state.issues);
+  const dispatch: AppDispatch = useDispatch();
+
+  useEffect(() => {
+    // Fetch issues for all projects
+    projects.forEach((project) => {
+      dispatch(fetchIssues(project.name));
+    });
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -25,9 +35,9 @@ const Map = () => {
         initialRegion={INITIAL_REGION}
         showsUserLocation
         showsMyLocationButton>
-        {projects.map((project: Project) =>
-          project.issues.map((issue: SentryItem) =>
-            issue?.events?.map((event: SentryEvent) =>
+        {projects.map((project) =>
+          project.issues.map((issue) =>
+            issue?.events?.map((event) =>
               event.location ? (
                 <Marker
                   key={event.id} // Assuming each event has a unique ID

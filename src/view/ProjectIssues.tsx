@@ -33,6 +33,11 @@ const ProjectIssues = ({ route }: { route: any }) => {
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
   useEffect(() => {
+    console.log(
+      "DISPATCHING Fetching issues for project",
+      projectName,
+      "FROM ProjectIssues"
+    );
     dispatch(fetchIssues(projectName));
   }, [dispatch]);
 

@@ -4,6 +4,7 @@ import { SentryItem } from "../../model/issue";
 import { IssueErrorPayload, Project } from "../../model/project";
 import format from "pretty-format";
 import { LocationData, SentryEvent } from "../../model/event";
+import { RootState } from "../store";
 
 interface ProjectsState {
   // data: { errors: SentryIssue[]; issues: SentryIssue[] };
@@ -52,6 +53,15 @@ const issuesSlice = createSlice({
         project.errors.push(item);
       }
     },
+    updateProject: (state, action: PayloadAction<Project>) => {
+      const { payload } = action;
+      return {
+        ...state,
+        projects: state.projects.map((project) =>
+          project.id === payload.id ? payload : project
+        ),
+      };
+    },
     clearData: (state) => {
       state.projects.forEach((project) => {
         project.errors = [];
@@ -67,18 +77,6 @@ const issuesSlice = createSlice({
       })
       .addCase(fetchIssues.fulfilled, (state) => {
         state.loading = false;
-
-        // Loop through the fetched issues and set isLoaded to true for the corresponding project
-        state.projects = state.projects.map((project) => {
-          const issueForProject = state.projects
-            .flatMap((p) => [...p.issues, ...p.errors])
-            .find((issue) => issue.project.id === project.id);
-
-          if (issueForProject) {
-            return { ...project, isLoaded: true };
-          }
-          return project;
-        });
       })
       .addCase(fetchIssues.rejected, (state, action) => {
         state.loading = false;
@@ -107,12 +105,25 @@ export const fetchIssues = createAsyncThunk<
   string, // Type for projectName argument
   { rejectValue: string } // Type for thunkAPI (customize as needed)
 >("issues/fetchIssues", async (projectName, thunkAPI) => {
-  const state = thunkAPI.getState() as { projects: Project[] };
-  const project = state.projects.find(
-    (project) => project.name === projectName
+  // Get the current state
+  const state = thunkAPI.getState() as RootState;
+
+  // Retrieve the projects array from the state
+  const projects: Project[] | undefined = state.issues.projects;
+
+  console.log("🚀 ~ FETCHING ISSUES INVOKED: ", projectName);
+
+  // Find the project with the given projectName
+  const project: Project | undefined = projects?.find(
+    (proj) => proj.name === projectName
   );
 
   if (project && !project.isLoaded) {
+    console.log(
+      "🚀 ~ file: ProjectsSlice.ts ~ FETCHING ISSUES FOR project:",
+      project
+    );
+
     try {
       // fetch project issues
       const response = await axios.get(
@@ -184,6 +195,14 @@ export const fetchIssues = createAsyncThunk<
         }
       });
 
+      // Set the project.isLoaded property to true
+      const updatedProject = { ...project, isLoaded: true };
+      await thunkAPI.dispatch(
+        issuesSlice.actions.updateProject(updatedProject)
+      );
+
+      console.log("Project updated:", format(updatedProject));
+
       // No need to return a payload as we're updating the state incrementally
     } catch (error: any) {
       console.error(
@@ -218,6 +237,7 @@ export const fetchProjects = createAsyncThunk(
           ...project,
           issues: project.issues || [],
           errors: project.errors || [],
+          isLoaded: false,
         })
       );
       return projectsWithIssuesAndErrors;
