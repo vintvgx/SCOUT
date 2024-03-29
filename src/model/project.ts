@@ -8,6 +8,7 @@ export interface Project {
   serverStatus?: string | "live" | "down";
   errors: SentryItem[];
   issues: SentryItem[];
+  isLoaded: boolean;
 }
 
 export interface IssueErrorPayload {
