@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,15 +8,26 @@ import {
 } from "react-native";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import IssueCard from "./IssueCard";
+import { SentryEvent } from "../model/event";
+import { SentryItem } from "../model/issue";
+import EventViewer from "./EventViewer";
+import { handleOpenEventModal } from "../utils/functions";
+import format from "pretty-format";
 
 interface ErrorsScreenType {
   projectId: string;
 }
 
 export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectId }) => {
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
+
   const { projects, loading, error } = useAppSelector((state) => state.issues);
 
-  const project = projects.find((project) => project.id === projectId);
+  // Ensure the project is defined and has issues
+  const project = projects.find((p) => p.id === projectId);
+  // A fallback for when project is undefined
+  const issues = project?.issues || [];
 
   if (loading)
     return (
@@ -57,7 +68,14 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectId }) => {
             <IssueCard
               key={error.id || index} // It's better to use issue.id if available
               issue={error}
-              onPress={() => console.log("Pressed issue", error)}
+              onPress={() => {
+                console.log(format(error));
+                handleOpenEventModal(
+                  error,
+                  setSelectedEvents,
+                  setIsViewerVisible
+                );
+              }}
             />
           ))
         ) : (
@@ -68,6 +86,11 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectId }) => {
           </View>
         )}
       </ScrollView>
+      <EventViewer
+        events={selectedEvents}
+        isVisible={isViewerVisible}
+        onClose={() => setIsViewerVisible(false)}
+      />
     </View>
   );
 };

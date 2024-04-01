@@ -7,6 +7,8 @@ import firebase from "firebase/compat/app";
 import "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { SentryItem } from "../model/issue";
+import { SentryEvent } from "../model/event";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA1Ioud4rwt4sIYrX-KGGfV3sOiqocxU3Y",
@@ -88,4 +90,17 @@ export const fetchLocationForIP = async (ipAddress: string) => {
     console.error("Failed to fetch location for IP:", error);
     // Handle errors, such as network issues
   }
+};
+
+/**
+ * Handles the press event for an issue.
+ * @param issue - The selected SentryItem.
+ */
+export const handleOpenEventModal = (
+  issue: SentryItem,
+  setSelectedEvents: (issue: SentryEvent[]) => void,
+  setIsViewerVisible: (isVisible: boolean) => void
+) => {
+  setSelectedEvents(issue.events || []);
+  setIsViewerVisible(true);
 };

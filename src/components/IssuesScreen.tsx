@@ -12,6 +12,7 @@ import EventViewer from "./EventViewer";
 import { SentryItem } from "../model/issue"; // Assuming SentryEvent is correctly imported
 import { SentryEvent } from "../model/event";
 import format from "pretty-format";
+import { handleOpenEventModal } from "../utils/functions";
 
 interface IssuesScreenType {
   projectId: string;
@@ -24,25 +25,8 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
 
   // Ensure the project is defined and has issues
   const project = projects.find((p) => p.id === projectId);
-  const issues = project?.issues || []; // Use optional chaining and provide a fallback
-
-  // Selecting issues for the current project
-  const projectIssues = useAppSelector(
-    (state) =>
-      state.issues.projects.find((project) => project.id === projectId)?.issues
-  );
-
-  // Console log the issues after they have been fetched and the state is updated
-  // useEffect(() => {
-  //   if (projectIssues) {
-  //     console.log("🚀 ~ Project Issues:", projectIssues);
-  //   }
-  // }, [projectIssues]);
-
-  const handleIssuePress = (issue: SentryItem) => {
-    setSelectedEvents(issue.events || []); // Assume 'events' is optionally part of SentryItem
-    setIsViewerVisible(true);
-  };
+  // A fallback for when project is undefined
+  const issues = project?.issues || [];
 
   if (loading)
     return (
@@ -70,7 +54,9 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
           <IssueCard
             key={issue.id || index}
             issue={issue}
-            onPress={() => handleIssuePress(issue)}
+            onPress={() =>
+              handleOpenEventModal(issue, setSelectedEvents, setIsViewerVisible)
+            }
           />
         ))}
       </ScrollView>

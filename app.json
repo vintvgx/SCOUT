@@ -4,10 +4,10 @@
     "slug": "dpd_stats",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/ICON1024.png",
+    "icon": "./assets/scout1024.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/IOS_SPLASH.png",
+      "image": "./assets/scout_splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
