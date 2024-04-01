@@ -21,6 +21,7 @@ import {
   fetchProjects,
 } from "../redux/slices/ProjectsSlice";
 import format from "pretty-format";
+import { StatusBar } from "expo-status-bar";
 
 const Home = () => {
   const [error, setError] = useState("");
@@ -78,6 +79,8 @@ const Home = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#121212" }}>
+      <StatusBar style="light" />
+
       <ScrollView
         style={{ marginTop: 50 }}
         contentContainerStyle={styles.container}

@@ -13,7 +13,7 @@ import {
 import IssueCard from "../components/IssueCard";
 import { SentryItem } from "../model/issue";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import { ErrorsScreen } from "../components/Errors";
+import { ErrorsScreen } from "../components/ErrorsScreen";
 import { IssuesScreen } from "../components/IssuesScreen";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
@@ -33,6 +33,11 @@ const ProjectIssues = ({ route }: { route: any }) => {
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
   useEffect(() => {
+    console.log(
+      "DISPATCHING Fetching issues for project",
+      projectName,
+      "FROM ProjectIssues"
+    );
     dispatch(fetchIssues(projectName));
   }, [dispatch]);
 
@@ -42,7 +47,7 @@ const ProjectIssues = ({ route }: { route: any }) => {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}>
-          <Ionicons name="chevron-back" size={15} color="white" />
+          <Ionicons name="chevron-back" size={20} color="white" />
         </TouchableOpacity>
         <Text style={styles.header}>{projectName}</Text>
       </View>
@@ -84,7 +89,8 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: "absolute", // Position absolutely to appear on the left
-    left: 20, // Distance from the left edge
+    left: 10, // Distance from the left edge
+    padding: 10,
   },
   header: {
     fontSize: 22,

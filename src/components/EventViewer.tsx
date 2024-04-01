@@ -12,12 +12,22 @@ import {
 import { LocationData, SentryEvent } from "../model/event";
 import format from "pretty-format";
 import { fetchLocationForIP } from "../utils/functions";
+import MapView, { Marker } from "react-native-maps";
+import Icon from "react-native-vector-icons/Ionicons";
+import EventInformation from "./EventInformation";
 
 interface EventViewerProps {
   isVisible: boolean;
   onClose: () => void;
   events: SentryEvent[]; // Expect an array of SentryEvent objects
 }
+
+const INITIAL_REGION = {
+  latitude: 42.3601,
+  longitude: -71.0589,
+  latitudeDelta: 0.0922,
+  longitudeDelta: 0.0421,
+};
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -36,40 +46,19 @@ const EventViewer: React.FC<EventViewerProps> = ({
   isVisible,
   onClose,
 }) => {
-  const [eventsWithLocation, setEventsWithLocation] = useState<SentryEvent[]>(
-    []
-  );
+  const eventTitle = events.length > 0 ? events[0].title : "Event";
 
-  // useEffect(() => {
-  //   const fetchLocationsAndSetEvents = async () => {
-  //     const eventsWithLocationData = await Promise.all(
-  //       events.map(async (event) => {
-  //         if (event.user?.ip_address) {
-  //           try {
-  //             const locationResponse = await fetchLocationForIP(
-  //               event.user.ip_address
-  //             ); // Assume this returns the data in the format of the response above
-  //             const locationData: LocationData = locationResponse; // Assuming fetchLocationForIP returns the data directly
-  //             console.log(
-  //               "🚀 ~ events.map ~ locationData:",
-  //               format(locationData)
-  //             );
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<SentryEvent | null>(null);
 
-  //             return { ...event, location: locationData };
-  //           } catch (error) {
-  //             console.error("Failed to fetch location:", error);
-  //             return event; // Return the event unchanged if location fetch fails
-  //           }
-  //         }
-  //         return event;
-  //       })
-  //     );
+  const handleInfoIconPress = (event: SentryEvent) => {
+    setSelectedEvent(event);
+    setInfoModalVisible(true);
+  };
 
-  //     setEventsWithLocation(eventsWithLocationData);
-  //   };
-
-  //   fetchLocationsAndSetEvents();
-  // }, [events]);
+  const handleScrollViewPress = () => {
+    // Prevent the modal from closing when pressing within the ScrollView
+  };
 
   return (
     <Modal
@@ -77,19 +66,31 @@ const EventViewer: React.FC<EventViewerProps> = ({
       transparent={true}
       visible={isVisible}
       onRequestClose={onClose}>
+      {/* <TouchableWithoutFeedback onPress={onClose}> */}
       <View style={styles.modalBackdrop}>
+        {/* This TouchableWithoutFeedback will only trigger if the inner content doesn't catch the touch */}
+        {/* <TouchableWithoutFeedback> */}
         <View style={styles.modalContainer}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>{eventTitle}</Text>
+          </View>
           <ScrollView
             horizontal={true}
             pagingEnabled={true}
             showsHorizontalScrollIndicator={false}>
             {events.map((event, index) => (
               <View key={index} style={styles.eventContainer}>
-                {/* Event title as header */}
-                <Text style={styles.header}>{event.title}</Text>
-                {/* Formatted date */}
+                <View style={styles.tagIcon}>
+                  <TouchableOpacity onPress={() => handleInfoIconPress(event)}>
+                    <Icon
+                      name="information-circle-outline"
+                      size={24}
+                      color="black"
+                    />
+                  </TouchableOpacity>
+                </View>
+                {event.message && <Text>{event.message}</Text>}
                 <Text style={styles.date}>{formatDate(event.dateCreated)}</Text>
-                {/* Section for user, URL, and message */}
                 <View style={styles.section}>
                   <Text style={styles.sectionHeader}>User</Text>
                   <Text style={styles.sectionContent}>
@@ -100,42 +101,39 @@ const EventViewer: React.FC<EventViewerProps> = ({
                   <Text style={styles.sectionHeader}>URL</Text>
                   <Text style={styles.sectionContent}>{event.culprit}</Text>
                 </View>
-                <View style={styles.section}>
-                  <Text style={styles.sectionHeader}>Message</Text>
-                  <Text style={styles.sectionContent}>{event.message}</Text>
-                  <Text style={styles.sectionContent}>
-                    {event.location?.address.city},{" "}
-                    {event.location?.address.state}
-                  </Text>
+                <MapView
+                  style={styles.map}
+                  initialRegion={{
+                    latitude:
+                      event.location?.address.latitude ||
+                      INITIAL_REGION.latitude,
+                    longitude:
+                      event.location?.address.longitude ||
+                      INITIAL_REGION.longitude,
+                    latitudeDelta: INITIAL_REGION.latitudeDelta,
+                    longitudeDelta: INITIAL_REGION.longitudeDelta,
+                  }}
+                  scrollEnabled={false}
+                  zoomEnabled={false}
+                  rotateEnabled={false}>
+                  <Marker
+                    coordinate={{
+                      latitude:
+                        event.location?.address.latitude ||
+                        INITIAL_REGION.latitude,
+                      longitude:
+                        event.location?.address.longitude ||
+                        INITIAL_REGION.longitude,
+                    }}
+                    title={event.title}
+                    description={event.message}
+                  />
+                </MapView>
+                <View style={styles.eventCounter}>
+                  <Text style={styles.eventCounterText}>{`${index + 1}/${
+                    events.length
+                  }`}</Text>
                 </View>
-
-                {event.tags.map((tag, tagIndex) => (
-                  <Text key={tagIndex} style={styles.tagDetail}>
-                    {tag.key}: {tag.value}
-                  </Text>
-                ))}
-                {/* <View style={styles.mapContainer}>
-                  {event.location?.address.latitude &&
-                    event.location.address.longitude && (
-                      <MapView
-                        style={styles.map}
-                        initialRegion={{
-                          latitude: event.location?.address?.latitude,
-                          longitude: event.location.address.longitude,
-                          latitudeDelta: 0.0922,
-                          longitudeDelta: 0.0421,
-                        }}>
-                        <Marker
-                          coordinate={{
-                            latitude: event.location?.address?.latitude,
-                            longitude: event.location.address.longitude,
-                          }}
-                          title={`${event.title}`}
-                          description={`Location for IP: ${event.user?.ip_address}`}
-                        />
-                      </MapView>
-                    )}
-                </View> */}
               </View>
             ))}
           </ScrollView>
@@ -143,10 +141,21 @@ const EventViewer: React.FC<EventViewerProps> = ({
             <Text style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
         </View>
+        {/* </TouchableWithoutFeedback> */}
+        {selectedEvent && (
+          <EventInformation
+            infoModalVisible={infoModalVisible}
+            setInfoModalVisible={setInfoModalVisible}
+            selectedEvent={selectedEvent}
+          />
+        )}
       </View>
+      {/* </TouchableWithoutFeedback> */}
     </Modal>
   );
 };
+
+// ... (rest of the code remains the same)
 
 const screen = Dimensions.get("window");
 
@@ -162,21 +171,48 @@ const styles = StyleSheet.create({
     width: screen.width * 0.9,
     backgroundColor: "#fff",
     borderRadius: 10,
-    padding: 20,
-    paddingTop: 30,
-    paddingBottom: 30,
+    borderBottomEndRadius: 50,
+    borderBottomStartRadius: 50,
+    alignContent: "center",
+    justifyContent: "center",
   },
   eventContainer: {
     alignItems: "flex-start",
     justifyContent: "center",
-    width: screen.width * 0.81,
+    width: screen.width * 0.9,
+    padding: 20,
   },
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#2a2a2a",
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 20,
+  },
+  header: {
+    alignSelf: "stretch",
+    backgroundColor: "#333", // Dark background for the header
+    borderTopLeftRadius: 10, // Match the modal's border radius
+    borderTopRightRadius: 10,
+    padding: 10,
+    marginBottom: 20,
+  },
+  tagIcon: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+  },
+  // headerTitle: {
+  //   fontSize: 22,
+  //   fontWeight: "bold",
+  //   color: "#fff", // White text color
+  //   textAlign: "center",
+  // },
   date: {
     fontSize: 16,
     color: "#4a4a4a",
@@ -202,10 +238,13 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     alignSelf: "stretch",
-    backgroundColor: "#707070",
+    backgroundColor: "#b3b2b1",
     padding: 15,
     borderRadius: 5,
     marginTop: 20,
+    position: "relative",
+    borderBottomEndRadius: 50,
+    borderBottomStartRadius: 50,
   },
   closeButtonText: {
     color: "#fff",
@@ -221,7 +260,23 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   map: {
-    ...StyleSheet.absoluteFillObject,
+    width: 300,
+    height: 200,
+    justifyContent: "center",
+    alignSelf: "center",
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  eventCounter: {
+    justifyContent: "center",
+    // backgroundColor: "#333",
+    padding: 5,
+    borderRadius: 5,
+    marginTop: 20,
+    alignSelf: "center",
+  },
+  eventCounterText: {
+    color: "#000",
   },
 });
 

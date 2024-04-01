@@ -1,6 +1,6 @@
 // App.tsx
 import React, { useState, useEffect } from "react";
-import { View, Text, Animated, SafeAreaView } from "react-native";
+import { View, Text, Animated, SafeAreaView, Image } from "react-native";
 import AppNavigation from "./src/navigation/Navigation";
 import { StatusBar } from "expo-status-bar";
 import * as Device from "expo-device";
@@ -38,7 +38,11 @@ export default function App() {
           justifyContent: "center",
           opacity: fadeAnim,
         }}>
-        <Text style={{ fontSize: 24 }}>DPD.STATS</Text>
+        <Image
+          source={require("./assets/icon.png")}
+          style={{ width: 100, height: 100 }}
+        />
+        <Text style={{ fontSize: 24, fontFamily: "Arial-bold" }}>SCOUT</Text>
       </Animated.View>
     );
   }
