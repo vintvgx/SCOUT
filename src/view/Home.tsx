@@ -77,6 +77,8 @@ const Home = () => {
     });
   };
 
+  //TODO - Place SCOUT logo in the header
+
   return (
     <View style={{ flex: 1, backgroundColor: "#121212" }}>
       <StatusBar style="light" />
