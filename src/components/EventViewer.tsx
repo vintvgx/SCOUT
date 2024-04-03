@@ -86,7 +86,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
                     <Icon
                       name="information-circle-outline"
                       size={24}
-                      color="white"
+                      color="#BB86FC"
                     />
                   </TouchableOpacity>
                 </View>
@@ -181,10 +181,11 @@ const styles = StyleSheet.create({
     width: screen.width * 0.9,
     backgroundColor: "#121212",
     borderRadius: 10,
-    borderBottomEndRadius: 50,
-    borderBottomStartRadius: 50,
+    // borderBottomEndRadius: 50,
+    // borderBottomStartRadius: 50,
     alignContent: "center",
     justifyContent: "center",
+    elevation: 20,
   },
   eventContainer: {
     alignItems: "flex-start",

@@ -5,14 +5,17 @@ import {
   ActivityIndicator,
   StyleSheet,
   ScrollView,
+  RefreshControl,
 } from "react-native";
-import { useAppSelector } from "../redux/store";
+import { AppDispatch, useAppSelector } from "../redux/store";
 import IssueCard from "./IssueCard";
 import EventViewer from "./EventViewer";
 import { SentryItem } from "../model/issue"; // Assuming SentryEvent is correctly imported
 import { SentryEvent } from "../model/event";
 import format from "pretty-format";
 import { handleOpenEventModal } from "../utils/functions";
+import { useDispatch } from "react-redux";
+import { fetchIssues, resetLoadedData } from "../redux/slices/ProjectsSlice";
 
 interface IssuesScreenType {
   projectId: string;
@@ -22,11 +25,24 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
   const { projects, loading, error } = useAppSelector((state) => state.issues);
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const dispatch: AppDispatch = useDispatch();
 
   // Ensure the project is defined and has issues
   const project = projects.find((p) => p.id === projectId);
   // A fallback for when project is undefined
   let issues = project?.issues || [];
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    // Dispatch fetchIssues action here. Assuming project.name exists and fetchIssues action is correctly defined.
+    // Replace 'project?.name' with the appropriate value if necessary
+    if (project?.name) {
+      dispatch(resetLoadedData(project?.name));
+      dispatch(fetchIssues(project?.name)).then(() => setRefreshing(false));
+    }
+  }, [dispatch, projectId]);
 
   const sortedIssues = useMemo(() => {
     // Clone and sort the issues array to avoid direct mutation
@@ -58,7 +74,10 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
         {sortedIssues && sortedIssues.length > 0 ? (
           sortedIssues.map((issue, index) => (
             <IssueCard

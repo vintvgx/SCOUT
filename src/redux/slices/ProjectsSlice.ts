@@ -68,6 +68,13 @@ const issuesSlice = createSlice({
         project.issues = [];
       });
     },
+    resetLoadedData: (state, action: PayloadAction<string>) => {
+      state.projects = state.projects.map((project) =>
+        project.name === action.payload
+          ? { ...project, isLoaded: false, issues: [], errors: [] }
+          : project
+      );
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -98,6 +105,9 @@ const issuesSlice = createSlice({
       });
   },
 });
+
+export const { addIssue, addError, updateProject, clearData, resetLoadedData } =
+  issuesSlice.actions;
 
 // Async thunk for fetching issues
 export const fetchIssues = createAsyncThunk<
