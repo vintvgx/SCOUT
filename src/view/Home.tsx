@@ -22,6 +22,7 @@ import {
 } from "../redux/slices/ProjectsSlice";
 import format from "pretty-format";
 import { StatusBar } from "expo-status-bar";
+import { PulseLight } from "../components/PulseLight";
 
 const Home = () => {
   const [error, setError] = useState("");
@@ -124,14 +125,7 @@ const Home = () => {
                       ? "Server Live"
                       : "Server Down"}
                   </Text>
-                  <View
-                    style={[
-                      styles.light,
-                      project.serverStatus === "live"
-                        ? styles.liveLight
-                        : styles.downLight,
-                    ]}
-                  />
+                  <PulseLight />
                 </>
               ) : (
                 <ActivityIndicator size="small" color="#ffffff" />
