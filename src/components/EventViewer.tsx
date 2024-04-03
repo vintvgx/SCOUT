@@ -100,7 +100,9 @@ const EventViewer: React.FC<EventViewerProps> = ({
                 <View style={styles.section}>
                   <Text style={styles.sectionHeader}>User</Text>
                   <Text style={styles.sectionContent}>
-                    {event.user?.ip_address}
+                    {event.user.email
+                      ? event.user.email
+                      : event.user?.ip_address}
                   </Text>
                 </View>
                 <View style={styles.section}>

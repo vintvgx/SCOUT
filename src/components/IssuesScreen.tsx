@@ -53,24 +53,27 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
     });
   }, [issues]);
 
-  if (loading)
+  if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator style={styles.center_of_screen} />
+        <ActivityIndicator style={styles.center_of_screen} size="small" />
       </View>
     );
-  if (error)
+  } else if (error) {
+    // Handle error state
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>Error: {error}</Text>
       </View>
     );
-  if (!project)
+  } else if (!project) {
+    // Handle case where project is not found
     return (
-      <View>
+      <View style={styles.center_of_screen}>
         <Text style={styles.errorText}>Project not found.</Text>
       </View>
     );
+  }
 
   return (
     <View style={styles.container}>
@@ -78,7 +81,8 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        {sortedIssues && sortedIssues.length > 0 ? (
+        {sortedIssues &&
+          sortedIssues.length > 0 &&
           sortedIssues.map((issue, index) => (
             <IssueCard
               key={issue.id || index}
@@ -91,14 +95,7 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
                 )
               }
             />
-          ))
-        ) : (
-          <View style={styles.center_of_screen}>
-            <Text style={styles.errorText}>
-              No issues found for this project.
-            </Text>
-          </View>
-        )}
+          ))}
       </ScrollView>
       <EventViewer
         events={selectedEvents}

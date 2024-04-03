@@ -15,7 +15,7 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, onPress }) => {
   return (
     <TouchableOpacity onPress={onPress} style={styles.card}>
       <Text style={styles.title}>{issue.title}</Text>
-      <Text style={styles.detail}>Events: {issue.count}</Text>
+      <Text style={styles.detail}>Events: {eventsCount}</Text>
       <Text style={styles.detail}>
         First Seen: {new Date(issue.firstSeen).toLocaleString()}
       </Text>
