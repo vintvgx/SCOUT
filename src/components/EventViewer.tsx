@@ -34,11 +34,12 @@ const formatDate = (dateString: string) => {
   const year = date.getFullYear();
   const month = `0${date.getMonth() + 1}`.slice(-2); // Month is 0-indexed
   const day = `0${date.getDate()}`.slice(-2);
-  const hours = `0${date.getHours()}`.slice(-2);
+  const hours = `0${date.getUTCHours()}`.slice(-1);
   const minutes = `0${date.getMinutes()}`.slice(-2);
   const seconds = `0${date.getSeconds()}`.slice(-2);
+  const timeOfDay = date.getHours() >= 12 ? "PM" : "AM";
 
-  return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+  return `${month}.${day}.${year} ${hours}:${minutes}:${seconds} ${timeOfDay}`;
 };
 
 const EventViewer: React.FC<EventViewerProps> = ({
@@ -62,7 +63,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
 
   return (
     <Modal
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       visible={isVisible}
       onRequestClose={onClose}>
@@ -85,12 +86,17 @@ const EventViewer: React.FC<EventViewerProps> = ({
                     <Icon
                       name="information-circle-outline"
                       size={24}
-                      color="black"
+                      color="white"
                     />
                   </TouchableOpacity>
                 </View>
-                {event.message && <Text>{event.message}</Text>}
+                <Text style={styles.sectionHeader}>EVENT</Text>
+                <Text style={styles.id}>ID: {event.id}</Text>
                 <Text style={styles.date}>{formatDate(event.dateCreated)}</Text>
+
+                {/* {event.message && (
+                  <Text style={styles.date}>{event.message}</Text>
+                )} */}
                 <View style={styles.section}>
                   <Text style={styles.sectionHeader}>User</Text>
                   <Text style={styles.sectionContent}>
@@ -129,6 +135,10 @@ const EventViewer: React.FC<EventViewerProps> = ({
                     description={event.message}
                   />
                 </MapView>
+                <Text style={styles.cityStatelocation}>
+                  {event.location?.address.city},{" "}
+                  {event.location?.address.state}
+                </Text>
                 <View style={styles.eventCounter}>
                   <Text style={styles.eventCounterText}>{`${index + 1}/${
                     events.length
@@ -164,12 +174,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: "rgba(200, 200, 200, 0.8)",
   },
   modalContainer: {
     maxHeight: screen.height * 0.8,
     width: screen.width * 0.9,
-    backgroundColor: "#fff",
+    backgroundColor: "#121212",
     borderRadius: 10,
     borderBottomEndRadius: 50,
     borderBottomStartRadius: 50,
@@ -191,7 +201,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "white",
+    color: "#FFFFFF",
     marginBottom: 20,
   },
   header: {
@@ -213,10 +223,15 @@ const styles = StyleSheet.create({
   //   color: "#fff", // White text color
   //   textAlign: "center",
   // },
+  id: {
+    fontSize: 14,
+    color: "#FFFFFF",
+    marginBottom: 10,
+  },
   date: {
     fontSize: 16,
-    color: "#4a4a4a",
-    marginBottom: 20,
+    color: "#FFFFFF",
+    marginBottom: 10,
   },
   section: {
     marginBottom: 20,
@@ -224,12 +239,12 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#3a3a3a",
+    color: "#FFFFFF",
     marginBottom: 5,
   },
   sectionContent: {
     fontSize: 16,
-    color: "#5a5a5a",
+    color: "#FFFFFF",
   },
   tagDetail: {
     fontSize: 14,
@@ -238,13 +253,13 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     alignSelf: "stretch",
-    backgroundColor: "#b3b2b1",
+    // backgroundColor: "#b3b2b1",
     padding: 15,
-    borderRadius: 5,
-    marginTop: 20,
+    // borderRadius: 5,
+    // marginTop: 20,
     position: "relative",
-    borderBottomEndRadius: 50,
-    borderBottomStartRadius: 50,
+    // borderBottomEndRadius: 50,
+    // borderBottomStartRadius: 50,
   },
   closeButtonText: {
     color: "#fff",
@@ -277,6 +292,13 @@ const styles = StyleSheet.create({
   },
   eventCounterText: {
     color: "#000",
+  },
+  cityStatelocation: {
+    color: "#5a5a5a",
+    fontSize: 16,
+    marginTop: 20,
+    textAlign: "center",
+    alignSelf: "center",
   },
 });
 

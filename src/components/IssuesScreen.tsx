@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -26,7 +26,16 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
   // Ensure the project is defined and has issues
   const project = projects.find((p) => p.id === projectId);
   // A fallback for when project is undefined
-  const issues = project?.issues || [];
+  let issues = project?.issues || [];
+
+  const sortedIssues = useMemo(() => {
+    // Clone and sort the issues array to avoid direct mutation
+    return [...issues].sort((a, b) => {
+      const dateA = new Date(a.lastSeen).getTime();
+      const dateB = new Date(b.lastSeen).getTime();
+      return dateB - dateA; // For descending order
+    });
+  }, [issues]);
 
   if (loading)
     return (
@@ -50,15 +59,27 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
   return (
     <View style={styles.container}>
       <ScrollView>
-        {issues.map((issue, index) => (
-          <IssueCard
-            key={issue.id || index}
-            issue={issue}
-            onPress={() =>
-              handleOpenEventModal(issue, setSelectedEvents, setIsViewerVisible)
-            }
-          />
-        ))}
+        {sortedIssues && sortedIssues.length > 0 ? (
+          sortedIssues.map((issue, index) => (
+            <IssueCard
+              key={issue.id || index}
+              issue={issue}
+              onPress={() =>
+                handleOpenEventModal(
+                  issue,
+                  setSelectedEvents,
+                  setIsViewerVisible
+                )
+              }
+            />
+          ))
+        ) : (
+          <View style={styles.center_of_screen}>
+            <Text style={styles.errorText}>
+              No issues found for this project.
+            </Text>
+          </View>
+        )}
       </ScrollView>
       <EventViewer
         events={selectedEvents}

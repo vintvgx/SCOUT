@@ -27,8 +27,8 @@ const EventInformation: React.FC<EventInformationProps> = ({
         transparent={true}
         visible={infoModalVisible}
         onRequestClose={() => setInfoModalVisible(false)}>
-        <View style={styles.modalBackdrop}>
-          <TouchableWithoutFeedback onPress={() => setInfoModalVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => setInfoModalVisible(false)}>
+          <View style={styles.modalBackdrop}>
             <View style={styles.infoModalContainer}>
               <View style={styles.header}>
                 <Text style={styles.infoHeader}>Event ID</Text>
@@ -45,8 +45,8 @@ const EventInformation: React.FC<EventInformationProps> = ({
                 </View>
               </ScrollView>
             </View>
-          </TouchableWithoutFeedback>
-        </View>
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
