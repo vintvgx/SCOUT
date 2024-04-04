@@ -26,12 +26,12 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
       title: `New ${issue.project} Issue`,
       body: issue.message || "A new issue has been reported.",
     },
-    data: {
-      projectName: issue.project,
-      issueId: issue.event.event_id,
-      level: issue.event.level,
-      timestamp: issue.event.received,
-    },
+    // data: {
+    //   projectName: issue.project,
+    //   issueId: issue.event.event_id,
+    //   level: issue.event.level,
+    //   timestamp: issue.event.received,
+    // },
   };
 
   const post_data = {
