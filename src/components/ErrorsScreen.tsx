@@ -78,7 +78,6 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectId }) => {
               key={error.id || index} // It's better to use issue.id if available
               issue={error}
               onPress={() => {
-                console.log(format(error));
                 handleOpenEventModal(
                   error,
                   setSelectedEvents,

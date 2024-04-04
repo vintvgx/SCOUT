@@ -53,7 +53,7 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
     });
   }, [issues]);
 
-  if (loading) {
+  if (loading && sortedIssues.length === 0) {
     return (
       <View style={styles.container}>
         <ActivityIndicator style={styles.center_of_screen} size="small" />

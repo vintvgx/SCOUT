@@ -8,6 +8,7 @@ import {
   Dimensions,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  Animated,
 } from "react-native";
 import { LocationData, SentryEvent } from "../model/event";
 import format from "pretty-format";
@@ -51,6 +52,23 @@ const EventViewer: React.FC<EventViewerProps> = ({
 
   const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<SentryEvent | null>(null);
+  const [animationValue, setAnimationValue] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    if (isVisible) {
+      Animated.timing(animationValue, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(animationValue, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isVisible]);
 
   const handleInfoIconPress = (event: SentryEvent) => {
     setSelectedEvent(event);
@@ -61,17 +79,27 @@ const EventViewer: React.FC<EventViewerProps> = ({
     // Prevent the modal from closing when pressing within the ScrollView
   };
 
+  const modalContainerStyle = {
+    ...styles.modalContainer,
+    opacity: animationValue,
+    transform: [
+      {
+        translateY: animationValue.interpolate({
+          inputRange: [0, 1],
+          outputRange: [100, 0],
+        }),
+      },
+    ],
+  };
+
   return (
     <Modal
       animationType="fade"
       transparent={true}
       visible={isVisible}
       onRequestClose={onClose}>
-      {/* <TouchableWithoutFeedback onPress={onClose}> */}
       <View style={styles.modalBackdrop}>
-        {/* This TouchableWithoutFeedback will only trigger if the inner content doesn't catch the touch */}
-        {/* <TouchableWithoutFeedback> */}
-        <View style={styles.modalContainer}>
+        <Animated.View style={modalContainerStyle}>
           <View style={styles.header}>
             <Text style={styles.headerTitle}>{eventTitle}</Text>
           </View>
@@ -86,7 +114,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
                     <Icon
                       name="information-circle-outline"
                       size={24}
-                      color="#BB86FC"
+                      color="#FFFFFF"
                     />
                   </TouchableOpacity>
                 </View>
@@ -94,9 +122,6 @@ const EventViewer: React.FC<EventViewerProps> = ({
                 <Text style={styles.id}>ID: {event.id}</Text>
                 <Text style={styles.date}>{formatDate(event.dateCreated)}</Text>
 
-                {/* {event.message && (
-                  <Text style={styles.date}>{event.message}</Text>
-                )} */}
                 <View style={styles.section}>
                   <Text style={styles.sectionHeader}>User</Text>
                   <Text style={styles.sectionContent}>
@@ -152,8 +177,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
-        </View>
-        {/* </TouchableWithoutFeedback> */}
+        </Animated.View>
         {selectedEvent && (
           <EventInformation
             infoModalVisible={infoModalVisible}
@@ -162,12 +186,9 @@ const EventViewer: React.FC<EventViewerProps> = ({
           />
         )}
       </View>
-      {/* </TouchableWithoutFeedback> */}
     </Modal>
   );
 };
-
-// ... (rest of the code remains the same)
 
 const screen = Dimensions.get("window");
 
@@ -183,8 +204,6 @@ const styles = StyleSheet.create({
     width: screen.width * 0.9,
     backgroundColor: "#121212",
     borderRadius: 10,
-    // borderBottomEndRadius: 50,
-    // borderBottomStartRadius: 50,
     alignContent: "center",
     justifyContent: "center",
     elevation: 20,
@@ -193,7 +212,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "center",
     width: screen.width * 0.9,
-    padding: 20,
+    padding: 24,
   },
   headerContainer: {
     flexDirection: "row",
@@ -209,8 +228,8 @@ const styles = StyleSheet.create({
   },
   header: {
     alignSelf: "stretch",
-    backgroundColor: "#333", // Dark background for the header
-    borderTopLeftRadius: 10, // Match the modal's border radius
+    backgroundColor: "#333",
+    borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     padding: 10,
     marginBottom: 20,
@@ -219,13 +238,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: 10,
+    backgroundColor: "#6B46C1",
+    padding: 8,
+    borderRadius: 20,
   },
-  // headerTitle: {
-  //   fontSize: 22,
-  //   fontWeight: "bold",
-  //   color: "#fff", // White text color
-  //   textAlign: "center",
-  // },
   id: {
     fontSize: 14,
     color: "#FFFFFF",
@@ -240,14 +256,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionHeader: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "600",
-    color: "#999997",
+    color: "#FFFFFF",
     marginBottom: 5,
+    fontFamily: "Roboto-Medium",
   },
   sectionContent: {
     fontSize: 16,
-    color: "#FFFFFF",
+    color: "#CCCCCC",
   },
   tagDetail: {
     fontSize: 14,
@@ -256,13 +273,8 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     alignSelf: "stretch",
-    // backgroundColor: "#b3b2b1",
     padding: 15,
-    // borderRadius: 5,
-    // marginTop: 20,
     position: "relative",
-    // borderBottomEndRadius: 50,
-    // borderBottomStartRadius: 50,
   },
   closeButtonText: {
     color: "#fff",
@@ -287,7 +299,6 @@ const styles = StyleSheet.create({
   },
   eventCounter: {
     justifyContent: "center",
-    // backgroundColor: "#333",
     padding: 5,
     borderRadius: 5,
     marginTop: 20,
