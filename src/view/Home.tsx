@@ -21,7 +21,6 @@ import {
   fetchIssues,
   fetchProjects,
 } from "../redux/slices/ProjectsSlice";
-import format from "pretty-format";
 import { StatusBar } from "expo-status-bar";
 import { PulseLight } from "../components/PulseLight";
 import Header from "../components/Header";
@@ -33,16 +32,11 @@ const Home = () => {
 
   const dispatch: AppDispatch = useDispatch();
   const { projects, projectsLoading } = useAppSelector((state) => state.issues);
-  // console.log("🚀 ~ Home ~ projects:", format(projects));
 
   useEffect(() => {
-    // Assuming fetchProjects action resolves when projects are successfully fetched
     dispatch(fetchProjects())
       .then((action) => {
-        // Check if action is successful before checking server status
         if (fetchProjects.fulfilled.match(action)) {
-          // Now that projects are fetched, dispatch checkServerStatus
-          // Make sure checkServerStatus action is correctly implemented to handle an array of projects
           dispatch(checkServerStatus(action.payload));
         }
       })
@@ -57,7 +51,6 @@ const Home = () => {
   useEffect(() => {
     registerForPushNotificationsAsync()
       .then((token: string | undefined) => {
-        // console.log(token);
         setExpoPushToken(token);
       })
       .catch((err) => console.log(err));
@@ -69,18 +62,6 @@ const Home = () => {
   const onRefresh = () => {
     dispatch(fetchProjects());
   };
-
-  const openLink = (url: any) => {
-    Linking.canOpenURL(url).then((supported: any) => {
-      if (supported) {
-        Linking.openURL(url);
-      } else {
-        console.log("Don't know how to open URI: " + url);
-      }
-    });
-  };
-
-  //TODO - Place SCOUT logo in the header
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
@@ -96,11 +77,6 @@ const Home = () => {
           <TouchableOpacity
             key={project.id}
             onPress={() => {
-              // Log the project ID and project name here
-              console.log(
-                `Project ID: ${project.id}, Project Name: ${project.name}`
-              );
-
               navigation.navigate("ProjectIssues", {
                 projectId: project.id,
                 projectName: project.name,
@@ -109,7 +85,6 @@ const Home = () => {
             style={styles.projectContainer}>
             <View style={{ flex: 1 }}>
               <Text style={styles.projectName}>{project.name}</Text>
-              {/* Example of additional project information */}
               <Text style={styles.projectInfo}>Description: {project.id}</Text>
               <Text style={styles.projectInfo}>
                 Open Issues: {project.platform}
@@ -123,9 +98,7 @@ const Home = () => {
                       color: project.serverStatus === "live" ? "#FFF" : "#FFF",
                       marginRight: 5,
                     }}>
-                    {project.serverStatus === "live"
-                      ? "Server Live"
-                      : "Server Down"}
+                    {project.serverStatus === "live" ? "Online" : "Offline"}
                   </Text>
                   <PulseLight />
                 </>
@@ -145,58 +118,30 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#121212", // Dark background for the container
-  },
-  // Removing header style as it seems to be unused
-  issueContainer: {
-    marginBottom: 20,
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: "#242424", // Slightly lighter dark shade for contrast against the container
-  },
-  issueTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#FFF", // White text for dark theme
-  },
-  link: {
-    marginTop: 10,
-    color: "#1E90FF", // Bright blue for links, for better visibility on dark background
+    backgroundColor: "#121212",
   },
   projectContainer: {
-    backgroundColor: "#2C2C2E", // Dark background for project cards
-    borderRadius: 10, // Rounded corners for a modern look
-    padding: 15, // Inner spacing
-    marginBottom: 10, // Space between project cards
-    shadowColor: "#000", // Shadow for depth
+    backgroundColor: "#2C2C2E",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
-    elevation: 5, // Elevation for Android
-    flexDirection: "row", // Layout children in a row
-    alignItems: "center", // Align items vertically
+    elevation: 15,
+    flexDirection: "row",
+    alignItems: "center",
   },
   projectName: {
-    fontSize: 18, // Text size
-    fontWeight: "bold", // Text weight
-    color: "#FFF", // White text color for readability
-    flex: 1, // Take up available space
-  },
-  light: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginLeft: 10,
-  },
-  liveLight: {
-    backgroundColor: "green",
-  },
-  downLight: {
-    backgroundColor: "red",
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#FFF",
+    flex: 1,
   },
   projectInfo: {
-    color: "#B0B0B0", // Lighter text color for additional info
-    fontSize: 14, // Smaller font size than the project name
-    marginTop: 2, // Space out the information vertically
+    color: "#B0B0B0",
+    fontSize: 14,
+    marginTop: 2,
   },
 });
