@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Modal,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   ScrollView, // Add ScrollView for better handling of content
 } from "react-native";
 import { SentryEvent } from "../model/event";
+import format from "pretty-format";
 
 interface EventInformationProps {
   infoModalVisible: boolean;
@@ -20,6 +21,11 @@ const EventInformation: React.FC<EventInformationProps> = ({
   setInfoModalVisible,
   selectedEvent,
 }) => {
+  // useEffect(() => {
+  //   console.log("EventInformation rendered");
+  //   console.log(format(selectedEvent));
+  // }, [selectedEvent]);
+
   return (
     <View>
       <Modal
@@ -27,8 +33,8 @@ const EventInformation: React.FC<EventInformationProps> = ({
         transparent={true}
         visible={infoModalVisible}
         onRequestClose={() => setInfoModalVisible(false)}>
-        <View style={styles.modalBackdrop}>
-          <TouchableWithoutFeedback onPress={() => setInfoModalVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => setInfoModalVisible(false)}>
+          <View style={styles.modalBackdrop}>
             <View style={styles.infoModalContainer}>
               <View style={styles.header}>
                 <Text style={styles.infoHeader}>Event ID</Text>
@@ -45,8 +51,8 @@ const EventInformation: React.FC<EventInformationProps> = ({
                 </View>
               </ScrollView>
             </View>
-          </TouchableWithoutFeedback>
-        </View>
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );

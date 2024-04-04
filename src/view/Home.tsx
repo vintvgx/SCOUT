@@ -7,6 +7,7 @@ import {
   Linking,
   RefreshControl,
   ActivityIndicator,
+  SafeAreaView,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -22,6 +23,8 @@ import {
 } from "../redux/slices/ProjectsSlice";
 import format from "pretty-format";
 import { StatusBar } from "expo-status-bar";
+import { PulseLight } from "../components/PulseLight";
+import Header from "../components/Header";
 
 const Home = () => {
   const [error, setError] = useState("");
@@ -80,11 +83,11 @@ const Home = () => {
   //TODO - Place SCOUT logo in the header
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#121212" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
       <StatusBar style="light" />
-
+      <Header />
       <ScrollView
-        style={{ marginTop: 50 }}
+        style={{ marginTop: 15 }}
         contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl refreshing={projectsLoading} onRefresh={onRefresh} />
@@ -124,14 +127,7 @@ const Home = () => {
                       ? "Server Live"
                       : "Server Down"}
                   </Text>
-                  <View
-                    style={[
-                      styles.light,
-                      project.serverStatus === "live"
-                        ? styles.liveLight
-                        : styles.downLight,
-                    ]}
-                  />
+                  <PulseLight />
                 </>
               ) : (
                 <ActivityIndicator size="small" color="#ffffff" />
@@ -140,7 +136,7 @@ const Home = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

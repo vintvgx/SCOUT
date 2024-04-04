@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -27,7 +27,16 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectId }) => {
   // Ensure the project is defined and has issues
   const project = projects.find((p) => p.id === projectId);
   // A fallback for when project is undefined
-  const issues = project?.issues || [];
+  const errors = project?.errors || [];
+
+  const sortedErrors = useMemo(() => {
+    // Clone and sort the issues array to avoid direct mutation
+    return [...errors].sort((a, b) => {
+      const dateA = new Date(a.lastSeen).getTime();
+      const dateB = new Date(b.lastSeen).getTime();
+      return dateB - dateA; // For descending order
+    });
+  }, [errors]);
 
   if (loading)
     return (
@@ -58,18 +67,17 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectId }) => {
     );
   }
 
-  const errors = project.errors;
+  // const errors = project.errors;
 
   return (
     <View style={styles.container}>
       <ScrollView>
-        {errors && errors.length > 0 ? (
-          errors.map((error, index) => (
+        {sortedErrors && sortedErrors.length > 0 ? (
+          sortedErrors.map((error, index) => (
             <IssueCard
               key={error.id || index} // It's better to use issue.id if available
               issue={error}
               onPress={() => {
-                console.log(format(error));
                 handleOpenEventModal(
                   error,
                   setSelectedEvents,

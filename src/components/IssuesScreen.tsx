@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
   ActivityIndicator,
   StyleSheet,
   ScrollView,
+  RefreshControl,
 } from "react-native";
-import { useAppSelector } from "../redux/store";
+import { AppDispatch, useAppSelector } from "../redux/store";
 import IssueCard from "./IssueCard";
 import EventViewer from "./EventViewer";
 import { SentryItem } from "../model/issue"; // Assuming SentryEvent is correctly imported
 import { SentryEvent } from "../model/event";
 import format from "pretty-format";
 import { handleOpenEventModal } from "../utils/functions";
+import { useDispatch } from "react-redux";
+import { fetchIssues, resetLoadedData } from "../redux/slices/ProjectsSlice";
 
 interface IssuesScreenType {
   projectId: string;
@@ -22,43 +25,77 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
   const { projects, loading, error } = useAppSelector((state) => state.issues);
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const dispatch: AppDispatch = useDispatch();
 
   // Ensure the project is defined and has issues
   const project = projects.find((p) => p.id === projectId);
   // A fallback for when project is undefined
-  const issues = project?.issues || [];
+  let issues = project?.issues || [];
 
-  if (loading)
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    // Dispatch fetchIssues action here. Assuming project.name exists and fetchIssues action is correctly defined.
+    // Replace 'project?.name' with the appropriate value if necessary
+    if (project?.name) {
+      dispatch(resetLoadedData(project?.name));
+      dispatch(fetchIssues(project?.name)).then(() => setRefreshing(false));
+    }
+  }, [dispatch, projectId]);
+
+  const sortedIssues = useMemo(() => {
+    // Clone and sort the issues array to avoid direct mutation
+    return [...issues].sort((a, b) => {
+      const dateA = new Date(a.lastSeen).getTime();
+      const dateB = new Date(b.lastSeen).getTime();
+      return dateB - dateA; // For descending order
+    });
+  }, [issues]);
+
+  if (loading && sortedIssues.length === 0) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator style={styles.center_of_screen} />
+        <ActivityIndicator style={styles.center_of_screen} size="small" />
       </View>
     );
-  if (error)
+  } else if (error) {
+    // Handle error state
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>Error: {error}</Text>
       </View>
     );
-  if (!project)
+  } else if (!project) {
+    // Handle case where project is not found
     return (
-      <View>
+      <View style={styles.center_of_screen}>
         <Text style={styles.errorText}>Project not found.</Text>
       </View>
     );
+  }
 
   return (
     <View style={styles.container}>
-      <ScrollView>
-        {issues.map((issue, index) => (
-          <IssueCard
-            key={issue.id || index}
-            issue={issue}
-            onPress={() =>
-              handleOpenEventModal(issue, setSelectedEvents, setIsViewerVisible)
-            }
-          />
-        ))}
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        {sortedIssues &&
+          sortedIssues.length > 0 &&
+          sortedIssues.map((issue, index) => (
+            <IssueCard
+              key={issue.id || index}
+              issue={issue}
+              onPress={() =>
+                handleOpenEventModal(
+                  issue,
+                  setSelectedEvents,
+                  setIsViewerVisible
+                )
+              }
+            />
+          ))}
       </ScrollView>
       <EventViewer
         events={selectedEvents}
