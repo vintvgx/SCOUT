@@ -1,4 +1,4 @@
-package com.vintvgx.stats.dpd
+package com.vintvgx.scout
 
 import android.app.Application
 import android.content.res.Configuration

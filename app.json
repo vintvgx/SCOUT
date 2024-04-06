@@ -2,7 +2,7 @@
   "expo": {
     "name": "dpd.stats",
     "slug": "dpd_stats",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/scout1024.png",
     "userInterfaceStyle": "light",
@@ -16,14 +16,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vintvgx.stats.dpd"
+      "bundleIdentifier": "com.vintvgx.scout"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.vintvgx.stats.dpd"
+      "package": "com.vintvgx.scout"
     },
     "web": {
       "favicon": "./assets/favicon.png"

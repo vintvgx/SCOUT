@@ -43,9 +43,12 @@ target 'dpdstats' do
 
   use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
   use_frameworks! :linkage => ENV['USE_FRAMEWORKS'].to_sym if ENV['USE_FRAMEWORKS']
-  use_frameworks! :linkage => :static
-  $RNFirebaseAsStaticFramework = true
+  # Enable modular headers globally
+  use_modular_headers!
 
+  # Pods for YourProject
+  pod 'Firebase/Core'
+  pod 'GoogleUtilities', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -53,7 +56,7 @@ target 'dpdstats' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/..",
     # Note that if you have use_frameworks! enabled, Flipper will not work if enabled
-    # :flipper_configuration => flipper_config
+    :flipper_configuration => flipper_config
   )
 
   post_install do |installer|

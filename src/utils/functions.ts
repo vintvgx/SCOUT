@@ -103,4 +103,5 @@ export const handleOpenEventModal = (
 ) => {
   setSelectedEvents(issue.events || []);
   setIsViewerVisible(true);
+  console.log(format(issue.events || []));
 };
