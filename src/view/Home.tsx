@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   SafeAreaView,
+  Button,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -24,11 +25,11 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { PulseLight } from "../components/PulseLight";
 import Header from "../components/Header";
+import axios from "axios";
 
 const Home = () => {
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
 
   const dispatch: AppDispatch = useDispatch();
   const { projects, projectsLoading } = useAppSelector((state) => state.issues);
@@ -47,14 +48,6 @@ const Home = () => {
         );
       });
   }, [dispatch]);
-
-  useEffect(() => {
-    registerForPushNotificationsAsync()
-      .then((token: string | undefined) => {
-        setExpoPushToken(token);
-      })
-      .catch((err) => console.log(err));
-  }, []);
 
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();

@@ -22,10 +22,8 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
 
   // Define the message for Firebase Cloud Messaging
   const message = {
-    notification: {
-      title: `New ${issue.project} Issue`,
-      body: issue.message || "A new issue has been reported.",
-    },
+    title: `New ${issue.project} Issue`,
+    body: issue.message || "A new issue has been reported.",
     data: {
       projectName: issue.project,
       issueId: issue.event.event_id,
@@ -33,6 +31,13 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
       timestamp: issue.event.received,
     },
   };
+
+  // const message = {
+
+  //     title: `New ${issue.project} Issue`,
+  //     body: issue.message || "A new issue has been reported.",
+
+  // };
 
   const post_data = {
     id: issue.id,
@@ -127,20 +132,31 @@ exports.fetchSentryIssues = functions.https.onCall(async (data, context) => {
 async function sendPushNotification(tokens, message) {
   console.log("🚀 ~ sendPushNotification ~ tokens:", tokens);
 
+  console.log("Sending notifications...");
+
+  console.log("Message:", message);
+
   const messages = tokens.map((token) => ({
     to: token.expoPushToken,
     sound: "default",
     ...message,
   }));
 
+  console.log("Messages:", messages);
+
   try {
-    await axios.post("https://exp.host/--/api/v2/push/send", messages, {
-      headers: {
-        Accept: "application/json",
-        "Accept-Encoding": "gzip, deflate",
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await axios.post(
+      "https://exp.host/--/api/v2/push/send",
+      messages,
+      {
+        headers: {
+          Accept: "application/json",
+          "Accept-Encoding": "gzip, deflate",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("ENS response:", response.data);
     console.log("Notifications sent successfully");
   } catch (error) {
     console.error("Push notification error:", error.message);
