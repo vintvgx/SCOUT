@@ -1,6 +1,6 @@
 {
-  "name": "dpd.stats",
-  "version": "1.0.1",
+  "name": "SCOUT",
+  "version": "1.0.0",
   "scripts": {
     "start": "expo start --dev-client",
     "android": "expo run:android",

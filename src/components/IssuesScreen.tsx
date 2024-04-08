@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -6,7 +7,9 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
+  RefreshControl,
 } from "react-native";
+import { AppDispatch, useAppSelector } from "../redux/store";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import IssueCard from "./IssueCard";
 import EventViewer from "./EventViewer";
@@ -14,6 +17,8 @@ import { SentryItem } from "../model/issue"; // Assuming SentryEvent is correctl
 import { SentryEvent } from "../model/event";
 import format from "pretty-format";
 import { handleOpenEventModal } from "../utils/functions";
+import { useDispatch } from "react-redux";
+import { fetchIssues, resetLoadedData } from "../redux/slices/ProjectsSlice";
 import { useDispatch } from "react-redux";
 import { fetchIssues, resetLoadedData } from "../redux/slices/ProjectsSlice";
 
@@ -25,6 +30,9 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
   const { projects, loading, error } = useAppSelector((state) => state.issues);
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const dispatch: AppDispatch = useDispatch();
   const [refreshing, setRefreshing] = useState(false);
 
   const dispatch: AppDispatch = useDispatch();
@@ -54,11 +62,15 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
   }, [issues]);
 
   if (loading && sortedIssues.length === 0) {
+  if (loading && sortedIssues.length === 0) {
     return (
       <View style={styles.container}>
         <ActivityIndicator style={styles.center_of_screen} size="small" />
+        <ActivityIndicator style={styles.center_of_screen} size="small" />
       </View>
     );
+  } else if (error) {
+    // Handle error state
   } else if (error) {
     // Handle error state
     return (
@@ -68,15 +80,38 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
     );
   } else if (!project) {
     // Handle case where project is not found
+  } else if (!project) {
+    // Handle case where project is not found
     return (
+      <View style={styles.center_of_screen}>
       <View style={styles.center_of_screen}>
         <Text style={styles.errorText}>Project not found.</Text>
       </View>
     );
   }
+  }
 
   return (
     <View style={styles.container}>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        {sortedIssues &&
+          sortedIssues.length > 0 &&
+          sortedIssues.map((issue, index) => (
+            <IssueCard
+              key={issue.id || index}
+              issue={issue}
+              onPress={() =>
+                handleOpenEventModal(
+                  issue,
+                  setSelectedEvents,
+                  setIsViewerVisible
+                )
+              }
+            />
+          ))}
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -83,6 +84,7 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
     );
   }
 
+  // const errors = project.errors;
   // const errors = project.errors;
 
   return (
