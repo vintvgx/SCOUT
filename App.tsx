@@ -24,8 +24,8 @@ export default function App() {
   const fadeAnim = new Animated.Value(1);
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
 
-  const navigation =
-    useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  // const navigation =
+  //   useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -37,7 +37,7 @@ export default function App() {
 
   useEffect(() => {
     registerForNotifications();
-    notificationResponseListener();
+    // notificationResponseListener();
   }, []);
 
   const registerForNotifications = async () => {
@@ -48,21 +48,21 @@ export default function App() {
       .catch((err) => console.log(err));
   };
 
-  const notificationResponseListener = () => {
-    Notifications.addNotificationResponseReceivedListener((response) => {
-      const { data } = response.notification.request.content;
-      const issueId = data.issueId;
-      // Assuming you have a navigator with a 'navigate' method
-      // You might need to adjust this depending on your navigation setup
-      // This example assumes you're using a ref to your navigation container
-      navigation.navigate("ProjectIssues", {
-        projectName: data.projectName,
-        data: data,
-      });
-      console.log("Notification data", data);
-      console.log("Issue ID", issueId);
-    });
-  };
+  // const notificationResponseListener = () => {
+  //   Notifications.addNotificationResponseReceivedListener((response) => {
+  //     const { data } = response.notification.request.content;
+  //     const issueId = data.issueId;
+  //     // Assuming you have a navigator with a 'navigate' method
+  //     // You might need to adjust this depending on your navigation setup
+  //     // This example assumes you're using a ref to your navigation container
+  //     navigation.navigate("ProjectIssues", {
+  //       projectName: data.projectName,
+  //       data: data,
+  //     });
+  //     console.log("Notification data", data);
+  //     console.log("Issue ID", issueId);
+  //   });
+  // };
 
   if (isSplashVisible) {
     return (

@@ -48,14 +48,24 @@ const ProjectIssues = ({ route }: { route: any }) => {
     if (data) {
       dispatch(fetchIssueById(data.issueId))
         .then((action) => {
-          // Handle the fetched issue data here
-          // If you need to open the EventViewer automatically, you can set the state here
+          if (fetchIssueById.fulfilled.match(action)) {
+            const fetchedIssue = action.payload; // Your fetched issue
+            // Determine which screen to navigate to based on the issue's level
+            const screenToNavigate =
+              fetchedIssue.level === "error" ? "ErrorsScreen" : "IssuesScreen";
+
+            // navigation.navigate(screenToNavigate, {
+            //   projectName: data.projectName,
+            //   issueId: data.issueId,
+            //   // You can pass additional data required by the destination screen
+            // });
+          }
         })
         .catch((error) =>
           console.error("Failed to fetch issue details:", error)
         );
     }
-  }, [dispatch, data]);
+  }, [dispatch, data, navigation]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
