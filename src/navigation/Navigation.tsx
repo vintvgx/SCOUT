@@ -12,7 +12,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 export type HomeStackParamList = {
   Home: undefined;
-  ProjectIssues: { projectId: string | any; projectName: string };
+  ProjectIssues: { projectName: string; data?: any };
 };
 
 const Tab = createBottomTabNavigator();

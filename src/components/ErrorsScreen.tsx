@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
   ActivityIndicator,
   StyleSheet,
   ScrollView,
+  RefreshControl,
 } from "react-native";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import IssueCard from "./IssueCard";
@@ -13,21 +15,36 @@ import { SentryItem } from "../model/issue";
 import EventViewer from "./EventViewer";
 import { handleOpenEventModal } from "../utils/functions";
 import format from "pretty-format";
+import { useDispatch } from "react-redux";
+import { fetchIssues, resetLoadedData } from "../redux/slices/ProjectsSlice";
 
 interface ErrorsScreenType {
-  projectId: string;
+  projectName: string;
 }
 
-export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectId }) => {
+export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const dispatch: AppDispatch = useDispatch();
 
   const { projects, loading, error } = useAppSelector((state) => state.issues);
 
   // Ensure the project is defined and has issues
-  const project = projects.find((p) => p.id === projectId);
+  const project = projects.find((p) => p.name === projectName);
   // A fallback for when project is undefined
   const errors = project?.errors || [];
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    // Dispatch fetchIssues action here. Assuming project.name exists and fetchIssues action is correctly defined.
+    // Replace 'project?.name' with the appropriate value if necessary
+    if (project?.name) {
+      dispatch(resetLoadedData(project?.name));
+      dispatch(fetchIssues(project?.name)).then(() => setRefreshing(false));
+    }
+  }, [dispatch, projectName]);
 
   const sortedErrors = useMemo(() => {
     // Clone and sort the issues array to avoid direct mutation
@@ -68,10 +85,14 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectId }) => {
   }
 
   // const errors = project.errors;
+  // const errors = project.errors;
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
         {sortedErrors && sortedErrors.length > 0 ? (
           sortedErrors.map((error, index) => (
             <IssueCard

@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   SafeAreaView,
+  Button,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -24,11 +25,11 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { PulseLight } from "../components/PulseLight";
 import Header from "../components/Header";
+import axios from "axios";
 
 const Home = () => {
   const [error, setError] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
 
   const dispatch: AppDispatch = useDispatch();
   const { projects, projectsLoading } = useAppSelector((state) => state.issues);
@@ -48,14 +49,6 @@ const Home = () => {
       });
   }, [dispatch]);
 
-  useEffect(() => {
-    registerForPushNotificationsAsync()
-      .then((token: string | undefined) => {
-        setExpoPushToken(token);
-      })
-      .catch((err) => console.log(err));
-  }, []);
-
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
@@ -65,50 +58,61 @@ const Home = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
-      <StatusBar style="light" />
-      <Header />
-      <ScrollView
-        style={{ marginTop: 15 }}
-        contentContainerStyle={styles.container}
-        refreshControl={
-          <RefreshControl refreshing={projectsLoading} onRefresh={onRefresh} />
-        }>
-        {projects.map((project) => (
-          <TouchableOpacity
-            key={project.id}
-            onPress={() => {
-              navigation.navigate("ProjectIssues", {
-                projectId: project.id,
-                projectName: project.name,
-              });
-            }}
-            style={styles.projectContainer}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.projectName}>{project.name}</Text>
-              <Text style={styles.projectInfo}>Description: {project.id}</Text>
-              <Text style={styles.projectInfo}>
-                Open Issues: {project.platform}
-              </Text>
-            </View>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              {project.serverStatus ? (
-                <>
-                  <Text
-                    style={{
-                      color: project.serverStatus === "live" ? "#FFF" : "#FFF",
-                      marginRight: 5,
-                    }}>
-                    {project.serverStatus === "live" ? "Online" : "Offline"}
-                  </Text>
-                  <PulseLight />
-                </>
-              ) : (
-                <ActivityIndicator size="small" color="#ffffff" />
-              )}
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
+        <StatusBar style="light" />
+        <Header />
+        <Header />
+        <ScrollView
+          style={{ marginTop: 15 }}
+          style={{ marginTop: 15 }}
+          contentContainerStyle={styles.container}
+          refreshControl={
+            <RefreshControl
+              refreshing={projectsLoading}
+              onRefresh={onRefresh}
+            />
+          }>
+          {projects.map((project) => (
+            <TouchableOpacity
+              key={project.id}
+              onPress={() => {
+                navigation.navigate("ProjectIssues", {
+                  projectName: project.name,
+                });
+              }}
+              style={styles.projectContainer}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.projectName}>{project.name}</Text>
+                <Text style={styles.projectInfo}>
+                  Description: {project.id}
+                </Text>
+                <Text style={styles.projectInfo}>
+                  Open Issues: {project.platform}
+                </Text>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                {project.serverStatus ? (
+                  <>
+                    <Text
+                      style={{
+                        color:
+                          project.serverStatus === "live" ? "#FFF" : "#FFF",
+                        marginRight: 5,
+                      }}>
+                      {project.serverStatus === "live" ? "Online" : "Offline"}
+                      {project.serverStatus === "live" ? "Online" : "Offline"}
+                    </Text>
+                    <PulseLight />
+                    <PulseLight />
+                  </>
+                ) : (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                )}
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </SafeAreaView>
     </SafeAreaView>
   );
 };
@@ -119,8 +123,14 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     backgroundColor: "#121212",
+    backgroundColor: "#121212",
   },
   projectContainer: {
+    backgroundColor: "#2C2C2E",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    shadowColor: "#000",
     backgroundColor: "#2C2C2E",
     borderRadius: 10,
     padding: 15,
@@ -132,14 +142,24 @@ const styles = StyleSheet.create({
     elevation: 15,
     flexDirection: "row",
     alignItems: "center",
+    elevation: 15,
+    flexDirection: "row",
+    alignItems: "center",
   },
   projectName: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#FFF",
     flex: 1,
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#FFF",
+    flex: 1,
   },
   projectInfo: {
+    color: "#B0B0B0",
+    fontSize: 14,
+    marginTop: 2,
     color: "#B0B0B0",
     fontSize: 14,
     marginTop: 2,

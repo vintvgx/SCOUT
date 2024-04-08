@@ -102,6 +102,18 @@ const issuesSlice = createSlice({
       })
       .addCase(checkServerStatus.fulfilled, (state, action) => {
         state.projects = action.payload;
+      })
+      .addCase(fetchIssueById.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchIssueById.fulfilled, (state, action) => {
+        state.loading = false;
+        resetLoadedData(action.payload.project);
+        fetchIssues(action.payload.project);
+      })
+      .addCase(fetchIssueById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
@@ -333,6 +345,29 @@ export const fetchLocationForIP = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.message || "Failed to fetch location for IP"
+      );
+    }
+  }
+);
+
+export const fetchIssueById = createAsyncThunk(
+  "issues/fetchIssueById",
+  async (issueId: string, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `https://sentry.io/api/0/organizations/communite/issues/${issueId}`,
+        {
+          headers: {
+            Authorization:
+              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data ||
+          "An error occurred while fetching the issue details"
       );
     }
   }

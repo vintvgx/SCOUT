@@ -25,7 +25,7 @@ export default Header;
 
 const styles = StyleSheet.create({
   headerContainer: {
-    height: 60,
+    height: 40,
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
@@ -36,9 +36,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
     textShadowColor: "rgba(255, 255, 255, 1)",
-    textShadowOffset: { width: -1, height: -1 },
-    textShadowRadius: 4,
+    // textShadowOffset: { width: -1, height: -1 },
+    // textShadowRadius: 4,
     letterSpacing: 10,
+    marginTop: 10,
   },
 });
 

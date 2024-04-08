@@ -9,6 +9,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { SentryItem } from "../model/issue";
 import { SentryEvent } from "../model/event";
+import * as SecureStore from "expo-secure-store";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA1Ioud4rwt4sIYrX-KGGfV3sOiqocxU3Y",
@@ -26,6 +27,12 @@ const db = getFirestore(app);
 
 export async function registerForPushNotificationsAsync() {
   let token;
+  let storedToken = await SecureStore.getItemAsync("expoPushToken");
+
+  if (storedToken) {
+    console.log("Using stored token:", storedToken);
+    return storedToken; // Use the stored token
+  }
 
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
@@ -55,13 +62,11 @@ export async function registerForPushNotificationsAsync() {
         projectId: "605ca6ac-8939-440c-baa7-0307f5f8d01d",
       })
     ).data;
-    // console.log(token);
 
     try {
-      const docRef = await addDoc(collection(db, "user"), {
+      await addDoc(collection(db, "user"), {
         expoPushToken: token,
       });
-      // console.log("Document written with ID: ", docRef.id);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -69,6 +74,11 @@ export async function registerForPushNotificationsAsync() {
     alert("Must use physical device for Push Notifications");
   }
 
+  if (token) {
+    await SecureStore.setItemAsync("expoPushToken", token ?? "");
+    console.log("Token saved to SecureStore");
+  }
+  console.log("Token:", token);
   return token;
 }
 

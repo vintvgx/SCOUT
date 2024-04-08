@@ -1,4 +1,4 @@
-package com.vintvgx.stats.dpd
+package com.vintvgx.scout
 
 import android.os.Build
 import android.os.Bundle

@@ -17,7 +17,7 @@ import { ErrorsScreen } from "../components/ErrorsScreen";
 import { IssuesScreen } from "../components/IssuesScreen";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
-import { fetchIssues } from "../redux/slices/ProjectsSlice";
+import { fetchIssueById, fetchIssues } from "../redux/slices/ProjectsSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -26,7 +26,9 @@ import { HomeStackParamList } from "../navigation/Navigation";
 const Tab = createMaterialTopTabNavigator();
 
 const ProjectIssues = ({ route }: { route: any }) => {
-  const { projectId, projectName } = route.params;
+  const { data, projectName } = route.params;
+
+  console.log("ProjectIssues: projectName", projectName);
 
   const dispatch: AppDispatch = useDispatch();
   const navigation =
@@ -40,6 +42,20 @@ const ProjectIssues = ({ route }: { route: any }) => {
     );
     dispatch(fetchIssues(projectName));
   }, [dispatch]);
+
+  // Fetch issue details by ID if issueId is present in the navigation parameters
+  useEffect(() => {
+    if (data) {
+      dispatch(fetchIssueById(data.issueId))
+        .then((action) => {
+          // Handle the fetched issue data here
+          // If you need to open the EventViewer automatically, you can set the state here
+        })
+        .catch((error) =>
+          console.error("Failed to fetch issue details:", error)
+        );
+    }
+  }, [dispatch, data]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -63,11 +79,11 @@ const ProjectIssues = ({ route }: { route: any }) => {
         }}>
         <Tab.Screen
           name="Issues"
-          children={() => <IssuesScreen projectId={projectId} />}
+          children={() => <IssuesScreen projectName={projectName} />}
         />
         <Tab.Screen
           name="Errors"
-          children={() => <ErrorsScreen projectId={projectId} />}
+          children={() => <ErrorsScreen projectName={projectName} />}
         />
       </Tab.Navigator>
     </SafeAreaView>
