@@ -71,7 +71,6 @@ const Home = () => {
             key={project.id}
             onPress={() => {
               navigation.navigate("ProjectIssues", {
-                projectId: project.id,
                 projectName: project.name,
               });
             }}

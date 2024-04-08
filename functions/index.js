@@ -29,6 +29,7 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
       issueId: issue.event.event_id,
       level: issue.event.level,
       timestamp: issue.event.received,
+      event: issue.event,
     },
   };
 
@@ -38,6 +39,8 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
   //     body: issue.message || "A new issue has been reported.",
 
   // };
+
+  console.log(issue);
 
   const post_data = {
     id: issue.id,

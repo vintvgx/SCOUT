@@ -18,10 +18,10 @@ import { useDispatch } from "react-redux";
 import { fetchIssues, resetLoadedData } from "../redux/slices/ProjectsSlice";
 
 interface IssuesScreenType {
-  projectId: string;
+  projectName: string;
 }
 
-export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
+export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
   const { projects, loading, error } = useAppSelector((state) => state.issues);
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
@@ -30,7 +30,7 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
   const dispatch: AppDispatch = useDispatch();
 
   // Ensure the project is defined and has issues
-  const project = projects.find((p) => p.id === projectId);
+  const project = projects.find((p) => p.name === projectName);
   // A fallback for when project is undefined
   let issues = project?.issues || [];
 
@@ -42,7 +42,7 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectId }) => {
       dispatch(resetLoadedData(project?.name));
       dispatch(fetchIssues(project?.name)).then(() => setRefreshing(false));
     }
-  }, [dispatch, projectId]);
+  }, [dispatch, projectName]);
 
   const sortedIssues = useMemo(() => {
     // Clone and sort the issues array to avoid direct mutation

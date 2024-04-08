@@ -1,13 +1,15 @@
 // App.tsx
 import React, { useState, useEffect } from "react";
 import { View, Text, Animated, SafeAreaView, Image } from "react-native";
-import AppNavigation from "./src/navigation/Navigation";
+import AppNavigation, { HomeStackParamList } from "./src/navigation/Navigation";
 import { StatusBar } from "expo-status-bar";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "./src/utils/functions";
 import { Provider } from "react-redux";
 import store, { AppDispatch } from "./src/redux/store";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -21,6 +23,9 @@ export default function App() {
   const [isSplashVisible, setSplashVisible] = useState(true);
   const fadeAnim = new Animated.Value(1);
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
+
+  const navigation =
+    useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -50,7 +55,10 @@ export default function App() {
       // Assuming you have a navigator with a 'navigate' method
       // You might need to adjust this depending on your navigation setup
       // This example assumes you're using a ref to your navigation container
-      // navigationRef.current?.navigate('ProjectIssues', { issueId: data.issueId });
+      navigation.navigate("ProjectIssues", {
+        projectName: data.projectName,
+        data: data,
+      });
       console.log("Notification data", data);
       console.log("Issue ID", issueId);
     });
