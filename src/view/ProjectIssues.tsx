@@ -53,6 +53,7 @@ const ProjectIssues = ({ route }: { route: any }) => {
             // Determine which screen to navigate to based on the issue's level
             const screenToNavigate =
               fetchedIssue.level === "error" ? "ErrorsScreen" : "IssuesScreen";
+            // Navigate to the appropriate screen
 
             // navigation.navigate(screenToNavigate, {
             //   projectName: data.projectName,

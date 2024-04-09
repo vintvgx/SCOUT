@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   Button,
 } from "react-native";
+import * as Notifications from "expo-notifications";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
@@ -32,6 +33,8 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const dispatch: AppDispatch = useDispatch();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const { projects, projectsLoading } = useAppSelector((state) => state.issues);
 
   useEffect(() => {
@@ -47,10 +50,20 @@ const Home = () => {
           error
         );
       });
-  }, [dispatch]);
 
-  const navigation =
-    useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const { data } = response.notification.request.content;
+        navigation.navigate("ProjectIssues", {
+          projectName: data.projectName,
+          data: data,
+        });
+      }
+    );
+
+    // Cleanup
+    return () => subscription.remove();
+  }, [dispatch, navigation]);
 
   const onRefresh = () => {
     dispatch(fetchProjects());
