@@ -6,14 +6,20 @@ import format from "pretty-format";
 interface IssueCardProps {
   issue: SentryItem;
   onPress: () => void;
+  isNew: boolean;
 }
 
-const IssueCard: React.FC<IssueCardProps> = ({ issue, onPress }) => {
+const IssueCard: React.FC<IssueCardProps> = ({ issue, onPress, isNew }) => {
   // console.log("🚀 ~ issue:", format(issue));
   const eventsCount = issue.events ? issue.events.length : "N/A";
 
+  const cardStyle = [
+    styles.card,
+    isNew && styles.newIssue, // Apply special styling if issue is new
+  ];
+
   return (
-    <TouchableOpacity onPress={onPress} style={styles.card}>
+    <TouchableOpacity onPress={onPress} style={cardStyle}>
       <Text style={styles.title}>{issue.title}</Text>
       <Text style={styles.detail}>Events: {eventsCount}</Text>
       <Text style={styles.detail}>
@@ -47,6 +53,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.23,
     shadowRadius: 2.62,
     elevation: 4,
+  },
+  newIssue: {
+    borderColor: "#BB86FC", // Example highlight color
+    borderWidth: 2,
   },
   title: {
     fontSize: 18,

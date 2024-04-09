@@ -13,6 +13,7 @@ interface ProjectsState {
   projectsLoading: boolean;
   error: string | null;
   projectsError: any;
+  newIssues: string[];
 }
 
 const initialState: ProjectsState = {
@@ -22,6 +23,7 @@ const initialState: ProjectsState = {
   projectsLoading: false,
   error: null,
   projectsError: null,
+  newIssues: [],
 };
 
 const projectUrls: { [key: string]: string } = {
@@ -75,6 +77,24 @@ const issuesSlice = createSlice({
           : project
       );
     },
+    addNewIssueID: (state, action: PayloadAction<string[]>) => {
+      // Ensure no duplicates
+      const newIssueIDs = action.payload;
+      newIssueIDs.forEach((id) => {
+        if (!state.newIssues.includes(id)) {
+          state.newIssues.push(id);
+        }
+      });
+    },
+    clearNewIssue: (state, action: PayloadAction<string>) => {
+      const issueIdToRemove = action.payload;
+      state.newIssues = state.newIssues.filter(
+        (issueId) => issueId !== issueIdToRemove
+      );
+    },
+    clearNewIssues: (state) => {
+      state.newIssues = [];
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -102,24 +122,20 @@ const issuesSlice = createSlice({
       })
       .addCase(checkServerStatus.fulfilled, (state, action) => {
         state.projects = action.payload;
-      })
-      .addCase(fetchIssueById.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchIssueById.fulfilled, (state, action) => {
-        state.loading = false;
-        resetLoadedData(action.payload.project);
-        fetchIssues(action.payload.project);
-      })
-      .addCase(fetchIssueById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
       });
   },
 });
 
-export const { addIssue, addError, updateProject, clearData, resetLoadedData } =
-  issuesSlice.actions;
+export const {
+  addIssue,
+  addError,
+  updateProject,
+  clearData,
+  addNewIssueID,
+  resetLoadedData,
+  clearNewIssue,
+  clearNewIssues,
+} = issuesSlice.actions;
 
 // Async thunk for fetching issues
 export const fetchIssues = createAsyncThunk<
@@ -223,7 +239,7 @@ export const fetchIssues = createAsyncThunk<
         issuesSlice.actions.updateProject(updatedProject)
       );
 
-      console.log("Project updated:", format(updatedProject));
+      // console.log("Project updated:", format(updatedProject));
 
       // No need to return a payload as we're updating the state incrementally
     } catch (error: any) {
@@ -345,29 +361,6 @@ export const fetchLocationForIP = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error.message || "Failed to fetch location for IP"
-      );
-    }
-  }
-);
-
-export const fetchIssueById = createAsyncThunk(
-  "issues/fetchIssueById",
-  async (issueId: string, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(
-        `https://sentry.io/api/0/organizations/communite/issues/${issueId}`,
-        {
-          headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
-          },
-        }
-      );
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data ||
-          "An error occurred while fetching the issue details"
       );
     }
   }

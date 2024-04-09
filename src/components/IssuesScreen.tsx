@@ -22,7 +22,9 @@ interface IssuesScreenType {
 }
 
 export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
-  const { projects, loading, error } = useAppSelector((state) => state.issues);
+  const { projects, loading, error, newIssues } = useAppSelector(
+    (state) => state.issues
+  );
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -89,11 +91,13 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
             <IssueCard
               key={issue.id || index}
               issue={issue}
+              isNew={newIssues.includes(issue.id)}
               onPress={() =>
                 handleOpenEventModal(
                   issue,
                   setSelectedEvents,
-                  setIsViewerVisible
+                  setIsViewerVisible,
+                  dispatch
                 )
               }
             />
