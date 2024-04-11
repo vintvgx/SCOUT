@@ -149,6 +149,10 @@ export const fetchIssues = createAsyncThunk<
   // Retrieve the projects array from the state
   const projects: Project[] | undefined = state.issues.projects;
 
+  const projectIndex = state.issues.projects.findIndex(
+    (proj) => proj.name === projectName
+  );
+
   console.log("🚀 ~ FETCHING ISSUES INVOKED: ", projectName);
 
   // Find the project with the given projectName
@@ -156,7 +160,8 @@ export const fetchIssues = createAsyncThunk<
     (proj) => proj.name === projectName
   );
 
-  if (project && !project.isLoaded) {
+  if (projectIndex !== -1 && !state.issues.projects[projectIndex].isLoaded) {
+    // if (project && !project.isLoaded) {
     console.log(
       "🚀 ~ file: ProjectsSlice.ts ~ FETCHING ISSUES FOR project:",
       project
@@ -175,10 +180,17 @@ export const fetchIssues = createAsyncThunk<
       );
 
       // Sequentially fetch events for each issue and attach location data
-      response.data.forEach(async (issue: SentryItem) => {
+      response.data.forEach(async (fetchedIssue: SentryItem) => {
+        const issueExists = state.issues.projects[projectIndex].issues.find(
+          (issue) => issue.id === issue.id
+        );
+
         // Fetch event data using issue id and the project id
         const eventActionResult = await thunkAPI.dispatch(
-          fetchEvent({ issueId: issue.id, projectId: issue.project.id })
+          fetchEvent({
+            issueId: fetchedIssue.id,
+            projectId: fetchedIssue.project.id,
+          })
         );
 
         // If the fetchEvent action was successful, process the events
@@ -208,21 +220,24 @@ export const fetchIssues = createAsyncThunk<
           );
 
           // Attach the events with location data to the issue
-          const issueWithEvents = { ...issue, events: eventsWithLocation };
+          const issueWithEvents = {
+            ...fetchedIssue,
+            events: eventsWithLocation,
+          };
 
           // Dispatch action to add issue or error to the state
           try {
-            if (issue.level === "error") {
+            if (fetchedIssue.level === "error") {
               thunkAPI.dispatch(
                 issuesSlice.actions.addError({
-                  projectId: issue.project.id,
+                  projectId: fetchedIssue.project.id,
                   item: issueWithEvents,
                 })
               );
             } else {
               thunkAPI.dispatch(
                 issuesSlice.actions.addIssue({
-                  projectId: issue.project.id,
+                  projectId: fetchedIssue.project.id,
                   item: issueWithEvents,
                 })
               );
@@ -234,7 +249,10 @@ export const fetchIssues = createAsyncThunk<
       });
 
       // Set the project.isLoaded property to true
-      const updatedProject = { ...project, isLoaded: true };
+      const updatedProject = {
+        ...state.issues.projects[projectIndex],
+        isLoaded: true,
+      };
       await thunkAPI.dispatch(
         issuesSlice.actions.updateProject(updatedProject)
       );
