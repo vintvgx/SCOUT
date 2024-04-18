@@ -73,6 +73,8 @@ const EventViewer: React.FC<EventViewerProps> = ({
   const handleInfoIconPress = (event: SentryEvent) => {
     setSelectedEvent(event);
     setInfoModalVisible(true);
+    console.log("🚀 ~ event:", format(event));
+    console.log("🚀 ~ EVENT: location:", format(event.location));
   };
 
   const handleScrollViewPress = () => {
@@ -137,12 +139,8 @@ const EventViewer: React.FC<EventViewerProps> = ({
                 <MapView
                   style={styles.map}
                   initialRegion={{
-                    latitude:
-                      event.location?.address.latitude ||
-                      INITIAL_REGION.latitude,
-                    longitude:
-                      event.location?.address.longitude ||
-                      INITIAL_REGION.longitude,
+                    latitude: event.location?.lat || INITIAL_REGION.latitude,
+                    longitude: event.location?.lon || INITIAL_REGION.longitude,
                     latitudeDelta: INITIAL_REGION.latitudeDelta,
                     longitudeDelta: INITIAL_REGION.longitudeDelta,
                   }}
@@ -151,20 +149,16 @@ const EventViewer: React.FC<EventViewerProps> = ({
                   rotateEnabled={false}>
                   <Marker
                     coordinate={{
-                      latitude:
-                        event.location?.address.latitude ||
-                        INITIAL_REGION.latitude,
+                      latitude: event.location?.lat || INITIAL_REGION.latitude,
                       longitude:
-                        event.location?.address.longitude ||
-                        INITIAL_REGION.longitude,
+                        event.location?.lon || INITIAL_REGION.longitude,
                     }}
                     title={event.title}
                     description={event.message}
                   />
                 </MapView>
                 <Text style={styles.cityStatelocation}>
-                  {event.location?.address.city},{" "}
-                  {event.location?.address.state}
+                  {event.location?.city}, {event.location?.region}
                 </Text>
                 <View style={styles.eventCounter}>
                   <Text style={styles.eventCounterText}>{`${index + 1}/${
@@ -260,7 +254,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#FFFFFF",
     marginBottom: 5,
-    fontFamily: "Roboto-Medium",
+    // fontFamily: "Roboto-Medium",
   },
   sectionContent: {
     fontSize: 16,

@@ -28,7 +28,9 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
 
   const dispatch: AppDispatch = useDispatch();
 
-  const { projects, loading, error } = useAppSelector((state) => state.issues);
+  const { projects, loading, error, newIssues } = useAppSelector(
+    (state) => state.issues
+  );
 
   // Ensure the project is defined and has issues
   const project = projects.find((p) => p.name === projectName);
@@ -97,11 +99,13 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
             <IssueCard
               key={error.id || index} // It's better to use issue.id if available
               issue={error}
+              isNew={newIssues.includes(error.id)}
               onPress={() => {
                 handleOpenEventModal(
                   error,
                   setSelectedEvents,
-                  setIsViewerVisible
+                  setIsViewerVisible,
+                  dispatch
                 );
               }}
             />

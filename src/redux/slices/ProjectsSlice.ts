@@ -13,6 +13,7 @@ interface ProjectsState {
   projectsLoading: boolean;
   error: string | null;
   projectsError: any;
+  newIssues: string[];
 }
 
 const initialState: ProjectsState = {
@@ -22,6 +23,7 @@ const initialState: ProjectsState = {
   projectsLoading: false,
   error: null,
   projectsError: null,
+  newIssues: [],
 };
 
 const projectUrls: { [key: string]: string } = {
@@ -75,6 +77,24 @@ const issuesSlice = createSlice({
           : project
       );
     },
+    addNewIssueID: (state, action: PayloadAction<string[]>) => {
+      // Ensure no duplicates
+      const newIssueIDs = action.payload;
+      newIssueIDs.forEach((id) => {
+        if (!state.newIssues.includes(id)) {
+          state.newIssues.push(id);
+        }
+      });
+    },
+    clearNewIssue: (state, action: PayloadAction<string>) => {
+      const issueIdToRemove = action.payload;
+      state.newIssues = state.newIssues.filter(
+        (issueId) => issueId !== issueIdToRemove
+      );
+    },
+    clearNewIssues: (state) => {
+      state.newIssues = [];
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -102,24 +122,20 @@ const issuesSlice = createSlice({
       })
       .addCase(checkServerStatus.fulfilled, (state, action) => {
         state.projects = action.payload;
-      })
-      .addCase(fetchIssueById.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchIssueById.fulfilled, (state, action) => {
-        state.loading = false;
-        resetLoadedData(action.payload.project);
-        fetchIssues(action.payload.project);
-      })
-      .addCase(fetchIssueById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
       });
   },
 });
 
-export const { addIssue, addError, updateProject, clearData, resetLoadedData } =
-  issuesSlice.actions;
+export const {
+  addIssue,
+  addError,
+  updateProject,
+  clearData,
+  addNewIssueID,
+  resetLoadedData,
+  clearNewIssue,
+  clearNewIssues,
+} = issuesSlice.actions;
 
 // Async thunk for fetching issues
 export const fetchIssues = createAsyncThunk<
@@ -133,6 +149,10 @@ export const fetchIssues = createAsyncThunk<
   // Retrieve the projects array from the state
   const projects: Project[] | undefined = state.issues.projects;
 
+  const projectIndex = state.issues.projects.findIndex(
+    (proj) => proj.name === projectName
+  );
+
   console.log("🚀 ~ FETCHING ISSUES INVOKED: ", projectName);
 
   // Find the project with the given projectName
@@ -140,12 +160,7 @@ export const fetchIssues = createAsyncThunk<
     (proj) => proj.name === projectName
   );
 
-  if (project && !project.isLoaded) {
-    console.log(
-      "🚀 ~ file: ProjectsSlice.ts ~ FETCHING ISSUES FOR project:",
-      project
-    );
-
+  if (projectIndex !== -1 && !state.issues.projects[projectIndex].isLoaded) {
     try {
       // fetch project issues
       const response = await axios.get(
@@ -159,10 +174,13 @@ export const fetchIssues = createAsyncThunk<
       );
 
       // Sequentially fetch events for each issue and attach location data
-      response.data.forEach(async (issue: SentryItem) => {
+      response.data.forEach(async (fetchedIssue: SentryItem) => {
         // Fetch event data using issue id and the project id
         const eventActionResult = await thunkAPI.dispatch(
-          fetchEvent({ issueId: issue.id, projectId: issue.project.id })
+          fetchEvent({
+            issueId: fetchedIssue.id,
+            projectId: fetchedIssue.project.id,
+          })
         );
 
         // If the fetchEvent action was successful, process the events
@@ -173,11 +191,17 @@ export const fetchIssues = createAsyncThunk<
               if (event.user?.ip_address) {
                 // Dispatch fetchLocationForIP and wait for the result
                 const locationActionResult = await thunkAPI.dispatch(
-                  fetchLocationForIP(event.user.ip_address)
+                  IP_API_fetchLocation(event.user.ip_address)
+                );
+                console.log(
+                  "🚀 ~ eventActionResult.payload.events.map ~ locationActionResult:",
+                  locationActionResult
                 );
 
                 // If the fetchLocationForIP action was successful, attach the location data to the event
-                if (fetchLocationForIP.fulfilled.match(locationActionResult)) {
+                if (
+                  IP_API_fetchLocation.fulfilled.match(locationActionResult)
+                ) {
                   event.location = locationActionResult.payload;
                 } else {
                   console.error(
@@ -192,21 +216,24 @@ export const fetchIssues = createAsyncThunk<
           );
 
           // Attach the events with location data to the issue
-          const issueWithEvents = { ...issue, events: eventsWithLocation };
+          const issueWithEvents = {
+            ...fetchedIssue,
+            events: eventsWithLocation,
+          };
 
           // Dispatch action to add issue or error to the state
           try {
-            if (issue.level === "error") {
+            if (fetchedIssue.level === "error") {
               thunkAPI.dispatch(
                 issuesSlice.actions.addError({
-                  projectId: issue.project.id,
+                  projectId: fetchedIssue.project.id,
                   item: issueWithEvents,
                 })
               );
             } else {
               thunkAPI.dispatch(
                 issuesSlice.actions.addIssue({
-                  projectId: issue.project.id,
+                  projectId: fetchedIssue.project.id,
                   item: issueWithEvents,
                 })
               );
@@ -218,12 +245,15 @@ export const fetchIssues = createAsyncThunk<
       });
 
       // Set the project.isLoaded property to true
-      const updatedProject = { ...project, isLoaded: true };
+      const updatedProject = {
+        ...state.issues.projects[projectIndex],
+        isLoaded: true,
+      };
       await thunkAPI.dispatch(
         issuesSlice.actions.updateProject(updatedProject)
       );
 
-      console.log("Project updated:", format(updatedProject));
+      // console.log("Project updated:", format(updatedProject));
 
       // No need to return a payload as we're updating the state incrementally
     } catch (error: any) {
@@ -322,7 +352,7 @@ export const checkServerStatus = createAsyncThunk(
   }
 );
 
-export const fetchLocationForIP = createAsyncThunk(
+export const fetchRadarLocationForIP = createAsyncThunk(
   "issues/fetchLocationForIP",
   async (ipAddress: string, { rejectWithValue }) => {
     try {
@@ -336,38 +366,52 @@ export const fetchLocationForIP = createAsyncThunk(
           },
         }
       );
-      if (response.ok) {
-        const data = await response.json();
-        return data;
-      } else {
-        throw new Error("Failed to fetch location");
+      console.log("🚀 ~ response:", format(response));
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch location with status: ${response.status}`
+        );
       }
-    } catch (error: any) {
-      return rejectWithValue(
-        error.message || "Failed to fetch location for IP"
-      );
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error("Error data:", error.response.data);
+          console.error("Status code:", error.response.status);
+          console.error("Headers:", error.response.headers);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error("No response received:", error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.error("Error message:", error.message);
+        }
+      } else {
+        console.error("Error", error);
+      }
     }
   }
 );
 
-export const fetchIssueById = createAsyncThunk(
-  "issues/fetchIssueById",
-  async (issueId: string, { rejectWithValue }) => {
+export const IP_API_fetchLocation = createAsyncThunk(
+  "issues/IP_API_fetchLocation",
+  async (ipAddress: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `https://sentry.io/api/0/organizations/communite/issues/${issueId}`,
-        {
-          headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
-          },
-        }
-      );
-      return response.data;
+      const response = await axios.get(`http://ip-api.com/json/${ipAddress}`);
+      console.log("🚀 ~ IP_API_fetchLocation response:", format(response.data));
+
+      if (response.status === 200) {
+        return response.data;
+      } else {
+        throw new Error(`Failed to fetch location: ${response.status}`);
+      }
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data ||
-          "An error occurred while fetching the issue details"
+        error.message || "Failed to fetch location for IP"
       );
     }
   }

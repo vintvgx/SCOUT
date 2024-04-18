@@ -10,6 +10,8 @@ import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { SentryItem } from "../model/issue";
 import { SentryEvent } from "../model/event";
 import * as SecureStore from "expo-secure-store";
+import { AppDispatch } from "../redux/store";
+import { clearNewIssue } from "../redux/slices/ProjectsSlice";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA1Ioud4rwt4sIYrX-KGGfV3sOiqocxU3Y",
@@ -109,9 +111,12 @@ export const fetchLocationForIP = async (ipAddress: string) => {
 export const handleOpenEventModal = (
   issue: SentryItem,
   setSelectedEvents: (issue: SentryEvent[]) => void,
-  setIsViewerVisible: (isVisible: boolean) => void
+  setIsViewerVisible: (isVisible: boolean) => void,
+  dispatch: AppDispatch
 ) => {
   setSelectedEvents(issue.events || []);
   setIsViewerVisible(true);
+  dispatch(clearNewIssue(issue.id));
+
   console.log(format(issue.events || []));
 };

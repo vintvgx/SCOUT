@@ -19,6 +19,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { registerForPushNotificationsAsync } from "../utils/functions";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import {
+  addNewIssueID,
   checkServerStatus,
   fetchIssues,
   fetchProjects,
@@ -54,6 +55,12 @@ const Home = () => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         const { data } = response.notification.request.content;
+
+        if (data.issueId) {
+          // Dispatch an action to mark this issue as new
+          dispatch(addNewIssueID([data.issueId]));
+        }
+
         navigation.navigate("ProjectIssues", {
           projectName: data.projectName,
           data: data,

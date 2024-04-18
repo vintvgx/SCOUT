@@ -17,7 +17,7 @@ import { ErrorsScreen } from "../components/ErrorsScreen";
 import { IssuesScreen } from "../components/IssuesScreen";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
-import { fetchIssueById, fetchIssues } from "../redux/slices/ProjectsSlice";
+import { fetchIssues, resetLoadedData } from "../redux/slices/ProjectsSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -46,20 +46,12 @@ const ProjectIssues = ({ route }: { route: any }) => {
   // Fetch issue details by ID if issueId is present in the navigation parameters
   useEffect(() => {
     if (data) {
-      dispatch(fetchIssueById(data.issueId))
+      dispatch(resetLoadedData(data.project));
+      dispatch(fetchIssues(data.project))
         .then((action) => {
-          if (fetchIssueById.fulfilled.match(action)) {
+          if (fetchIssues.fulfilled.match(action)) {
             const fetchedIssue = action.payload; // Your fetched issue
-            // Determine which screen to navigate to based on the issue's level
-            const screenToNavigate =
-              fetchedIssue.level === "error" ? "ErrorsScreen" : "IssuesScreen";
-            // Navigate to the appropriate screen
-
-            // navigation.navigate(screenToNavigate, {
-            //   projectName: data.projectName,
-            //   issueId: data.issueId,
-            //   // You can pass additional data required by the destination screen
-            // });
+            console.log("Fetched issue details:", fetchedIssue);
           }
         })
         .catch((error) =>

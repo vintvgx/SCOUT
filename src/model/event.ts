@@ -21,7 +21,7 @@ export interface SentryEvent {
   eventID: string;
   groupID: string;
   id: string;
-  location: LocationData | null;
+  location: Location | null;
   message: string;
   platform: string;
   projectID: string;
@@ -37,6 +37,23 @@ export interface LocationData {
     code: number;
   };
   proxy: boolean;
+}
+
+export interface Location {
+  as: string;
+  city: string;
+  country: string;
+  countryCode: string;
+  isp: string;
+  lat: number;
+  lon: number;
+  org: string;
+  query: string;
+  region: string;
+  regionName: string;
+  status: string;
+  timezone: string;
+  zip: string;
 }
 
 interface Address {
