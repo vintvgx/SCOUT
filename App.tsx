@@ -77,7 +77,7 @@ export default function App() {
           source={require("./assets/icon.png")}
           style={{ width: 100, height: 100 }}
         />
-        <Text style={{ fontSize: 24, fontFamily: "Arial-bold" }}>SCOUT</Text>
+        <Text style={{ fontSize: 24 }}>SCOUT</Text>
       </Animated.View>
     );
   }

@@ -94,6 +94,52 @@ const EventViewer: React.FC<EventViewerProps> = ({
     ],
   };
 
+  const renderMapView = (event: any) => {
+    if (event?.location?.status === "success") {
+      return (
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: event.location.lat,
+              longitude: event.location.lon,
+              latitudeDelta: INITIAL_REGION.latitudeDelta,
+              longitudeDelta: INITIAL_REGION.longitudeDelta,
+            }}
+            scrollEnabled={false}
+            zoomEnabled={false}
+            rotateEnabled={false}>
+            <Marker
+              coordinate={{
+                latitude: event.location.lat,
+                longitude: event.location.lon,
+              }}
+              title={event.title}
+              description={event.message}
+            />
+          </MapView>
+          <Text style={styles.cityStatelocation}>
+            {event.location?.city}, {event.location?.region}
+          </Text>
+        </View>
+      );
+    } else {
+      return (
+        <View style={styles.mapContainer}>
+          <MapView
+            style={styles.map_unknown}
+            initialRegion={INITIAL_REGION}
+            scrollEnabled={false}
+            zoomEnabled={false}
+            rotateEnabled={false}>
+            {/* Optionally add a static marker or other elements here */}
+          </MapView>
+          <Text style={styles.unknownLocationText}>Unknown Location</Text>
+        </View>
+      );
+    }
+  };
+
   return (
     <Modal
       animationType="fade"
@@ -136,30 +182,8 @@ const EventViewer: React.FC<EventViewerProps> = ({
                   <Text style={styles.sectionHeader}>URL</Text>
                   <Text style={styles.sectionContent}>{event.culprit}</Text>
                 </View>
-                <MapView
-                  style={styles.map}
-                  initialRegion={{
-                    latitude: event.location?.lat || INITIAL_REGION.latitude,
-                    longitude: event.location?.lon || INITIAL_REGION.longitude,
-                    latitudeDelta: INITIAL_REGION.latitudeDelta,
-                    longitudeDelta: INITIAL_REGION.longitudeDelta,
-                  }}
-                  scrollEnabled={false}
-                  zoomEnabled={false}
-                  rotateEnabled={false}>
-                  <Marker
-                    coordinate={{
-                      latitude: event.location?.lat || INITIAL_REGION.latitude,
-                      longitude:
-                        event.location?.lon || INITIAL_REGION.longitude,
-                    }}
-                    title={event.title}
-                    description={event.message}
-                  />
-                </MapView>
-                <Text style={styles.cityStatelocation}>
-                  {event.location?.city}, {event.location?.region}
-                </Text>
+                {renderMapView(event)}
+
                 <View style={styles.eventCounter}>
                   <Text style={styles.eventCounterText}>{`${index + 1}/${
                     events.length
@@ -281,7 +305,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    marginTop: 20,
   },
   map: {
     width: 300,
@@ -290,6 +314,16 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     borderWidth: 1,
     borderRadius: 10,
+  },
+  map_unknown: {
+    width: 300,
+    height: 200,
+    justifyContent: "center",
+    alignSelf: "center",
+    borderWidth: 1,
+    borderRadius: 10,
+    backgroundColor: "#333",
+    opacity: 0.4,
   },
   eventCounter: {
     justifyContent: "center",
@@ -308,6 +342,24 @@ const styles = StyleSheet.create({
     textAlign: "center",
     alignSelf: "center",
   },
+  unknownLocationText: {
+    position: "absolute",
+    top: "50%",
+    width: "100%",
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    transform: [{ translateY: -8 }], // Adjust as necessary
+  },
+  // mapContainer: {
+  //   height: 200,
+  //   width: '100%',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   marginBottom: 20,
+  //   position: 'relative',
+  // },
 });
 
 export default EventViewer;

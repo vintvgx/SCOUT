@@ -28,6 +28,7 @@ import { StatusBar } from "expo-status-bar";
 import { PulseLight } from "../components/PulseLight";
 import Header from "../components/Header";
 import axios from "axios";
+import ProjectCard from "../components/ProjectCard";
 
 const Home = () => {
   const [error, setError] = useState("");
@@ -92,41 +93,15 @@ const Home = () => {
             />
           }>
           {projects.map((project) => (
-            <TouchableOpacity
-              key={project.id}
-              onPress={() => {
+            <ProjectCard
+              key={project.name}
+              project={project}
+              onPress={() =>
                 navigation.navigate("ProjectIssues", {
                   projectName: project.name,
-                });
-              }}
-              style={styles.projectContainer}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.projectName}>{project.name}</Text>
-                <Text style={styles.projectInfo}>
-                  Description: {project.id}
-                </Text>
-                <Text style={styles.projectInfo}>
-                  Open Issues: {project.platform}
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {project.serverStatus ? (
-                  <>
-                    <Text
-                      style={{
-                        color:
-                          project.serverStatus === "live" ? "#FFF" : "#FFF",
-                        marginRight: 5,
-                      }}>
-                      {project.serverStatus === "live" ? "Online" : "Offline"}
-                    </Text>
-                    <PulseLight />
-                  </>
-                ) : (
-                  <ActivityIndicator size="small" color="#ffffff" />
-                )}
-              </View>
-            </TouchableOpacity>
+                })
+              }
+            />
           ))}
         </ScrollView>
       </SafeAreaView>

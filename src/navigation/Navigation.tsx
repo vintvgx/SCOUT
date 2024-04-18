@@ -45,7 +45,7 @@ export default function AppNavigation() {
       <Tab.Navigator
         screenOptions={{
           tabBarStyle: { backgroundColor: "#222" },
-          tabBarActiveTintColor: "#fff",
+          tabBarActiveTintColor: "#BB86FC",
           tabBarInactiveTintColor: "#555",
           tabBarShowLabel: false,
           headerShown: false,

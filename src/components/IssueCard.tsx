@@ -1,7 +1,6 @@
 import React from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { SentryItem } from "../model/issue";
-import format from "pretty-format";
 
 interface IssueCardProps {
   issue: SentryItem;
@@ -10,29 +9,30 @@ interface IssueCardProps {
 }
 
 const IssueCard: React.FC<IssueCardProps> = ({ issue, onPress, isNew }) => {
-  // console.log("🚀 ~ issue:", format(issue));
   const eventsCount = issue.events ? issue.events.length : "N/A";
 
   const cardStyle = [
     styles.card,
-    isNew && styles.newIssue, // Apply special styling if issue is new
+    isNew && styles.newIssue, // Highlight new issues distinctly
   ];
 
   return (
     <TouchableOpacity onPress={onPress} style={cardStyle}>
       <Text style={styles.title}>{issue.title}</Text>
-      <Text style={styles.detail}>Events: {eventsCount}</Text>
-      <Text style={styles.detail}>
-        First Seen: {new Date(issue.firstSeen).toLocaleString()}
-      </Text>
-      <Text style={styles.detail}>
-        Last Seen: {new Date(issue.lastSeen).toLocaleString()}
-      </Text>
-      <View style={styles.footer}>
-        <Text style={styles.link}>View on Sentry</Text>
-
+      <View style={styles.detailsContainer}>
         <Text style={styles.detail}>Events: {eventsCount}</Text>
+        <Text style={styles.detail}>
+          First Seen: {new Date(issue.firstSeen).toLocaleString()}
+        </Text>
+        <Text style={styles.detail}>
+          Last Seen: {new Date(issue.lastSeen).toLocaleString()}
+        </Text>
       </View>
+      {isNew && (
+        <View style={styles.newTag}>
+          <Text style={styles.newText}>NEW</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -41,42 +41,50 @@ export default IssueCard;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#1E1E1E", // Darker tone for the card background
+    backgroundColor: "#1E1E1E",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.23,
-    shadowRadius: 2.62,
-    elevation: 4,
+    shadowOpacity: 0.25,
+    shadowRadius: 4.65,
+    elevation: 8,
   },
   newIssue: {
-    borderColor: "#BB86FC", // Example highlight color
+    borderColor: "#BB86FC",
     borderWidth: 2,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#FFFFFF", // White for readability
-    marginBottom: 10,
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginBottom: 12,
+  },
+  detailsContainer: {
+    paddingLeft: 10,
+    borderLeftColor: "#BB86FC",
+    borderLeftWidth: 4,
   },
   detail: {
     fontSize: 14,
-    color: "#A5A5A5", // Light grey for details, ensuring they are readable but less prominent
+    color: "#A5A5A5",
     marginBottom: 4,
   },
-  link: {
-    fontSize: 14,
-    color: "#BB86FC", // Using a purple accent color for links, inspired by Material Design
-    marginTop: 8,
+  newTag: {
+    position: "absolute",
+    right: 10,
+    top: 10,
+    backgroundColor: "#BB86FC",
+    borderRadius: 4,
+    padding: 4,
   },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between", // Positions the children at both ends
-    marginTop: 8,
+  newText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });

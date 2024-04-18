@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: "300",
     color: "white",
     textShadowColor: "rgba(255, 255, 255, 1)",
     // textShadowOffset: { width: -1, height: -1 },
