@@ -50,8 +50,8 @@ const Map = () => {
                 <Marker
                   key={event.id} // Assuming each event has a unique ID
                   coordinate={{
-                    latitude: event?.location?.address?.latitude,
-                    longitude: event?.location?.address?.longitude,
+                    latitude: event?.location?.lat,
+                    longitude: event?.location?.lon,
                   }}
                   title={event.message} // Optional: use event message or other relevant data as the marker title
                   onPress={() => handleMarkerPress(issue)}
