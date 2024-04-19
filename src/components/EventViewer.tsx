@@ -9,10 +9,10 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Animated,
+  useColorScheme,
 } from "react-native";
 import { LocationData, SentryEvent } from "../model/event";
 import format from "pretty-format";
-import { fetchLocationForIP } from "../utils/functions";
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/Ionicons";
 import EventInformation from "./EventInformation";
@@ -48,11 +48,10 @@ const EventViewer: React.FC<EventViewerProps> = ({
   isVisible,
   onClose,
 }) => {
-  const eventTitle = events.length > 0 ? events[0].title : "Event";
-
-  const [infoModalVisible, setInfoModalVisible] = useState(false);
+  const scheme = useColorScheme();
+  const animationValue = new Animated.Value(0);
   const [selectedEvent, setSelectedEvent] = useState<SentryEvent | null>(null);
-  const [animationValue, setAnimationValue] = useState(new Animated.Value(0));
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
@@ -73,16 +72,10 @@ const EventViewer: React.FC<EventViewerProps> = ({
   const handleInfoIconPress = (event: SentryEvent) => {
     setSelectedEvent(event);
     setInfoModalVisible(true);
-    console.log("🚀 ~ event:", format(event));
-    console.log("🚀 ~ EVENT: location:", format(event.location));
-  };
-
-  const handleScrollViewPress = () => {
-    // Prevent the modal from closing when pressing within the ScrollView
   };
 
   const modalContainerStyle = {
-    ...styles.modalContainer,
+    ...styles(scheme).modalContainer,
     opacity: animationValue,
     transform: [
       {
@@ -94,12 +87,12 @@ const EventViewer: React.FC<EventViewerProps> = ({
     ],
   };
 
-  const renderMapView = (event: any) => {
+  const renderMapView = (event: SentryEvent) => {
     if (event?.location?.status === "success") {
       return (
-        <View style={styles.mapContainer}>
+        <View style={styles(scheme).mapContainer}>
           <MapView
-            style={styles.map}
+            style={styles(scheme).map}
             initialRegion={{
               latitude: event.location.lat,
               longitude: event.location.lon,
@@ -118,23 +111,24 @@ const EventViewer: React.FC<EventViewerProps> = ({
               description={event.message}
             />
           </MapView>
-          <Text style={styles.cityStatelocation}>
+          <Text style={styles(scheme).cityStateLocation}>
             {event.location?.city}, {event.location?.region}
           </Text>
         </View>
       );
     } else {
       return (
-        <View style={styles.mapContainer}>
+        <View style={styles(scheme).mapContainer}>
           <MapView
-            style={styles.map_unknown}
+            style={styles(scheme).mapUnknown}
             initialRegion={INITIAL_REGION}
             scrollEnabled={false}
             zoomEnabled={false}
-            rotateEnabled={false}>
-            {/* Optionally add a static marker or other elements here */}
-          </MapView>
-          <Text style={styles.unknownLocationText}>Unknown Location</Text>
+            rotateEnabled={false}
+          />
+          <Text style={styles(scheme).unknownLocationText}>
+            Unknown Location
+          </Text>
         </View>
       );
     }
@@ -146,18 +140,20 @@ const EventViewer: React.FC<EventViewerProps> = ({
       transparent={true}
       visible={isVisible}
       onRequestClose={onClose}>
-      <View style={styles.modalBackdrop}>
+      <View style={styles(scheme).modalBackdrop}>
         <Animated.View style={modalContainerStyle}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>{eventTitle}</Text>
+          <View style={styles(scheme).header}>
+            <Text style={styles(scheme).headerTitle}>
+              {events.length > 0 ? events[0].title : "Event"}
+            </Text>
           </View>
           <ScrollView
             horizontal={true}
             pagingEnabled={true}
             showsHorizontalScrollIndicator={false}>
             {events.map((event, index) => (
-              <View key={index} style={styles.eventContainer}>
-                <View style={styles.tagIcon}>
+              <View key={index} style={styles(scheme).eventContainer}>
+                <View style={styles(scheme).tagIcon}>
                   <TouchableOpacity onPress={() => handleInfoIconPress(event)}>
                     <Icon
                       name="information-circle-outline"
@@ -166,28 +162,33 @@ const EventViewer: React.FC<EventViewerProps> = ({
                     />
                   </TouchableOpacity>
                 </View>
-                <Text style={styles.sectionHeader}>EVENT</Text>
-                <Text style={styles.id}>ID: {event.id}</Text>
-                <Text style={styles.date}>{formatDate(event.dateCreated)}</Text>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionHeader}>User</Text>
-                  <Text style={styles.sectionContent}>
+                <Text style={styles(scheme).sectionHeader}>EVENT</Text>
+                <Text style={styles(scheme).id}>ID: {event.id}</Text>
+                <Text style={styles(scheme).date}>
+                  {formatDate(event.dateCreated)}
+                </Text>
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={styles(scheme).sectionHeader}>User</Text>
+                  <Text style={styles(scheme).sectionContent}>
                     {event.user.email
                       ? event.user.email
                       : event.user?.ip_address}
                   </Text>
                 </View>
-                <View style={styles.section}>
-                  <Text style={styles.sectionHeader}>URL</Text>
-                  <Text style={styles.sectionContent}>{event.culprit}</Text>
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={styles(scheme).sectionHeader}>URL</Text>
+                  <Text style={styles(scheme).sectionContent}>
+                    {event.culprit}
+                  </Text>
                 </View>
                 {renderMapView(event)}
               </View>
             ))}
           </ScrollView>
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Close</Text>
+          <TouchableOpacity
+            style={styles(scheme).closeButton}
+            onPress={onClose}>
+            <Text style={styles(scheme).closeButtonText}>Close</Text>
           </TouchableOpacity>
         </Animated.View>
         {selectedEvent && (
@@ -202,144 +203,125 @@ const EventViewer: React.FC<EventViewerProps> = ({
   );
 };
 
-const screen = Dimensions.get("window");
-
-const styles = StyleSheet.create({
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(200, 200, 200, 0.8)",
-  },
-  modalContainer: {
-    maxHeight: screen.height * 0.8,
-    width: screen.width * 0.9,
-    backgroundColor: "#121212",
-    borderRadius: 10,
-    alignContent: "center",
-    justifyContent: "center",
-    elevation: 20,
-  },
-  eventContainer: {
-    alignItems: "flex-start",
-    justifyContent: "center",
-    width: screen.width * 0.9,
-    padding: 24,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 20,
-  },
-  header: {
-    alignSelf: "stretch",
-    backgroundColor: "#333",
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    padding: 10,
-    marginBottom: 20,
-  },
-  tagIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "#6B46C1",
-    padding: 8,
-    borderRadius: 20,
-  },
-  id: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    marginBottom: 10,
-  },
-  date: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    marginBottom: 10,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    marginBottom: 5,
-    // fontFamily: "Roboto-Medium",
-  },
-  sectionContent: {
-    fontSize: 16,
-    color: "#CCCCCC",
-  },
-  tagDetail: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 4,
-  },
-  closeButton: {
-    alignSelf: "stretch",
-    padding: 15,
-    position: "relative",
-  },
-  closeButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  mapContainer: {
-    height: 200, // Adjust based on your preference
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 20,
-  },
-  map: {
-    width: 300,
-    height: 200,
-    justifyContent: "center",
-    alignSelf: "center",
-    borderWidth: 1,
-    borderRadius: 10,
-  },
-  map_unknown: {
-    width: 300,
-    height: 200,
-    justifyContent: "center",
-    alignSelf: "center",
-    borderWidth: 1,
-    borderRadius: 10,
-    backgroundColor: "#333",
-    opacity: 0.4,
-  },
-  eventCounter: {
-    justifyContent: "center",
-    padding: 5,
-    borderRadius: 5,
-    marginTop: 20,
-    alignSelf: "center",
-  },
-  eventCounterText: {
-    color: "#000",
-  },
-  cityStatelocation: {
-    color: "#5a5a5a",
-    fontSize: 16,
-    marginTop: 20,
-    textAlign: "center",
-    alignSelf: "center",
-  },
-  unknownLocationText: {
-    position: "absolute",
-    top: "50%",
-    width: "100%",
-    textAlign: "center",
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-    transform: [{ translateY: -8 }], // Adjust as necessary
-  },
-});
+const styles = (scheme: any) =>
+  StyleSheet.create({
+    modalBackdrop: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(200, 200, 200, 0.8)",
+    },
+    modalContainer: {
+      maxHeight: Dimensions.get("window").height * 0.8,
+      width: Dimensions.get("window").width * 0.9,
+      backgroundColor: scheme === "dark" ? "#121212" : "#FFFFFF",
+      borderRadius: 10,
+      alignContent: "center",
+      justifyContent: "center",
+      elevation: 20,
+    },
+    eventContainer: {
+      alignItems: "flex-start",
+      justifyContent: "center",
+      width: Dimensions.get("window").width * 0.9,
+      padding: 24,
+    },
+    header: {
+      alignSelf: "stretch",
+      backgroundColor: scheme === "dark" ? "#333" : "#EEE",
+      borderTopLeftRadius: 10,
+      borderTopRightRadius: 10,
+      padding: 10,
+      marginBottom: 20,
+    },
+    headerTitle: {
+      fontSize: 22,
+      fontWeight: "bold",
+      color: scheme === "dark" ? "#FFFFFF" : "#000000",
+      marginBottom: 20,
+    },
+    tagIcon: {
+      position: "absolute",
+      top: 10,
+      right: 10,
+      backgroundColor: "#6B46C1",
+      padding: 8,
+      borderRadius: 20,
+    },
+    id: {
+      fontSize: 14,
+      color: scheme === "dark" ? "#FFFFFF" : "#000000",
+      marginBottom: 10,
+    },
+    date: {
+      fontSize: 16,
+      color: scheme === "dark" ? "#FFFFFF" : "#000000",
+      marginBottom: 10,
+    },
+    sectionHeader: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: scheme === "dark" ? "#FFFFFF" : "#000000",
+      marginBottom: 5,
+    },
+    sectionContent: {
+      fontSize: 16,
+      color: scheme === "dark" ? "#CCCCCC" : "#333333",
+    },
+    mapContainer: {
+      height: 200,
+      width: "100%",
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 20,
+    },
+    map: {
+      width: 300,
+      height: 200,
+      justifyContent: "center",
+      alignSelf: "center",
+      borderWidth: 1,
+      borderRadius: 10,
+    },
+    mapUnknown: {
+      width: 300,
+      height: 200,
+      justifyContent: "center",
+      alignSelf: "center",
+      borderWidth: 1,
+      borderRadius: 10,
+      backgroundColor: scheme === "dark" ? "#333" : "#DDD",
+      opacity: 0.4,
+    },
+    closeButton: {
+      alignSelf: "stretch",
+      padding: 15,
+      position: "relative",
+      marginTop: 20,
+    },
+    closeButtonText: {
+      color: scheme === "dark" ? "#FFFFFF" : "#000000",
+      fontSize: 18,
+      fontWeight: "bold",
+      textAlign: "center",
+    },
+    cityStateLocation: {
+      color: scheme === "dark" ? "#5a5a5a" : "#333333",
+      fontSize: 16,
+      marginTop: 20,
+      textAlign: "center",
+      alignSelf: "center",
+    },
+    unknownLocationText: {
+      position: "absolute",
+      top: "50%",
+      width: "100%",
+      textAlign: "center",
+      color: scheme === "dark" ? "#FFFFFF" : "#000000",
+      fontSize: 16,
+      fontWeight: "bold",
+      transform: [{ translateY: -8 }],
+    },
+  });
 
 export default EventViewer;
