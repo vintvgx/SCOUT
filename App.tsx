@@ -1,6 +1,14 @@
 // App.tsx
 import React, { useState, useEffect } from "react";
-import { View, Text, Animated, SafeAreaView, Image } from "react-native";
+import {
+  View,
+  Text,
+  Appearance,
+  useColorScheme,
+  Animated,
+  SafeAreaView,
+  Image,
+} from "react-native";
 import AppNavigation, { HomeStackParamList } from "./src/navigation/Navigation";
 import { StatusBar } from "expo-status-bar";
 import * as Device from "expo-device";
@@ -23,6 +31,10 @@ export default function App() {
   const [isSplashVisible, setSplashVisible] = useState(true);
   const fadeAnim = new Animated.Value(1);
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
+  const scheme = useColorScheme(); // Detects the theme
+
+  const backgroundColor = scheme === "dark" ? "#000" : "#fff";
+  const textColor = scheme === "dark" ? "#fff" : "#000";
 
   // const navigation =
   //   useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
@@ -72,6 +84,7 @@ export default function App() {
           alignItems: "center",
           justifyContent: "center",
           opacity: fadeAnim,
+          backgroundColor,
         }}>
         <Image
           source={require("./assets/icon.png")}
@@ -84,8 +97,8 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <View style={{ flex: 1, backgroundColor: "#000" }}>
-        <StatusBar style="light" />
+      <View style={{ flex: 1, backgroundColor }}>
+        <StatusBar style={scheme === "dark" ? "light" : "dark"} />
         <AppNavigation />
       </View>
     </Provider>

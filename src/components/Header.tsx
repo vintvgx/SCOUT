@@ -1,8 +1,12 @@
-import { StyleSheet, View, Animated } from "react-native";
+import { StyleSheet, View, Animated, useColorScheme } from "react-native";
 import React, { useEffect, useState } from "react";
 
 const Header = () => {
   const [fadeAnim] = useState(new Animated.Value(0)); // Initial opacity value of 0
+
+  const scheme = useColorScheme();
+  const backgroundColor = scheme === "dark" ? "#222" : "#fff";
+  const color = scheme === "dark" ? "#fff" : "#000";
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -13,8 +17,8 @@ const Header = () => {
   }, [fadeAnim]);
 
   return (
-    <View style={styles.headerContainer}>
-      <Animated.Text style={[styles.headerText, { opacity: fadeAnim }]}>
+    <View style={[styles.headerContainer, { backgroundColor }]}>
+      <Animated.Text style={[styles.headerText, { color, opacity: fadeAnim }]}>
         SCOUT
       </Animated.Text>
     </View>
@@ -29,12 +33,10 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#121212",
   },
   headerText: {
     fontSize: 24,
     fontWeight: "300",
-    color: "white",
     textShadowColor: "rgba(255, 255, 255, 1)",
     // textShadowOffset: { width: -1, height: -1 },
     // textShadowRadius: 4,

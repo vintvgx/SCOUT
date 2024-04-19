@@ -183,12 +183,6 @@ const EventViewer: React.FC<EventViewerProps> = ({
                   <Text style={styles.sectionContent}>{event.culprit}</Text>
                 </View>
                 {renderMapView(event)}
-
-                <View style={styles.eventCounter}>
-                  <Text style={styles.eventCounterText}>{`${index + 1}/${
-                    events.length
-                  }`}</Text>
-                </View>
               </View>
             ))}
           </ScrollView>
@@ -231,12 +225,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: screen.width * 0.9,
     padding: 24,
-  },
-  headerContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
   },
   headerTitle: {
     fontSize: 22,
@@ -352,14 +340,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     transform: [{ translateY: -8 }], // Adjust as necessary
   },
-  // mapContainer: {
-  //   height: 200,
-  //   width: '100%',
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   marginBottom: 20,
-  //   position: 'relative',
-  // },
 });
 
 export default EventViewer;

@@ -9,6 +9,7 @@ import HomeScreen from "../view/Home";
 import ProjectIssuesScreen from "../view/ProjectIssues";
 //@ts-ignore
 import Icon from "react-native-vector-icons/Ionicons";
+import { useColorScheme } from "react-native";
 
 export type HomeStackParamList = {
   Home: undefined;
@@ -40,11 +41,14 @@ function HomeStackScreen() {
 }
 
 export default function AppNavigation() {
+  const scheme = useColorScheme();
+  const backgroundColor = scheme === "dark" ? "#222" : "#eee";
+
   return (
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={{
-          tabBarStyle: { backgroundColor: "#222" },
+          tabBarStyle: { backgroundColor },
           tabBarActiveTintColor: "#BB86FC",
           tabBarInactiveTintColor: "#555",
           tabBarShowLabel: false,

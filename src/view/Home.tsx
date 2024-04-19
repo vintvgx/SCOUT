@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   SafeAreaView,
   Button,
+  useColorScheme,
 } from "react-native";
 import * as Notifications from "expo-notifications";
 import React, { useEffect, useState } from "react";
@@ -31,8 +32,8 @@ import axios from "axios";
 import ProjectCard from "../components/ProjectCard";
 
 const Home = () => {
-  const [error, setError] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
+  const scheme = useColorScheme();
+  const backgroundColor = scheme === "dark" ? "#222" : "#fff";
 
   const dispatch: AppDispatch = useDispatch();
   const navigation =
@@ -78,14 +79,14 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
-        <StatusBar style="light" />
+    <SafeAreaView style={{ flex: 1, backgroundColor }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor }}>
+        <StatusBar style={scheme === "dark" ? "light" : "dark"} />
         <Header />
 
         <ScrollView
           style={{ marginTop: 15 }}
-          contentContainerStyle={styles.container}
+          contentContainerStyle={[styles.container, { backgroundColor }]}
           refreshControl={
             <RefreshControl
               refreshing={projectsLoading}
@@ -114,31 +115,5 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#121212",
-  },
-  projectContainer: {
-    backgroundColor: "#2C2C2E",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: "#000",
-
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 15,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  projectName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFF",
-    flex: 1,
-  },
-  projectInfo: {
-    color: "#B0B0B0",
-    fontSize: 14,
-    marginTop: 2,
   },
 });
