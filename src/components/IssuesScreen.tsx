@@ -104,8 +104,7 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        {sortedIssues &&
-          sortedIssues.length > 0 &&
+        {sortedIssues && sortedIssues.length > 0 ? (
           sortedIssues.map((issue, index) => (
             <IssueCard
               key={issue.id || index}
@@ -120,7 +119,14 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
                 )
               }
             />
-          ))}
+          ))
+        ) : (
+          <View style={styles.center_of_screen}>
+            <Text style={styles.errorText}>
+              No issues found for this project.
+            </Text>
+          </View>
+        )}
       </ScrollView>
       <EventViewer
         events={selectedEvents}
@@ -138,10 +144,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   errorText: {
-    color: "red",
+    color: "gray",
     textAlign: "center",
-    marginTop: 20,
-    alignSelf: "center",
-    justifyContent: "center",
+    marginTop: 30,
   },
 });

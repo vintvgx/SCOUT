@@ -2,7 +2,7 @@
   "expo": {
     "name": "dpd.stats",
     "slug": "dpd_stats",
-    "version": "1.1.0",
+    "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/scout1024.png",
     "userInterfaceStyle": "automatic",
@@ -35,7 +35,14 @@
     },
     "owner": "vintvgx",
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+      "@sentry/react-native/expo",
+        {
+          "organization": "communite",
+          "project": "scout"
+        }
+      ]
     ]
   }
 }
