@@ -2,10 +2,10 @@
   "expo": {
     "name": "dpd.stats",
     "slug": "dpd_stats",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "orientation": "portrait",
     "icon": "./assets/scout1024.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/scout_splash.png",
       "resizeMode": "contain",
