@@ -5,7 +5,7 @@
     "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/scout1024.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/scout_splash.png",
       "resizeMode": "contain",

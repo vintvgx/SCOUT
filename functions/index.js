@@ -148,18 +148,17 @@ async function sendPushNotification(tokens, message) {
   console.log("Messages:", messages);
 
   try {
-    const response = await axios.post(
-      "https://exp.host/--/api/v2/push/send",
-      messages,
-      {
+    const response = await axios
+      .post("https://exp.host/--/api/v2/push/send", messages, {
         headers: {
           Accept: "application/json",
           "Accept-Encoding": "gzip, deflate",
           "Content-Type": "application/json",
         },
-      }
-    );
-    console.log("ENS response:", response.data);
+      })
+      .then((response) => {
+        console.log(response.data);
+      });
     console.log("Notifications sent successfully");
   } catch (error) {
     console.error("Push notification error:", error.message);

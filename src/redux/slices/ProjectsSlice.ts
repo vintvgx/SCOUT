@@ -5,6 +5,7 @@ import { IssueErrorPayload, Project } from "../../model/project";
 import format from "pretty-format";
 import { LocationData, SentryEvent } from "../../model/event";
 import { RootState } from "../store";
+import * as Sentry from "@sentry/react-native";
 
 interface ProjectsState {
   // data: { errors: SentryIssue[]; issues: SentryIssue[] };
@@ -261,6 +262,7 @@ export const fetchIssues = createAsyncThunk<
         "Error fetching issues:",
         error.response?.data || error.message
       );
+      Sentry.captureException(error);
       return thunkAPI.rejectWithValue(
         error.response?.data || "An error occurred"
       );
@@ -294,6 +296,8 @@ export const fetchProjects = createAsyncThunk(
       );
       return projectsWithIssuesAndErrors;
     } catch (error: any) {
+      Sentry.captureException(error);
+
       return rejectWithValue(error.response.data);
     }
   }
@@ -320,6 +324,8 @@ export const fetchEvent = createAsyncThunk(
 
       return { issueId, events: response.data };
     } catch (error: any) {
+      Sentry.captureException(error);
+
       return rejectWithValue(
         error.response?.data || "An error occurred while fetching events"
       );
@@ -410,6 +416,8 @@ export const IP_API_fetchLocation = createAsyncThunk(
         throw new Error(`Failed to fetch location: ${response.status}`);
       }
     } catch (error: any) {
+      Sentry.captureException(error);
+
       return rejectWithValue(
         error.message || "Failed to fetch location for IP"
       );

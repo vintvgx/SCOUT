@@ -1,7 +1,17 @@
-import { StyleSheet, View, Animated, useColorScheme } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Animated,
+  useColorScheme,
+  TouchableOpacity,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 
-const Header = () => {
+interface HeaderProps {
+  onPress: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onPress }) => {
   const [fadeAnim] = useState(new Animated.Value(0)); // Initial opacity value of 0
 
   const scheme = useColorScheme();
@@ -17,11 +27,13 @@ const Header = () => {
   }, [fadeAnim]);
 
   return (
-    <View style={[styles.headerContainer, { backgroundColor }]}>
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.headerContainer, { backgroundColor }]}>
       <Animated.Text style={[styles.headerText, { color, opacity: fadeAnim }]}>
         SCOUT
       </Animated.Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 

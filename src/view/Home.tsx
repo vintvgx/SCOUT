@@ -30,6 +30,7 @@ import { PulseLight } from "../components/PulseLight";
 import Header from "../components/Header";
 import axios from "axios";
 import ProjectCard from "../components/ProjectCard";
+import format from "pretty-format";
 
 const Home = () => {
   const scheme = useColorScheme();
@@ -40,6 +41,7 @@ const Home = () => {
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const { projects, projectsLoading } = useAppSelector((state) => state.issues);
   const { expoPushToken } = useAppSelector((state) => state.register);
+  const [displayNotification, setDisplayNotification] = useState(false);
 
   useEffect(() => {
     dispatch(fetchProjects())
@@ -87,15 +89,25 @@ const Home = () => {
       sound: "default",
       title: "Original Title2",
       body: expoPushToken,
+      data: {
+        title: "Original Title2",
+        body: expoPushToken,
+        _displayInForeground: true,
+      },
     };
+    console.log("Message:", format(message));
     try {
-      await axios.post("https://exp.host/--/api/v2/push/send", message, {
-        headers: {
-          Accept: "application/json",
-          "Accept-Encoding": "gzip, deflate",
-          "Content-Type": "application/json",
-        },
-      });
+      await axios
+        .post("https://exp.host/--/api/v2/push/send", message, {
+          headers: {
+            Accept: "application/json",
+            "Accept-Encoding": "gzip, deflate",
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          console.log("Response:", response.data);
+        });
     } catch (err: any) {
       console.error("POST Push Notification err:", err.message);
     }
@@ -105,7 +117,9 @@ const Home = () => {
     <SafeAreaView style={{ flex: 1, backgroundColor }}>
       <SafeAreaView style={{ flex: 1, backgroundColor }}>
         <StatusBar style={scheme === "dark" ? "light" : "dark"} />
-        <Header />
+        <Header
+          onPress={() => setDisplayNotification((prevState) => !prevState)}
+        />
 
         <ScrollView
           style={{ marginTop: 15 }}
@@ -116,19 +130,25 @@ const Home = () => {
               onRefresh={onRefresh}
             />
           }>
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.name}
-              project={project}
-              onPress={() =>
-                navigation.navigate("ProjectIssues", {
-                  projectName: project.name,
-                })
-              }
-            />
-          ))}
+          {projects
+            .filter(
+              (project) => project.name !== "scout" || displayNotification
+            )
+            .map((project) => (
+              <ProjectCard
+                key={project.name}
+                project={project}
+                onPress={() =>
+                  navigation.navigate("ProjectIssues", {
+                    projectName: project.name,
+                  })
+                }
+              />
+            ))}
         </ScrollView>
-        <Button title="Notification me" onPress={sendNotification} />
+        {displayNotification && (
+          <Button title="Notification me" onPress={sendNotification} />
+        )}
       </SafeAreaView>
     </SafeAreaView>
   );

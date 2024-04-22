@@ -14,6 +14,7 @@ import { AppDispatch } from "../redux/store";
 import { useDispatch } from "react-redux";
 import { registerForPushNotificationsAsync } from "../utils/functions";
 import { setExpoPushToken } from "../redux/slices/RegisterSlice";
+import * as Sentry from "@sentry/react-native";
 
 export type HomeStackParamList = {
   Home: undefined;
@@ -50,18 +51,22 @@ export default function AppNavigation() {
 
   const dispatch: AppDispatch = useDispatch();
 
-  const registerForNotifications = async () => {
-    await registerForPushNotificationsAsync()
-      .then((token: string | undefined) => {
-        dispatch(setExpoPushToken(token));
-      })
-      .catch((err) => console.log(err));
-  };
-
   useEffect(() => {
     registerForNotifications();
     // notificationResponseListener();
   }, []);
+
+  const registerForNotifications = async () => {
+    await registerForPushNotificationsAsync()
+      .then((token: string | undefined) => {
+        dispatch(setExpoPushToken(token));
+
+        Sentry.captureMessage(`Registered for EXPO Push Token: ${token}`);
+      })
+      .catch((err) => {
+        Sentry.captureException(err);
+      });
+  };
 
   return (
     <NavigationContainer>
