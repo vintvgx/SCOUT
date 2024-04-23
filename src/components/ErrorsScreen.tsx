@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
+  useColorScheme,
 } from "react-native";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import IssueCard from "./IssueCard";
@@ -25,6 +26,7 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const scheme = useColorScheme();
 
   const dispatch: AppDispatch = useDispatch();
 
@@ -58,7 +60,11 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
 
   if (loading)
     return (
-      <View style={styles.container}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+        }}>
         <View style={styles.center_of_screen}>
           <ActivityIndicator />
         </View>
@@ -67,7 +73,11 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
 
   if (error) {
     return (
-      <View style={styles.container}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+        }}>
         <View style={styles.center_of_screen}>
           <Text style={styles.errorText}>{error}</Text>
         </View>
@@ -77,7 +87,11 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
 
   if (!project) {
     return (
-      <View style={styles.container}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+        }}>
         <View style={styles.center_of_screen}>
           <Text style={styles.errorText}>Project not found.</Text>
         </View>
@@ -89,7 +103,11 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
   // const errors = project.errors;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+      }}>
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -128,10 +146,6 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
   center_of_screen: {
     flex: 1,
     justifyContent: "center",

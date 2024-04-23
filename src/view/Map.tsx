@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, SafeAreaView } from "react-native";
+import { StyleSheet, SafeAreaView, useColorScheme } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { Project } from "../model/project";
@@ -18,6 +18,7 @@ const Map = () => {
     longitudeDelta: 0.0421,
   };
 
+  const scheme = useColorScheme();
   const { projects } = useAppSelector((state) => state.issues);
   const dispatch: AppDispatch = useDispatch();
   const [modalVisible, setModalVisible] = useState(false);
@@ -37,7 +38,7 @@ const Map = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <StatusBar style="dark" />
+      <StatusBar style={scheme === "dark" ? "light" : "dark"} />
       <MapView
         style={StyleSheet.absoluteFillObject}
         initialRegion={INITIAL_REGION}

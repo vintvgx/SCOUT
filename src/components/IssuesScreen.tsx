@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
+  useColorScheme,
 } from "react-native";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import IssueCard from "./IssueCard";
@@ -25,6 +26,8 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
   const { projects, loading, error, newIssues } = useAppSelector(
     (state) => state.issues
   );
+
+  const scheme = useColorScheme();
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -58,21 +61,33 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
   if (loading && sortedIssues.length === 0) {
     if (loading && sortedIssues.length === 0) {
       return (
-        <View style={styles.container}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+          }}>
           <ActivityIndicator style={styles.center_of_screen} size="small" />
         </View>
       );
     } else if (error) {
       // Handle error state
       return (
-        <View style={styles.container}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+          }}>
           <Text style={styles.errorText}>Error: {error}</Text>
         </View>
       );
     } else if (!project) {
       // Handle case where project is not found
       return (
-        <View style={styles.center_of_screen}>
+        <View
+          style={[
+            styles.center_of_screen,
+            { backgroundColor: scheme === "dark" ? "#121212" : "#FFF" },
+          ]}>
           <Text style={styles.errorText}>Project not found.</Text>
         </View>
       );
@@ -80,13 +95,16 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+      }}>
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        {sortedIssues &&
-          sortedIssues.length > 0 &&
+        {sortedIssues && sortedIssues.length > 0 ? (
           sortedIssues.map((issue, index) => (
             <IssueCard
               key={issue.id || index}
@@ -101,7 +119,14 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
                 )
               }
             />
-          ))}
+          ))
+        ) : (
+          <View style={styles.center_of_screen}>
+            <Text style={styles.errorText}>
+              No issues found for this project.
+            </Text>
+          </View>
+        )}
       </ScrollView>
       <EventViewer
         events={selectedEvents}
@@ -113,20 +138,14 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
   center_of_screen: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
   errorText: {
-    color: "red",
+    color: "gray",
     textAlign: "center",
-    marginTop: 20,
-    alignSelf: "center",
-    justifyContent: "center",
+    marginTop: 30,
   },
 });

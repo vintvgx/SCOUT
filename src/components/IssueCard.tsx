@@ -1,7 +1,12 @@
 import React from "react";
-import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+} from "react-native";
 import { SentryItem } from "../model/issue";
-import format from "pretty-format";
 
 interface IssueCardProps {
   issue: SentryItem;
@@ -10,29 +15,37 @@ interface IssueCardProps {
 }
 
 const IssueCard: React.FC<IssueCardProps> = ({ issue, onPress, isNew }) => {
-  // console.log("🚀 ~ issue:", format(issue));
+  const scheme = useColorScheme(); // Detects the color scheme (light or dark)
   const eventsCount = issue.events ? issue.events.length : "N/A";
 
+  // Styles dynamically adjusted according to the theme
   const cardStyle = [
-    styles.card,
-    isNew && styles.newIssue, // Apply special styling if issue is new
+    scheme === "dark" ? styles.cardDark : styles.cardLight,
+    isNew && styles.newIssue, // Highlight new issues distinctly
   ];
+
+  const detailStyle =
+    scheme === "dark" ? styles.detailDark : styles.detailLight;
 
   return (
     <TouchableOpacity onPress={onPress} style={cardStyle}>
-      <Text style={styles.title}>{issue.title}</Text>
-      <Text style={styles.detail}>Events: {eventsCount}</Text>
-      <Text style={styles.detail}>
-        First Seen: {new Date(issue.firstSeen).toLocaleString()}
+      <Text style={scheme === "dark" ? styles.titleDark : styles.titleLight}>
+        {issue.title}
       </Text>
-      <Text style={styles.detail}>
-        Last Seen: {new Date(issue.lastSeen).toLocaleString()}
-      </Text>
-      <View style={styles.footer}>
-        <Text style={styles.link}>View on Sentry</Text>
-
-        <Text style={styles.detail}>Events: {eventsCount}</Text>
+      <View style={styles.detailsContainer}>
+        <Text style={detailStyle}>Events: {eventsCount}</Text>
+        <Text style={detailStyle}>
+          First Seen: {new Date(issue.firstSeen).toLocaleString()}
+        </Text>
+        <Text style={detailStyle}>
+          Last Seen: {new Date(issue.lastSeen).toLocaleString()}
+        </Text>
       </View>
+      {isNew && (
+        <View style={styles.newTag}>
+          <Text style={styles.newText}>NEW</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -40,43 +53,70 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, onPress, isNew }) => {
 export default IssueCard;
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#1E1E1E", // Darker tone for the card background
+  cardDark: {
+    backgroundColor: "#1E1E1E",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.23,
-    shadowRadius: 2.62,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  cardLight: {
+    backgroundColor: "#F7F7F7", // Changed from white to light gray for better contrast
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000", // Darker shadow for better contrast
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2, // Increased opacity for a more pronounced shadow
+    shadowRadius: 6, // Slightly larger radius for a softer spread
+    elevation: 10, // Slightly raised elevation for more depth
   },
   newIssue: {
-    borderColor: "#BB86FC", // Example highlight color
+    borderColor: "#BB86FC",
     borderWidth: 2,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#FFFFFF", // White for readability
-    marginBottom: 10,
+  titleDark: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginBottom: 12,
   },
-  detail: {
+  titleLight: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 12,
+  },
+  detailsContainer: {
+    paddingLeft: 10,
+    borderLeftColor: "#BB86FC",
+    borderLeftWidth: 4,
+  },
+  detailDark: {
     fontSize: 14,
-    color: "#A5A5A5", // Light grey for details, ensuring they are readable but less prominent
+    color: "#A5A5A5",
     marginBottom: 4,
   },
-  link: {
+  detailLight: {
     fontSize: 14,
-    color: "#BB86FC", // Using a purple accent color for links, inspired by Material Design
-    marginTop: 8,
+    color: "#333333",
+    marginBottom: 4,
   },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between", // Positions the children at both ends
-    marginTop: 8,
+  newTag: {
+    position: "absolute",
+    right: 10,
+    top: 10,
+    backgroundColor: "#BB86FC",
+    borderRadius: 4,
+    padding: 4,
+  },
+  newText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });

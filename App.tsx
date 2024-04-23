@@ -1,15 +1,21 @@
 // App.tsx
 import React, { useState, useEffect } from "react";
-import { View, Text, Animated, SafeAreaView, Image } from "react-native";
-import AppNavigation, { HomeStackParamList } from "./src/navigation/Navigation";
+import {
+  View,
+  Text,
+  Appearance,
+  useColorScheme,
+  Animated,
+  Image,
+} from "react-native";
+import AppNavigation from "./src/navigation/Navigation";
 import { StatusBar } from "expo-status-bar";
-import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "./src/utils/functions";
-import { Provider } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
 import store, { AppDispatch } from "./src/redux/store";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import * as Sentry from "@sentry/react-native";
+import { setExpoPushToken } from "./src/redux/slices/RegisterSlice";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -19,13 +25,19 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export default function App() {
+Sentry.init({
+  dsn: "https://528b0f80ff87e6b7af4e6b3321c27510@o4506865440849920.ingest.us.sentry.io/4507119672557568",
+  debug: true,
+  tracesSampleRate: 1.0,
+});
+
+const App = () => {
   const [isSplashVisible, setSplashVisible] = useState(true);
   const fadeAnim = new Animated.Value(1);
-  const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
+  const scheme = useColorScheme(); // Detects the theme
 
-  // const navigation =
-  //   useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  const backgroundColor = scheme === "dark" ? "#000" : "#fff";
+  const textColor = scheme === "dark" ? "#fff" : "#000";
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -35,35 +47,6 @@ export default function App() {
     }).start(() => setSplashVisible(false));
   }, []);
 
-  useEffect(() => {
-    registerForNotifications();
-    // notificationResponseListener();
-  }, []);
-
-  const registerForNotifications = async () => {
-    await registerForPushNotificationsAsync()
-      .then((token: string | undefined) => {
-        setExpoPushToken(token);
-      })
-      .catch((err) => console.log(err));
-  };
-
-  // const notificationResponseListener = () => {
-  //   Notifications.addNotificationResponseReceivedListener((response) => {
-  //     const { data } = response.notification.request.content;
-  //     const issueId = data.issueId;
-  //     // Assuming you have a navigator with a 'navigate' method
-  //     // You might need to adjust this depending on your navigation setup
-  //     // This example assumes you're using a ref to your navigation container
-  //     navigation.navigate("ProjectIssues", {
-  //       projectName: data.projectName,
-  //       data: data,
-  //     });
-  //     console.log("Notification data", data);
-  //     console.log("Issue ID", issueId);
-  //   });
-  // };
-
   if (isSplashVisible) {
     return (
       <Animated.View
@@ -72,22 +55,28 @@ export default function App() {
           alignItems: "center",
           justifyContent: "center",
           opacity: fadeAnim,
+          backgroundColor,
         }}>
         <Image
           source={require("./assets/icon.png")}
           style={{ width: 100, height: 100 }}
         />
-        <Text style={{ fontSize: 24, fontFamily: "Arial-bold" }}>SCOUT</Text>
+        <Text style={{ fontSize: 24 }}>SCOUT</Text>
       </Animated.View>
     );
   }
 
   return (
     <Provider store={store}>
-      <View style={{ flex: 1, backgroundColor: "#000" }}>
-        <StatusBar style="light" />
+      <View style={{ flex: 1, backgroundColor }}>
+        <StatusBar style={scheme === "dark" ? "light" : "dark"} />
         <AppNavigation />
       </View>
     </Provider>
   );
+};
+
+export default Sentry.wrap(App);
+function useAppDispatch() {
+  throw new Error("Function not implemented.");
 }

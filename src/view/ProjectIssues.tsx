@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Button,
   TouchableOpacity,
+  useColorScheme,
 } from "react-native";
 import IssueCard from "../components/IssueCard";
 import { SentryItem } from "../model/issue";
@@ -26,6 +27,7 @@ import { HomeStackParamList } from "../navigation/Navigation";
 const Tab = createMaterialTopTabNavigator();
 
 const ProjectIssues = ({ route }: { route: any }) => {
+  const scheme = useColorScheme();
   const { data, projectName } = route.params;
 
   console.log("ProjectIssues: projectName", projectName);
@@ -61,24 +63,44 @@ const ProjectIssues = ({ route }: { route: any }) => {
   }, [dispatch, data, navigation]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.headerContainer}>
+    <SafeAreaView
+      style={{
+        backgroundColor: scheme === "dark" ? "#121212" : "#FFFFFF",
+        flex: 1,
+      }}>
+      <View
+        style={[
+          styles.headerContainer,
+          { backgroundColor: scheme === "dark" ? "#121212" : "#FFF" },
+        ]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}>
-          <Ionicons name="chevron-back" size={20} color="white" />
+          <Ionicons
+            name="chevron-back"
+            size={20}
+            color={scheme === "dark" ? "#FFF" : "#000"}
+          />
         </TouchableOpacity>
-        <Text style={styles.header}>{projectName}</Text>
+        <Text
+          style={[
+            styles.header,
+            { color: scheme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}>
+          {projectName}
+        </Text>
       </View>
       <Tab.Navigator
         screenOptions={{
-          tabBarActiveTintColor: "#FFFFFF",
-          tabBarInactiveTintColor: "#555",
+          tabBarActiveTintColor: scheme === "dark" ? "#FFFFFF" : "#000000",
+          tabBarInactiveTintColor: scheme === "dark" ? "#555" : "#888",
           tabBarIndicatorStyle: {
             backgroundColor: "#BB86FC",
           },
           tabBarPressColor: "#4A90E2",
-          tabBarStyle: { backgroundColor: "#121212" },
+          tabBarStyle: {
+            backgroundColor: scheme === "dark" ? "#121212" : "#FFFFFF",
+          },
         }}>
         <Tab.Screen
           name="Issues"
@@ -94,16 +116,11 @@ const ProjectIssues = ({ route }: { route: any }) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#121212", // Ensures the background color fills the whole screen
-  },
   headerContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center", // Center the title container
     padding: 20,
-    backgroundColor: "#121212",
     position: "relative", // Enable absolute positioning for children
   },
   backButton: {

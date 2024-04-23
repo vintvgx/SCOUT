@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   SafeAreaView,
   Button,
+  useColorScheme,
 } from "react-native";
 import * as Notifications from "expo-notifications";
 import React, { useEffect, useState } from "react";
@@ -28,15 +29,19 @@ import { StatusBar } from "expo-status-bar";
 import { PulseLight } from "../components/PulseLight";
 import Header from "../components/Header";
 import axios from "axios";
+import ProjectCard from "../components/ProjectCard";
+import format from "pretty-format";
 
 const Home = () => {
-  const [error, setError] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
+  const scheme = useColorScheme();
+  const backgroundColor = scheme === "dark" ? "#222" : "#fff";
 
   const dispatch: AppDispatch = useDispatch();
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const { projects, projectsLoading } = useAppSelector((state) => state.issues);
+  const { expoPushToken } = useAppSelector((state) => state.register);
+  const [displayNotification, setDisplayNotification] = useState(false);
 
   useEffect(() => {
     dispatch(fetchProjects())
@@ -76,59 +81,74 @@ const Home = () => {
     dispatch(fetchProjects());
   };
 
+  const sendNotification = async () => {
+    console.log("Sending notification");
+    console.log("Expo Push Token:", expoPushToken);
+    const message = {
+      to: expoPushToken,
+      sound: "default",
+      title: "Original Title2",
+      body: expoPushToken,
+      data: {
+        title: "Original Title2",
+        body: expoPushToken,
+        _displayInForeground: true,
+      },
+    };
+    console.log("Message:", format(message));
+    try {
+      await axios
+        .post("https://exp.host/--/api/v2/push/send", message, {
+          headers: {
+            Accept: "application/json",
+            "Accept-Encoding": "gzip, deflate",
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          console.log("Response:", response.data);
+        });
+    } catch (err: any) {
+      console.error("POST Push Notification err:", err.message);
+    }
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#121212" }}>
-        <StatusBar style="light" />
-        <Header />
+    <SafeAreaView style={{ flex: 1, backgroundColor }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor }}>
+        <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+        <Header
+          onPress={() => setDisplayNotification((prevState) => !prevState)}
+        />
 
         <ScrollView
           style={{ marginTop: 15 }}
-          contentContainerStyle={styles.container}
+          contentContainerStyle={[styles.container, { backgroundColor }]}
           refreshControl={
             <RefreshControl
               refreshing={projectsLoading}
               onRefresh={onRefresh}
             />
           }>
-          {projects.map((project) => (
-            <TouchableOpacity
-              key={project.id}
-              onPress={() => {
-                navigation.navigate("ProjectIssues", {
-                  projectName: project.name,
-                });
-              }}
-              style={styles.projectContainer}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.projectName}>{project.name}</Text>
-                <Text style={styles.projectInfo}>
-                  Description: {project.id}
-                </Text>
-                <Text style={styles.projectInfo}>
-                  Open Issues: {project.platform}
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {project.serverStatus ? (
-                  <>
-                    <Text
-                      style={{
-                        color:
-                          project.serverStatus === "live" ? "#FFF" : "#FFF",
-                        marginRight: 5,
-                      }}>
-                      {project.serverStatus === "live" ? "Online" : "Offline"}
-                    </Text>
-                    <PulseLight />
-                  </>
-                ) : (
-                  <ActivityIndicator size="small" color="#ffffff" />
-                )}
-              </View>
-            </TouchableOpacity>
-          ))}
+          {projects
+            .filter(
+              (project) => project.name !== "scout" || displayNotification
+            )
+            .map((project) => (
+              <ProjectCard
+                key={project.name}
+                project={project}
+                onPress={() =>
+                  navigation.navigate("ProjectIssues", {
+                    projectName: project.name,
+                  })
+                }
+              />
+            ))}
         </ScrollView>
+        {displayNotification && (
+          <Button title="Notification me" onPress={sendNotification} />
+        )}
       </SafeAreaView>
     </SafeAreaView>
   );
@@ -139,31 +159,5 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#121212",
-  },
-  projectContainer: {
-    backgroundColor: "#2C2C2E",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: "#000",
-
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 15,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  projectName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFF",
-    flex: 1,
-  },
-  projectInfo: {
-    color: "#B0B0B0",
-    fontSize: 14,
-    marginTop: 2,
   },
 });

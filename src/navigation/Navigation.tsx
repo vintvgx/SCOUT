@@ -1,5 +1,5 @@
 // navigation.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -9,6 +9,12 @@ import HomeScreen from "../view/Home";
 import ProjectIssuesScreen from "../view/ProjectIssues";
 //@ts-ignore
 import Icon from "react-native-vector-icons/Ionicons";
+import { useColorScheme } from "react-native";
+import { AppDispatch } from "../redux/store";
+import { useDispatch } from "react-redux";
+import { registerForPushNotificationsAsync } from "../utils/functions";
+import { setExpoPushToken } from "../redux/slices/RegisterSlice";
+import * as Sentry from "@sentry/react-native";
 
 export type HomeStackParamList = {
   Home: undefined;
@@ -40,12 +46,34 @@ function HomeStackScreen() {
 }
 
 export default function AppNavigation() {
+  const scheme = useColorScheme();
+  const backgroundColor = scheme === "dark" ? "#222" : "#eee";
+
+  const dispatch: AppDispatch = useDispatch();
+
+  useEffect(() => {
+    registerForNotifications();
+    // notificationResponseListener();
+  }, []);
+
+  const registerForNotifications = async () => {
+    await registerForPushNotificationsAsync()
+      .then((token: string | undefined) => {
+        dispatch(setExpoPushToken(token));
+
+        Sentry.captureMessage(`Registered for EXPO Push Token: ${token}`);
+      })
+      .catch((err) => {
+        Sentry.captureException(err);
+      });
+  };
+
   return (
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={{
-          tabBarStyle: { backgroundColor: "#222" },
-          tabBarActiveTintColor: "#fff",
+          tabBarStyle: { backgroundColor },
+          tabBarActiveTintColor: "#BB86FC",
           tabBarInactiveTintColor: "#555",
           tabBarShowLabel: false,
           headerShown: false,
