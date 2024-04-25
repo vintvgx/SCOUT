@@ -33,13 +33,6 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
     },
   };
 
-  // const message = {
-
-  //     title: `New ${issue.project} Issue`,
-  //     body: issue.message || "A new issue has been reported.",
-
-  // };
-
   console.log(issue);
 
   const post_data = {
