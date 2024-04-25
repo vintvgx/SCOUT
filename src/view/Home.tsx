@@ -31,6 +31,7 @@ import Header from "../components/Header";
 import axios from "axios";
 import ProjectCard from "../components/ProjectCard";
 import format from "pretty-format";
+import * as Sentry from "@sentry/react-native";
 
 const Home = () => {
   const scheme = useColorScheme();
@@ -88,7 +89,7 @@ const Home = () => {
       to: expoPushToken,
       sound: "default",
       title: "Original Title2",
-      body: expoPushToken,
+      body: "ISSA TEST!",
       data: {
         title: "Original Title2",
         body: expoPushToken,
@@ -107,9 +108,11 @@ const Home = () => {
         })
         .then((response) => {
           console.log("Response:", response.data);
+          Sentry.captureMessage("Push Notification sent successfully");
         });
     } catch (err: any) {
       console.error("POST Push Notification err:", err.message);
+      Sentry.captureException(err);
     }
   };
 
@@ -147,7 +150,10 @@ const Home = () => {
             ))}
         </ScrollView>
         {displayNotification && (
-          <Button title="Notification me" onPress={sendNotification} />
+          <View>
+            <Text>{expoPushToken}</Text>
+            <Button title="Test Notification" onPress={sendNotification} />
+          </View>
         )}
       </SafeAreaView>
     </SafeAreaView>

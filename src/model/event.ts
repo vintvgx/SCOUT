@@ -30,6 +30,33 @@ export interface SentryEvent {
   user: User;
 }
 
+export interface Location {
+  ip: string;
+  is_eu: boolean;
+  city: string | null;
+  region: string | null;
+  region_code: string | null;
+  region_type: string | null;
+  country_name: string;
+  country_code: string;
+  continent_name: string;
+  continent_code: string;
+  latitude: number;
+  longitude: number;
+  postal: string | null;
+  calling_code: string;
+  flag: string;
+  emoji_flag: string;
+  emoji_unicode: string;
+  asn: ASN;
+  languages: Language[];
+  currency: Currency;
+  time_zone: TimeZone;
+  threat: Threat;
+  count: string;
+  status?: string;
+}
+
 export interface LocationData {
   address: Address;
   ip: string;
@@ -39,23 +66,54 @@ export interface LocationData {
   proxy: boolean;
 }
 
-export interface Location {
-  as: string;
-  city: string;
-  country: string;
-  countryCode: string;
-  isp: string;
-  lat: number;
-  lon: number;
-  org: string;
-  query: string;
-  region: string;
-  regionName: string;
-  status: string;
-  timezone: string;
-  zip: string;
+export interface ASN {
+  asn: string;
+  name: string;
+  domain: string;
+  route: string;
+  type: string;
 }
 
+export interface Language {
+  name: string;
+  native: string;
+  code: string;
+}
+
+export interface Currency {
+  name: string;
+  code: string;
+  symbol: string;
+  native: string;
+  plural: string;
+}
+
+export interface TimeZone {
+  name: string | null;
+  abbr: string | null;
+  offset: string | null;
+  is_dst: boolean | null;
+  current_time: string | null;
+}
+
+export interface Threat {
+  is_tor: boolean;
+  is_icloud_relay: boolean;
+  is_proxy: boolean;
+  is_datacenter: boolean;
+  is_anonymous: boolean;
+  is_known_attacker: boolean;
+  is_known_abuser: boolean;
+  is_threat: boolean;
+  is_bogon: boolean;
+  blocklists: Blocklist[];
+}
+
+export interface Blocklist {
+  name: string;
+  site: string;
+  type: string;
+}
 interface Address {
   city: string;
   country: string;

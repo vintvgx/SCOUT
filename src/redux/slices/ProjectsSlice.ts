@@ -192,7 +192,7 @@ export const fetchIssues = createAsyncThunk<
               if (event.user?.ip_address) {
                 // Dispatch fetchLocationForIP and wait for the result
                 const locationActionResult = await thunkAPI.dispatch(
-                  IP_API_fetchLocation(event.user.ip_address)
+                  fetchLocationFromIP(event.user.ip_address)
                 );
                 console.log(
                   "🚀 ~ eventActionResult.payload.events.map ~ locationActionResult:",
@@ -200,10 +200,11 @@ export const fetchIssues = createAsyncThunk<
                 );
 
                 // If the fetchLocationForIP action was successful, attach the location data to the event
-                if (
-                  IP_API_fetchLocation.fulfilled.match(locationActionResult)
-                ) {
-                  event.location = locationActionResult.payload;
+                if (fetchLocationFromIP.fulfilled.match(locationActionResult)) {
+                  event.location = {
+                    ...locationActionResult.payload,
+                    status: "success",
+                  };
                 } else {
                   console.error(
                     "Failed to fetch location for event user IP:",
@@ -403,11 +404,13 @@ export const fetchRadarLocationForIP = createAsyncThunk(
   }
 );
 
-export const IP_API_fetchLocation = createAsyncThunk(
+export const fetchLocationFromIP = createAsyncThunk(
   "issues/IP_API_fetchLocation",
   async (ipAddress: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`http://ip-api.com/json/${ipAddress}`);
+      const response = await axios.get(
+        `https://api.ipdata.co/${ipAddress}?api-key=f3b2bbda73a79a49a8bea121b1e1c5ca9bf8f23d602631db4e48d2a7`
+      );
       console.log("🚀 ~ IP_API_fetchLocation response:", format(response.data));
 
       if (response.status === 200) {
