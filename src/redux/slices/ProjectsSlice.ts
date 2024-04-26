@@ -72,6 +72,7 @@ const issuesSlice = createSlice({
       });
     },
     resetLoadedData: (state, action: PayloadAction<string>) => {
+      console.log("Resetting loaded data for project:", action.payload);
       state.projects = state.projects.map((project) =>
         project.name === action.payload
           ? { ...project, isLoaded: false, issues: [], errors: [] }
@@ -194,10 +195,6 @@ export const fetchIssues = createAsyncThunk<
                 const locationActionResult = await thunkAPI.dispatch(
                   fetchLocationFromIP(event.user.ip_address)
                 );
-                console.log(
-                  "🚀 ~ eventActionResult.payload.events.map ~ locationActionResult:",
-                  locationActionResult
-                );
 
                 // If the fetchLocationForIP action was successful, attach the location data to the event
                 if (fetchLocationFromIP.fulfilled.match(locationActionResult)) {
@@ -210,6 +207,8 @@ export const fetchIssues = createAsyncThunk<
                     "Failed to fetch location for event user IP:",
                     locationActionResult.error
                   );
+
+                  Sentry.captureException(locationActionResult.error);
                 }
               }
               // Return the event with or without location data
@@ -320,9 +319,6 @@ export const fetchEvent = createAsyncThunk(
           },
         }
       );
-      // console.log("🚀 ~ response:", format(response.data));
-      // console.log("EVENTS:", { issueId, events: response.data });
-
       return { issueId, events: response.data };
     } catch (error: any) {
       Sentry.captureException(error);
@@ -408,11 +404,12 @@ export const fetchLocationFromIP = createAsyncThunk(
   "issues/IP_API_fetchLocation",
   async (ipAddress: string, { rejectWithValue }) => {
     try {
+      // const response = await axios.get(
+      //   `https://ipgeolocation.abstractapi.com/v1/?api_key=58d5c114755a4ac287efb175ded901cf&ip_address=${ipAddress}`);
+
       const response = await axios.get(
         `https://api.ipdata.co/${ipAddress}?api-key=f3b2bbda73a79a49a8bea121b1e1c5ca9bf8f23d602631db4e48d2a7`
       );
-      console.log("🚀 ~ IP_API_fetchLocation response:", format(response.data));
-
       if (response.status === 200) {
         return response.data;
       } else {

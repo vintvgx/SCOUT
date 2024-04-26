@@ -67,6 +67,11 @@ const Home = () => {
           dispatch(addNewIssueID([data.issueId]));
         }
 
+        console.log(
+          "🚀 ~ HOME ~ notification response listener (issueId):",
+          data.issueId
+        );
+
         navigation.navigate("ProjectIssues", {
           projectName: data.projectName,
           data: data,

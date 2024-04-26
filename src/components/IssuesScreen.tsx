@@ -39,6 +39,16 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
   // A fallback for when project is undefined
   let issues = project?.issues || [];
 
+  useEffect(() => {
+    console.log("NEW ISSUES", newIssues);
+
+    const new_issues_filter = issues.filter((issue) =>
+      newIssues.includes(issue.id)
+    );
+
+    console.log("NEW ISSUES FILTER", new_issues_filter);
+  }, [dispatch]);
+
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     // Dispatch fetchIssues action here. Assuming project.name exists and fetchIssues action is correctly defined.
