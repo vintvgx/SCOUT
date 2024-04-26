@@ -29,16 +29,9 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
       issueId: issue.event.event_id,
       level: issue.event.level,
       timestamp: issue.event.received,
-      event: issue.event,
+      _displayInForeground: true,
     },
   };
-
-  // const message = {
-
-  //     title: `New ${issue.project} Issue`,
-  //     body: issue.message || "A new issue has been reported.",
-
-  // };
 
   console.log(issue);
 
@@ -93,6 +86,40 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
   }
 });
 
+async function sendPushNotification(tokens, message) {
+  console.log("🚀 ~ sendPushNotification ~ tokens:", tokens);
+
+  console.log("Sending notifications...");
+
+  console.log("Message:", message);
+
+  const messages = tokens.map((token) => ({
+    to: token.expoPushToken,
+    sound: "default",
+    ...message,
+  }));
+
+  console.log("Messages:", messages);
+
+  try {
+    const response = await axios.post(
+      "https://exp.host/--/api/v2/push/send",
+      messages,
+      {
+        headers: {
+          Accept: "application/json",
+          "Accept-Encoding": "gzip, deflate",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("Response from Expo server:", response.data);
+    console.log("Notifications sent successfully");
+  } catch (error) {
+    console.error("Push notification error:", error.message);
+  }
+}
+
 exports.fetchSentryProjects = functions.https.onRequest(async (req, res) => {
   try {
     const response = await axios.get(
@@ -131,39 +158,6 @@ exports.fetchSentryIssues = functions.https.onCall(async (data, context) => {
     );
   }
 });
-
-async function sendPushNotification(tokens, message) {
-  console.log("🚀 ~ sendPushNotification ~ tokens:", tokens);
-
-  console.log("Sending notifications...");
-
-  console.log("Message:", message);
-
-  const messages = tokens.map((token) => ({
-    to: token.expoPushToken,
-    sound: "default",
-    ...message,
-  }));
-
-  console.log("Messages:", messages);
-
-  try {
-    const response = await axios
-      .post("https://exp.host/--/api/v2/push/send", messages, {
-        headers: {
-          Accept: "application/json",
-          "Accept-Encoding": "gzip, deflate",
-          "Content-Type": "application/json",
-        },
-      })
-      .then((response) => {
-        console.log(response.data);
-      });
-    console.log("Notifications sent successfully");
-  } catch (error) {
-    console.error("Push notification error:", error.message);
-  }
-}
 
 async function fetchTokens() {
   const db = admin.firestore();

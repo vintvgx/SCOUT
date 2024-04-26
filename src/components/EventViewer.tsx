@@ -94,8 +94,8 @@ const EventViewer: React.FC<EventViewerProps> = ({
           <MapView
             style={styles(scheme).map}
             initialRegion={{
-              latitude: event.location.lat,
-              longitude: event.location.lon,
+              latitude: event.location.latitude,
+              longitude: event.location.longitude,
               latitudeDelta: INITIAL_REGION.latitudeDelta,
               longitudeDelta: INITIAL_REGION.longitudeDelta,
             }}
@@ -104,15 +104,16 @@ const EventViewer: React.FC<EventViewerProps> = ({
             rotateEnabled={false}>
             <Marker
               coordinate={{
-                latitude: event.location.lat,
-                longitude: event.location.lon,
+                latitude: event.location.latitude,
+                longitude: event.location.longitude,
               }}
               title={event.title}
               description={event.message}
             />
           </MapView>
           <Text style={styles(scheme).cityStateLocation}>
-            {event.location?.city}, {event.location?.region}
+            {event.location?.city}, {event.location?.region},{" "}
+            {event?.location?.country_name}
           </Text>
         </View>
       );

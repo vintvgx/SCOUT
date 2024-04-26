@@ -36,29 +36,17 @@ const ProjectIssues = ({ route }: { route: any }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
-  useEffect(() => {
-    console.log(
-      "DISPATCHING Fetching issues for project",
-      projectName,
-      "FROM ProjectIssues"
-    );
-    dispatch(fetchIssues(projectName));
-  }, [dispatch]);
-
   // Fetch issue details by ID if issueId is present in the navigation parameters
   useEffect(() => {
+    console.log("FETCHED ISSUES FOR PROJECT", projectName);
+
     if (data) {
-      dispatch(resetLoadedData(data.project));
-      dispatch(fetchIssues(data.project))
-        .then((action) => {
-          if (fetchIssues.fulfilled.match(action)) {
-            const fetchedIssue = action.payload; // Your fetched issue
-            console.log("Fetched issue details:", fetchedIssue);
-          }
-        })
-        .catch((error) =>
-          console.error("Failed to fetch issue details:", error)
-        );
+      dispatch(resetLoadedData(projectName));
+      dispatch(fetchIssues(projectName)).catch((error) =>
+        console.error("Failed to fetch issue details:", error)
+      );
+    } else {
+      dispatch(fetchIssues(projectName));
     }
   }, [dispatch, data, navigation]);
 

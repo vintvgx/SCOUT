@@ -39,6 +39,16 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
   // A fallback for when project is undefined
   let issues = project?.issues || [];
 
+  useEffect(() => {
+    console.log("NEW ISSUES", newIssues);
+
+    const new_issues_filter = issues.filter((issue) =>
+      newIssues.includes(issue.id)
+    );
+
+    console.log("NEW ISSUES FILTER", new_issues_filter);
+  }, [dispatch]);
+
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     // Dispatch fetchIssues action here. Assuming project.name exists and fetchIssues action is correctly defined.
@@ -91,6 +101,17 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
           <Text style={styles.errorText}>Project not found.</Text>
         </View>
       );
+    } else if (!loading && sortedIssues.length === 0) {
+      // Handle case where there are no issues
+      return (
+        <View
+          style={[
+            styles.center_of_screen,
+            { backgroundColor: scheme === "dark" ? "#121212" : "#FFF" },
+          ]}>
+          <Text style={styles.errorText}>No issues found.</Text>
+        </View>
+      );
     }
   }
 
@@ -104,7 +125,8 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        {sortedIssues && sortedIssues.length > 0 ? (
+        {sortedIssues &&
+          sortedIssues.length > 0 &&
           sortedIssues.map((issue, index) => (
             <IssueCard
               key={issue.id || index}
@@ -119,14 +141,7 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
                 )
               }
             />
-          ))
-        ) : (
-          <View style={styles.center_of_screen}>
-            <Text style={styles.errorText}>
-              No issues found for this project.
-            </Text>
-          </View>
-        )}
+          ))}
       </ScrollView>
       <EventViewer
         events={selectedEvents}
