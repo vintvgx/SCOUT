@@ -16,7 +16,9 @@
     "@react-navigation/native-stack": "^6.9.23",
     "@react-navigation/stack": "^6.3.26",
     "@reduxjs/toolkit": "^2.2.2",
+    "@sentry/react-native": "~5.20.0",
     "axios": "^1.6.7",
+    "bottleneck": "^2.19.5",
     "dotenv": "^16.4.5",
     "expo": "~50.0.11",
     "expo-dev-client": "~3.3.10",
@@ -37,8 +39,7 @@
     "react-native-svg": "14.1.0",
     "react-native-tab-view": "^3.5.2",
     "react-native-vector-icons": "^10.0.3",
-    "react-redux": "^9.1.0",
-    "@sentry/react-native": "~5.20.0"
+    "react-redux": "^9.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

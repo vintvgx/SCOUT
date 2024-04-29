@@ -6,6 +6,10 @@ import format from "pretty-format";
 import { LocationData, SentryEvent } from "../../model/event";
 import { RootState } from "../store";
 import * as Sentry from "@sentry/react-native";
+import Bottleneck from "bottleneck";
+
+const EXPO_PUBLIC_SENTRY_KEY = process.env.SENTRY_AUTH_TOKEN;
+const EXPO_PUBLIC_ABSTRACT_KEY = process.env.ABSTRACT_API_KEY;
 
 interface ProjectsState {
   // data: { errors: SentryIssue[]; issues: SentryIssue[] };
@@ -169,13 +173,13 @@ export const fetchIssues = createAsyncThunk<
         `https://sentry.io/api/0/projects/communite/${projectName}/issues/`,
         {
           headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+            Authorization: `Bearer ${EXPO_PUBLIC_SENTRY_KEY}`,
           },
         }
       );
 
       // Sequentially fetch events for each issue and attach location data
+
       response.data.forEach(async (fetchedIssue: SentryItem) => {
         // Fetch event data using issue id and the project id
         const eventActionResult = await thunkAPI.dispatch(
@@ -276,15 +280,16 @@ export const fetchProjects = createAsyncThunk(
   "issues/fetchProjects",
   async (_, { rejectWithValue }) => {
     try {
+      console.log(`Bearer ${EXPO_PUBLIC_SENTRY_KEY}`);
       const response = await axios.get(
         "https://sentry.io/api/0/organizations/communite/projects/",
         {
           headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+            Authorization: `Bearer ${EXPO_PUBLIC_SENTRY_KEY}`,
           },
         }
       );
+      console.log("🚀 ~ response:", format(response.data));
 
       const projectsWithIssuesAndErrors = response.data.map(
         (project: { issues: any; errors: any }) => ({
@@ -297,6 +302,7 @@ export const fetchProjects = createAsyncThunk(
       return projectsWithIssuesAndErrors;
     } catch (error: any) {
       Sentry.captureException(error);
+      console.log("🚀 ~ error:", error.response.data);
 
       return rejectWithValue(error.response.data);
     }
@@ -314,8 +320,7 @@ export const fetchEvent = createAsyncThunk(
         `https://sentry.io/api/0/organizations/communite/issues/${issueId}/events/`,
         {
           headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+            Authorization: `Bearer ${EXPO_PUBLIC_SENTRY_KEY}`,
           },
         }
       );
@@ -400,20 +405,28 @@ export const fetchRadarLocationForIP = createAsyncThunk(
   }
 );
 
+const limiter = new Bottleneck({
+  minTime: 100,
+});
+
 export const fetchLocationFromIP = createAsyncThunk(
   "issues/IP_API_fetchLocation",
   async (ipAddress: string, { rejectWithValue }) => {
     try {
       // const response = await axios.get(
-      //   `https://ipgeolocation.abstractapi.com/v1/?api_key=58d5c114755a4ac287efb175ded901cf&ip_address=${ipAddress}`);
-
-      const response = await axios.get(
-        `https://api.ipdata.co/${ipAddress}?api-key=f3b2bbda73a79a49a8bea121b1e1c5ca9bf8f23d602631db4e48d2a7`
+      //   `https://ipgeolocation.abstractapi.com/v1/?api_key=58d5c114755a4ac287efb175ded901cf&ip_address=${ipAddress}`
+      // );
+      const response = await limiter.schedule(() =>
+        axios.get(
+          `https://ipgeolocation.abstractapi.com/v1/?api_key=${EXPO_PUBLIC_ABSTRACT_KEY}&ip_address=${ipAddress}`
+        )
       );
       if (response.status === 200) {
         return response.data;
       } else {
-        throw new Error(`Failed to fetch location: ${response.status}`);
+        throw new Error(
+          `Failed to fetch location: ${response.status}: ${response}`
+        );
       }
     } catch (error: any) {
       Sentry.captureException(error);
