@@ -11,6 +11,11 @@ import Bottleneck from "bottleneck";
 const EXPO_PUBLIC_SENTRY_KEY = process.env.SENTRY_AUTH_TOKEN;
 const EXPO_PUBLIC_ABSTRACT_KEY = process.env.ABSTRACT_API_KEY;
 
+console.log(
+  "🚀 ~ file: ProjectsSlice.ts ~ line 17 ~ EXPO_PUBLIC_SENTRY_KEY",
+  EXPO_PUBLIC_SENTRY_KEY
+);
+
 interface ProjectsState {
   // data: { errors: SentryIssue[]; issues: SentryIssue[] };
   projects: Project[];
