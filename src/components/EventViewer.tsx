@@ -88,7 +88,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
   };
 
   const renderMapView = (event: SentryEvent) => {
-    if (event?.location?.status === "success") {
+    if (event?.location) {
       return (
         <View style={styles(scheme).mapContainer}>
           <MapView

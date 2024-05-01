@@ -3,10 +3,11 @@ import axios from "axios";
 import { SentryItem } from "../../model/issue";
 import { IssueErrorPayload, Project } from "../../model/project";
 import format from "pretty-format";
-import { LocationData, SentryEvent } from "../../model/event";
+import { Location, LocationData, SentryEvent } from "../../model/event";
 import { RootState } from "../store";
 import * as Sentry from "@sentry/react-native";
 import { DEFAULT_LOCATION } from "../../utils/constants";
+import { requestThrottle } from "../../utils/throttleRequest";
 
 interface ProjectsState {
   // data: { errors: SentryIssue[]; issues: SentryIssue[] };
@@ -159,10 +160,6 @@ export const fetchIssues = createAsyncThunk<
   console.log("🚀 ~ FETCHING ISSUES INVOKED: ", projectName);
 
   // Find the project with the given projectName
-  const project: Project | undefined = projects?.find(
-    (proj) => proj.name === projectName
-  );
-
   if (projectIndex !== -1 && !state.issues.projects[projectIndex].isLoaded) {
     try {
       // fetch project issues
@@ -197,20 +194,9 @@ export const fetchIssues = createAsyncThunk<
                   fetchLocationFromIP(event.user.ip_address)
                 );
 
-                // If the fetchLocationForIP action was successful, attach the location data to the event
-                if (fetchLocationFromIP.fulfilled.match(locationActionResult)) {
-                  event.location = {
-                    ...locationActionResult.payload,
-                    status: "success",
-                  };
-                } else {
-                  console.error(
-                    "Failed to fetch location for event user IP:",
-                    locationActionResult.error
-                  );
-
-                  Sentry.captureException(locationActionResult.error);
-                }
+                // Attach the location data to the event, successful or not
+                event.location =
+                  locationActionResult.payload as Location | null;
               }
               // Return the event with or without location data
               return event;
@@ -224,24 +210,20 @@ export const fetchIssues = createAsyncThunk<
           };
 
           // Dispatch action to add issue or error to the state
-          try {
-            if (fetchedIssue.level === "error") {
-              thunkAPI.dispatch(
-                issuesSlice.actions.addError({
-                  projectId: fetchedIssue.project.id,
-                  item: issueWithEvents,
-                })
-              );
-            } else {
-              thunkAPI.dispatch(
-                issuesSlice.actions.addIssue({
-                  projectId: fetchedIssue.project.id,
-                  item: issueWithEvents,
-                })
-              );
-            }
-          } catch (e) {
-            console.log(e);
+          if (fetchedIssue.level === "error") {
+            thunkAPI.dispatch(
+              issuesSlice.actions.addError({
+                projectId: fetchedIssue.project.id,
+                item: issueWithEvents,
+              })
+            );
+          } else {
+            thunkAPI.dispatch(
+              issuesSlice.actions.addIssue({
+                projectId: fetchedIssue.project.id,
+                item: issueWithEvents,
+              })
+            );
           }
         }
       });
@@ -254,10 +236,6 @@ export const fetchIssues = createAsyncThunk<
       await thunkAPI.dispatch(
         issuesSlice.actions.updateProject(updatedProject)
       );
-
-      // console.log("Project updated:", format(updatedProject));
-
-      // No need to return a payload as we're updating the state incrementally
     } catch (error: any) {
       console.error(
         "Error fetching issues:",
@@ -269,7 +247,7 @@ export const fetchIssues = createAsyncThunk<
       );
     }
   } else {
-    console.log("Project already loaded");
+    console.log(`Issues for project ${projectName} already loaded`);
   }
 });
 
@@ -356,27 +334,36 @@ export const checkServerStatus = createAsyncThunk(
   }
 );
 
-export const fetchLocationFromIP = createAsyncThunk(
+export const fetchLocationFromIP = createAsyncThunk<Location, string>(
   "issues/IP_API_fetchLocation",
   async (ipAddress: string, { rejectWithValue }) => {
-    try {
-      // const response = await axios.get(
-      //   `https://ipgeolocation.abstractapi.com/v1/?api_key=58d5c114755a4ac287efb175ded901cf&ip_address=${ipAddress}`);
-
-      const response = await axios.get(
-        `https://api.ipdata.co/${ipAddress}?api-key=f3b2bbda73a79a49a8bea121b1e1c5ca9bf8f23d602631db4e48d2a7`
-      );
-      if (response.status === 200) {
-        console.log("Location data:", response.data);
-        return response.data;
-      } else {
-        throw new Error(`Failed to fetch location: ${response.status}`);
+    const fetchLocation = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.ipdata.co/${ipAddress}?api-key=f3b2bbda73a79a49a8bea121b1e1c5ca9bf8f23d602631db4e48d2a7`
+        );
+        if (response.status === 200) {
+          console.log(
+            `Successfully fetched data for ${ipAddress}:`,
+            response.status
+          );
+          return response.data;
+        } else {
+          throw new Error(
+            `Failed fetched data for ${ipAddress}: ${response.status}`
+          );
+        }
+      } catch (error: any) {
+        console.log("Using default location data due to error:", error.message);
+        return rejectWithValue(DEFAULT_LOCATION);
       }
-    } catch (error: any) {
-      Sentry.captureException(error);
-      console.log("Using default location data due to error:", error.message);
-      return rejectWithValue(DEFAULT_LOCATION);
-    }
+    };
+
+    return new Promise((resolve, reject) => {
+      requestThrottle.addToQueue(() =>
+        fetchLocation().then(resolve).catch(reject)
+      );
+    });
   }
 );
 
