@@ -6,6 +6,7 @@ import format from "pretty-format";
 import { LocationData, SentryEvent } from "../../model/event";
 import { RootState } from "../store";
 import * as Sentry from "@sentry/react-native";
+import { DEFAULT_LOCATION } from "../../utils/constants";
 
 interface ProjectsState {
   // data: { errors: SentryIssue[]; issues: SentryIssue[] };
@@ -355,51 +356,6 @@ export const checkServerStatus = createAsyncThunk(
   }
 );
 
-export const fetchRadarLocationForIP = createAsyncThunk(
-  "issues/fetchLocationForIP",
-  async (ipAddress: string, { rejectWithValue }) => {
-    try {
-      const response = await fetch(
-        `https://api.radar.io/v1/geocode/ip?ip=${ipAddress}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization:
-              "prj_live_pk_feab46e3a831493a7a49d3294834b276bf5fd7b1",
-          },
-        }
-      );
-      console.log("🚀 ~ response:", format(response));
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch location with status: ${response.status}`
-        );
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.error("Error data:", error.response.data);
-          console.error("Status code:", error.response.status);
-          console.error("Headers:", error.response.headers);
-        } else if (error.request) {
-          // The request was made but no response was received
-          console.error("No response received:", error.request);
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.error("Error message:", error.message);
-        }
-      } else {
-        console.error("Error", error);
-      }
-    }
-  }
-);
-
 export const fetchLocationFromIP = createAsyncThunk(
   "issues/IP_API_fetchLocation",
   async (ipAddress: string, { rejectWithValue }) => {
@@ -411,16 +367,15 @@ export const fetchLocationFromIP = createAsyncThunk(
         `https://api.ipdata.co/${ipAddress}?api-key=f3b2bbda73a79a49a8bea121b1e1c5ca9bf8f23d602631db4e48d2a7`
       );
       if (response.status === 200) {
+        console.log("Location data:", response.data);
         return response.data;
       } else {
         throw new Error(`Failed to fetch location: ${response.status}`);
       }
     } catch (error: any) {
       Sentry.captureException(error);
-
-      return rejectWithValue(
-        error.message || "Failed to fetch location for IP"
-      );
+      console.log("Using default location data due to error:", error.message);
+      return rejectWithValue(DEFAULT_LOCATION);
     }
   }
 );
