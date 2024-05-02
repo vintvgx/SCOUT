@@ -7,7 +7,7 @@ import { SentryItem } from "../model/issue";
 import { SentryEvent } from "../model/event";
 import { useAppSelector, AppDispatch } from "../redux/store";
 import { useDispatch } from "react-redux";
-import { fetchIssues } from "../redux/slices/ProjectsSlice";
+import { fetchSentryIssuesWithLocation } from "../redux/slices/ProjectsSlice";
 import MapViewModal from "../components/MapViewModal";
 
 const Map = () => {
@@ -27,7 +27,7 @@ const Map = () => {
   useEffect(() => {
     // Fetch issues for all projects
     projects.forEach((project) => {
-      dispatch(fetchIssues(project.name));
+      dispatch(fetchSentryIssuesWithLocation(project.name));
     });
   }, []);
 

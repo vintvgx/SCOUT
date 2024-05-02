@@ -61,3 +61,10 @@ export const DEFAULT_LOCATION: Location = {
   },
   count: "1",
 };
+
+export const INITIAL_REGION = {
+  latitude: 42.3601,
+  longitude: -71.0589,
+  latitudeDelta: 0.0922,
+  longitudeDelta: 0.0421,
+};

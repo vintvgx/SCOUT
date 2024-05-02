@@ -118,5 +118,18 @@ export const handleOpenEventModal = (
   setIsViewerVisible(true);
   dispatch(clearNewIssue(issue.id));
 
-  console.log(format(issue.events || []));
+  // console.log(format(issue.events || []));
+};
+
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = `0${date.getMonth() + 1}`.slice(-2); // Month is 0-indexed
+  const day = `0${date.getDate()}`.slice(-2);
+  const hours = `0${date.getUTCHours()}`.slice(-1);
+  const minutes = `0${date.getMinutes()}`.slice(-2);
+  const seconds = `0${date.getSeconds()}`.slice(-2);
+  const timeOfDay = date.getHours() >= 12 ? "PM" : "AM";
+
+  return `${month}.${day}.${year} ${hours}:${minutes}:${seconds} ${timeOfDay}`;
 };

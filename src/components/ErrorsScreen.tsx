@@ -16,7 +16,10 @@ import EventViewer from "./EventViewer";
 import { handleOpenEventModal } from "../utils/functions";
 import format from "pretty-format";
 import { useDispatch } from "react-redux";
-import { fetchIssues, resetLoadedData } from "../redux/slices/ProjectsSlice";
+import {
+  fetchSentryIssues,
+  resetLoadedData,
+} from "../redux/slices/ProjectsSlice";
 
 interface ErrorsScreenType {
   projectName: string;
@@ -41,11 +44,13 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    // Dispatch fetchIssues action here. Assuming project.name exists and fetchIssues action is correctly defined.
-    // Replace 'project?.name' with the appropriate value if necessary
+
+    // Dispatch fetchSentryIssues action here. Assuming project.name exists and fetchSentryIssues action is correctly defined.
     if (project?.name) {
       dispatch(resetLoadedData(project?.name));
-      dispatch(fetchIssues(project?.name)).then(() => setRefreshing(false));
+      dispatch(fetchSentryIssues(project?.name)).then(() =>
+        setRefreshing(false)
+      );
     }
   }, [dispatch, projectName]);
 

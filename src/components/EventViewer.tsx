@@ -10,12 +10,18 @@ import {
   TouchableWithoutFeedback,
   Animated,
   useColorScheme,
+  ActivityIndicator,
 } from "react-native";
-import { LocationData, SentryEvent } from "../model/event";
+import { Location, LocationData, SentryEvent } from "../model/event";
 import format from "pretty-format";
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/Ionicons";
 import EventInformation from "./EventInformation";
+import { DEFAULT_LOCATION, INITIAL_REGION } from "../utils/constants";
+import { formatDate } from "../utils/functions";
+import { AppDispatch } from "../redux/store";
+import { useDispatch } from "react-redux";
+import { fetchLocationFromIP } from "../redux/slices/ProjectsSlice";
 
 interface EventViewerProps {
   isVisible: boolean;
@@ -23,35 +29,20 @@ interface EventViewerProps {
   events: SentryEvent[]; // Expect an array of SentryEvent objects
 }
 
-const INITIAL_REGION = {
-  latitude: 42.3601,
-  longitude: -71.0589,
-  latitudeDelta: 0.0922,
-  longitudeDelta: 0.0421,
-};
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = `0${date.getMonth() + 1}`.slice(-2); // Month is 0-indexed
-  const day = `0${date.getDate()}`.slice(-2);
-  const hours = `0${date.getUTCHours()}`.slice(-1);
-  const minutes = `0${date.getMinutes()}`.slice(-2);
-  const seconds = `0${date.getSeconds()}`.slice(-2);
-  const timeOfDay = date.getHours() >= 12 ? "PM" : "AM";
-
-  return `${month}.${day}.${year} ${hours}:${minutes}:${seconds} ${timeOfDay}`;
-};
-
 const EventViewer: React.FC<EventViewerProps> = ({
   events,
   isVisible,
   onClose,
 }) => {
+  const dispatch: AppDispatch = useDispatch();
   const scheme = useColorScheme();
   const animationValue = new Animated.Value(0);
   const [selectedEvent, setSelectedEvent] = useState<SentryEvent | null>(null);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
+  const [loadingLocations, setLoadingLocations] = useState<boolean>(false);
+  // const [loadingLocations, setLoadingLocations] = useState<boolean[]>(
+  //   new Array(events.length).fill(false)
+  // );
 
   useEffect(() => {
     if (isVisible) {
@@ -69,10 +60,36 @@ const EventViewer: React.FC<EventViewerProps> = ({
     }
   }, [isVisible]);
 
-  const handleInfoIconPress = (event: SentryEvent) => {
-    setSelectedEvent(event);
-    setInfoModalVisible(true);
-  };
+  useEffect(() => {
+    console.log("Fetching location");
+
+    const fetchAndSetLocations = async () => {
+      let allLocationsFetched = true;
+      const promises = events.map(async (event) => {
+        if (!event.location && event.user?.ip_address) {
+          allLocationsFetched = false;
+          return dispatch(fetchLocationFromIP(event.user.ip_address))
+            .then((actionResult) => ({
+              ...event,
+              location: actionResult.payload,
+            }))
+            .catch(() => ({ ...event, location: DEFAULT_LOCATION }));
+        }
+        return event;
+      });
+
+      if (!allLocationsFetched) {
+        setLoadingLocations(true);
+        Promise.all(promises).then(() => {
+          setLoadingLocations(false);
+        });
+      }
+    };
+
+    if (events.length > 0) {
+      fetchAndSetLocations();
+    }
+  }, [events, dispatch]);
 
   const modalContainerStyle = {
     ...styles(scheme).modalContainer,
@@ -87,21 +104,37 @@ const EventViewer: React.FC<EventViewerProps> = ({
     ],
   };
 
-  const renderMapView = (event: SentryEvent) => {
-    if (event?.location) {
-      return (
-        <View style={styles(scheme).mapContainer}>
-          <MapView
-            style={styles(scheme).map}
-            initialRegion={{
-              latitude: event.location.latitude,
-              longitude: event.location.longitude,
-              latitudeDelta: INITIAL_REGION.latitudeDelta,
-              longitudeDelta: INITIAL_REGION.longitudeDelta,
-            }}
-            scrollEnabled={false}
-            zoomEnabled={false}
-            rotateEnabled={false}>
+  const handleInfoIconPress = (event: SentryEvent) => {
+    setSelectedEvent(event);
+    setInfoModalVisible(true);
+  };
+
+  const renderMapView = (event: SentryEvent, index: number) => {
+    const initialRegion = {
+      latitude: INITIAL_REGION.latitude,
+      longitude: INITIAL_REGION.longitude,
+      latitudeDelta: INITIAL_REGION.latitudeDelta,
+      longitudeDelta: INITIAL_REGION.longitudeDelta,
+    };
+
+    return (
+      <View style={styles(scheme).mapContainer}>
+        <MapView
+          style={styles(scheme).map}
+          initialRegion={
+            event.location
+              ? {
+                  latitude: event.location.latitude,
+                  longitude: event.location.longitude,
+                  latitudeDelta: INITIAL_REGION.latitudeDelta,
+                  longitudeDelta: INITIAL_REGION.longitudeDelta,
+                }
+              : initialRegion
+          }
+          scrollEnabled={false}
+          zoomEnabled={false}
+          rotateEnabled={false}>
+          {event.location && (
             <Marker
               coordinate={{
                 latitude: event.location.latitude,
@@ -110,29 +143,18 @@ const EventViewer: React.FC<EventViewerProps> = ({
               title={event.title}
               description={event.message}
             />
-          </MapView>
-          <Text style={styles(scheme).cityStateLocation}>
-            {event.location?.city}, {event.location?.region},{" "}
-            {event?.location?.country_name}
-          </Text>
-        </View>
-      );
-    } else {
-      return (
-        <View style={styles(scheme).mapContainer}>
-          <MapView
-            style={styles(scheme).mapUnknown}
-            initialRegion={INITIAL_REGION}
-            scrollEnabled={false}
-            zoomEnabled={false}
-            rotateEnabled={false}
-          />
-          <Text style={styles(scheme).unknownLocationText}>
-            Unknown Location
-          </Text>
-        </View>
-      );
-    }
+          )}
+        </MapView>
+        {loadingLocations && (
+          <View style={styles(scheme).mapLoadingOverlay}>
+            <ActivityIndicator
+              size="large"
+              color={scheme === "dark" ? "#FFFFFF" : "#000000"}
+            />
+          </View>
+        )}
+      </View>
+    );
   };
 
   return (
@@ -182,7 +204,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
                     {event.culprit}
                   </Text>
                 </View>
-                {renderMapView(event)}
+                {renderMapView(event, index)}
               </View>
             ))}
           </ScrollView>
@@ -293,6 +315,17 @@ const styles = (scheme: any) =>
       borderRadius: 10,
       backgroundColor: scheme === "dark" ? "#333" : "#DDD",
       opacity: 0.4,
+    },
+    mapLoadingOverlay: {
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      backgroundColor:
+        scheme === "dark"
+          ? "rgba(51, 51, 51, 0.8)"
+          : "rgba(221, 221, 221, 0.8)", // Darker or lighter overlay based on theme
+      justifyContent: "center",
+      alignItems: "center",
     },
     closeButton: {
       alignSelf: "stretch",
