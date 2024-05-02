@@ -26,7 +26,8 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
     body: issue.message || "A new issue has been reported.",
     data: {
       projectName: issue.project,
-      issueId: issue.event.event_id,
+      issueId: issue.id,
+      eventId: issue.event.event_id,
       level: issue.event.level,
       timestamp: issue.event.received,
       _displayInForeground: true,
@@ -39,7 +40,8 @@ exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
     id: issue.id,
     event: {
       project: issue.project,
-      id: issue.event.event_id,
+      id: issue.id,
+      eventId: issue.event.event_id,
       level: issue.event.level,
       metadata: issue.event.metadata,
       location: issue.event.location,

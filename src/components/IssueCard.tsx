@@ -14,7 +14,7 @@ interface IssueCardProps {
   isNew: boolean;
 }
 
-const IssueCard: React.FC<IssueCardProps> = ({ issue, onPress, isNew }) => {
+const IssueCard = React.memo<IssueCardProps>(({ issue, onPress, isNew }) => {
   const scheme = useColorScheme(); // Detects the color scheme (light or dark)
   const eventsCount = issue.events ? issue.events.length : "N/A";
 
@@ -48,7 +48,7 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, onPress, isNew }) => {
       )}
     </TouchableOpacity>
   );
-};
+});
 
 export default IssueCard;
 
@@ -57,12 +57,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#1E1E1E",
     borderRadius: 8,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 18,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 4.65,
     elevation: 8,
+    width: "98.5%",
   },
   cardLight: {
     backgroundColor: "#F7F7F7", // Changed from white to light gray for better contrast
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
   },
   newIssue: {
     borderColor: "#BB86FC",
-    borderWidth: 2,
+    borderWidth: 0.5,
   },
   titleDark: {
     fontSize: 20,

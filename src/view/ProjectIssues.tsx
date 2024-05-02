@@ -18,7 +18,10 @@ import { ErrorsScreen } from "../components/ErrorsScreen";
 import { IssuesScreen } from "../components/IssuesScreen";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
-import { fetchIssues, resetLoadedData } from "../redux/slices/ProjectsSlice";
+import {
+  fetchSentryIssues,
+  resetLoadedData,
+} from "../redux/slices/ProjectsSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -42,11 +45,11 @@ const ProjectIssues = ({ route }: { route: any }) => {
 
     if (data) {
       dispatch(resetLoadedData(projectName));
-      dispatch(fetchIssues(projectName)).catch((error) =>
+      dispatch(fetchSentryIssues(projectName)).catch((error) =>
         console.error("Failed to fetch issue details:", error)
       );
     } else {
-      dispatch(fetchIssues(projectName));
+      dispatch(fetchSentryIssues(projectName));
     }
   }, [dispatch, data, navigation]);
 

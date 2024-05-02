@@ -16,7 +16,10 @@ import { SentryEvent } from "../model/event";
 import format from "pretty-format";
 import { handleOpenEventModal } from "../utils/functions";
 import { useDispatch } from "react-redux";
-import { fetchIssues, resetLoadedData } from "../redux/slices/ProjectsSlice";
+import {
+  fetchSentryIssues,
+  resetLoadedData,
+} from "../redux/slices/ProjectsSlice";
 
 interface IssuesScreenType {
   projectName: string;
@@ -39,23 +42,15 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
   // A fallback for when project is undefined
   let issues = project?.issues || [];
 
-  useEffect(() => {
-    console.log("NEW ISSUES", newIssues);
-
-    const new_issues_filter = issues.filter((issue) =>
-      newIssues.includes(issue.id)
-    );
-
-    console.log("NEW ISSUES FILTER", new_issues_filter);
-  }, [dispatch]);
-
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    // Dispatch fetchIssues action here. Assuming project.name exists and fetchIssues action is correctly defined.
+    // Dispatch fetchSentryIssues action here. Assuming project.name exists and fetchSentryIssues action is correctly defined.
     // Replace 'project?.name' with the appropriate value if necessary
     if (project?.name) {
       dispatch(resetLoadedData(project?.name));
-      dispatch(fetchIssues(project?.name)).then(() => setRefreshing(false));
+      dispatch(fetchSentryIssues(project?.name)).then(() =>
+        setRefreshing(false)
+      );
     }
   }, [dispatch, projectName]);
 
@@ -119,6 +114,7 @@ export const IssuesScreen: React.FC<IssuesScreenType> = ({ projectName }) => {
     <View
       style={{
         flex: 1,
+        justifyContent: "center",
         backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
       }}>
       <ScrollView

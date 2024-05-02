@@ -3,18 +3,12 @@ import axios from "axios";
 import { SentryItem } from "../../model/issue";
 import { IssueErrorPayload, Project } from "../../model/project";
 import format from "pretty-format";
-import { LocationData, SentryEvent } from "../../model/event";
+import { Location, LocationData, SentryEvent } from "../../model/event";
 import { RootState } from "../store";
 import * as Sentry from "@sentry/react-native";
-import Bottleneck from "bottleneck";
-
-const EXPO_PUBLIC_SENTRY_KEY = process.env.SENTRY_AUTH_TOKEN;
-const EXPO_PUBLIC_ABSTRACT_KEY = process.env.ABSTRACT_API_KEY;
-
-console.log(
-  "🚀 ~ file: ProjectsSlice.ts ~ line 17 ~ EXPO_PUBLIC_SENTRY_KEY",
-  EXPO_PUBLIC_SENTRY_KEY
-);
+import { DEFAULT_LOCATION } from "../../utils/constants";
+import { requestThrottle } from "../../utils/throttleRequest";
+import * as SecureStore from "expo-secure-store";
 
 interface ProjectsState {
   // data: { errors: SentryIssue[]; issues: SentryIssue[] };
@@ -106,17 +100,30 @@ const issuesSlice = createSlice({
     clearNewIssues: (state) => {
       state.newIssues = [];
     },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
-      // Existing cases for fetchIssues
-      .addCase(fetchIssues.pending, (state) => {
+      // Existing cases for fetchSentryIssues
+      .addCase(fetchSentryIssues.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchIssues.fulfilled, (state) => {
-        state.loading = false;
+      .addCase(fetchSentryIssues.fulfilled, (state) => {
+        // state.loading = false;
       })
-      .addCase(fetchIssues.rejected, (state, action) => {
+      .addCase(fetchSentryIssues.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchSentryIssuesWithLocation.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchSentryIssuesWithLocation.fulfilled, (state) => {
+        // state.loading = false;
+      })
+      .addCase(fetchSentryIssuesWithLocation.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
@@ -146,14 +153,118 @@ export const {
   resetLoadedData,
   clearNewIssue,
   clearNewIssues,
+  setLoading,
 } = issuesSlice.actions;
 
+// Async thunk for fetching issues from Sentry
+export const fetchSentryIssues = createAsyncThunk<
+  void,
+  string,
+  { rejectValue: string }
+>("issues/fetchSentryIssues", async (projectName, thunkAPI) => {
+  console.log("Fetching issues for: ", projectName);
+
+  // Get the current state
+  const state = thunkAPI.getState() as RootState;
+
+  // Retrieve the projects array from the state
+  const projects: Project[] | undefined = state.issues.projects;
+
+  // Find the index of the project with the given projectName
+  const projectIndex = state.issues.projects.findIndex(
+    (proj) => proj.name === projectName
+  );
+
+  // Check if project is already loaded and fetch if not
+  if (projectIndex !== -1 && !state.issues.projects[projectIndex].isLoaded) {
+    try {
+      // fetch project issues
+      const response = await axios.get(
+        `https://sentry.io/api/0/projects/communite/${projectName}/issues/`,
+        {
+          headers: {
+            Authorization:
+              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+          },
+        }
+      );
+
+      // Sequentially fetch events for each issue and attach location data
+      response.data.forEach(async (fetchedIssue: SentryItem) => {
+        // Fetch event data using issue id and the project id
+        const eventActionResult = await thunkAPI.dispatch(
+          fetchEvent({
+            issueId: fetchedIssue.id,
+            projectId: fetchedIssue.project.id,
+          })
+        );
+
+        // If the fetchEvent action was successful, process the events
+        if (fetchEvent.fulfilled.match(eventActionResult)) {
+          // Process each event to fetch location data
+          const eventsResult = await Promise.all(
+            eventActionResult.payload.events.map(async (event: SentryEvent) => {
+              // Return the event
+              return event;
+            })
+          );
+
+          // Attach the events with location data to the issue
+          const issueWithEvents = {
+            ...fetchedIssue,
+            events: eventsResult,
+          };
+
+          // Dispatch action to add issue or error to the state
+          if (fetchedIssue.level === "error") {
+            thunkAPI.dispatch(
+              issuesSlice.actions.addError({
+                projectId: fetchedIssue.project.id,
+                item: issueWithEvents,
+              })
+            );
+          } else {
+            thunkAPI.dispatch(
+              issuesSlice.actions.addIssue({
+                projectId: fetchedIssue.project.id,
+                item: issueWithEvents,
+              })
+            );
+          }
+        }
+      });
+
+      const updatedProject = {
+        ...state.issues.projects[projectIndex],
+        isLoaded: true,
+      };
+      await thunkAPI.dispatch(
+        issuesSlice.actions.updateProject(updatedProject)
+      );
+      thunkAPI.dispatch(setLoading(false));
+    } catch (error: any) {
+      console.error(
+        "Error fetching issues:",
+        error.response?.data || error.message
+      );
+      Sentry.captureException(error);
+      return thunkAPI.rejectWithValue(
+        error.response?.data || "An error occurred"
+      );
+    }
+  } else {
+    console.log(`Issues for project ${projectName} already loaded`);
+  }
+});
+
 // Async thunk for fetching issues
-export const fetchIssues = createAsyncThunk<
+export const fetchSentryIssuesWithLocation = createAsyncThunk<
   void, // Type for returned value
   string, // Type for projectName argument
   { rejectValue: string } // Type for thunkAPI (customize as needed)
->("issues/fetchIssues", async (projectName, thunkAPI) => {
+>("issues/fetchSentryIssuesWithLocation", async (projectName, thunkAPI) => {
+  console.log("Fetching issues for: ", projectName);
+
   // Get the current state
   const state = thunkAPI.getState() as RootState;
 
@@ -164,13 +275,7 @@ export const fetchIssues = createAsyncThunk<
     (proj) => proj.name === projectName
   );
 
-  console.log("🚀 ~ FETCHING ISSUES INVOKED: ", projectName);
-
   // Find the project with the given projectName
-  const project: Project | undefined = projects?.find(
-    (proj) => proj.name === projectName
-  );
-
   if (projectIndex !== -1 && !state.issues.projects[projectIndex].isLoaded) {
     try {
       // fetch project issues
@@ -205,20 +310,9 @@ export const fetchIssues = createAsyncThunk<
                   fetchLocationFromIP(event.user.ip_address)
                 );
 
-                // If the fetchLocationForIP action was successful, attach the location data to the event
-                if (fetchLocationFromIP.fulfilled.match(locationActionResult)) {
-                  event.location = {
-                    ...locationActionResult.payload,
-                    status: "success",
-                  };
-                } else {
-                  console.error(
-                    "Failed to fetch location for event user IP:",
-                    locationActionResult.error
-                  );
-
-                  Sentry.captureException(locationActionResult.error);
-                }
+                // Attach the location data to the event, successful or not
+                event.location =
+                  locationActionResult.payload as Location | null;
               }
               // Return the event with or without location data
               return event;
@@ -232,24 +326,20 @@ export const fetchIssues = createAsyncThunk<
           };
 
           // Dispatch action to add issue or error to the state
-          try {
-            if (fetchedIssue.level === "error") {
-              thunkAPI.dispatch(
-                issuesSlice.actions.addError({
-                  projectId: fetchedIssue.project.id,
-                  item: issueWithEvents,
-                })
-              );
-            } else {
-              thunkAPI.dispatch(
-                issuesSlice.actions.addIssue({
-                  projectId: fetchedIssue.project.id,
-                  item: issueWithEvents,
-                })
-              );
-            }
-          } catch (e) {
-            console.log(e);
+          if (fetchedIssue.level === "error") {
+            thunkAPI.dispatch(
+              issuesSlice.actions.addError({
+                projectId: fetchedIssue.project.id,
+                item: issueWithEvents,
+              })
+            );
+          } else {
+            thunkAPI.dispatch(
+              issuesSlice.actions.addIssue({
+                projectId: fetchedIssue.project.id,
+                item: issueWithEvents,
+              })
+            );
           }
         }
       });
@@ -262,10 +352,7 @@ export const fetchIssues = createAsyncThunk<
       await thunkAPI.dispatch(
         issuesSlice.actions.updateProject(updatedProject)
       );
-
-      // console.log("Project updated:", format(updatedProject));
-
-      // No need to return a payload as we're updating the state incrementally
+      thunkAPI.dispatch(setLoading(false));
     } catch (error: any) {
       console.error(
         "Error fetching issues:",
@@ -277,7 +364,7 @@ export const fetchIssues = createAsyncThunk<
       );
     }
   } else {
-    console.log("Project already loaded");
+    console.log(`Issues for project ${projectName} already loaded`);
   }
 });
 
@@ -365,81 +452,43 @@ export const checkServerStatus = createAsyncThunk(
   }
 );
 
-export const fetchRadarLocationForIP = createAsyncThunk(
-  "issues/fetchLocationForIP",
-  async (ipAddress: string, { rejectWithValue }) => {
-    try {
-      const response = await fetch(
-        `https://api.radar.io/v1/geocode/ip?ip=${ipAddress}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization:
-              "prj_live_pk_feab46e3a831493a7a49d3294834b276bf5fd7b1",
-          },
-        }
-      );
-      console.log("🚀 ~ response:", format(response));
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch location with status: ${response.status}`
-        );
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.error("Error data:", error.response.data);
-          console.error("Status code:", error.response.status);
-          console.error("Headers:", error.response.headers);
-        } else if (error.request) {
-          // The request was made but no response was received
-          console.error("No response received:", error.request);
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.error("Error message:", error.message);
-        }
-      } else {
-        console.error("Error", error);
-      }
-    }
-  }
-);
-
-const limiter = new Bottleneck({
-  minTime: 100,
-});
-
-export const fetchLocationFromIP = createAsyncThunk(
+export const fetchLocationFromIP = createAsyncThunk<Location, string>(
   "issues/IP_API_fetchLocation",
   async (ipAddress: string, { rejectWithValue }) => {
-    try {
-      // const response = await axios.get(
-      //   `https://ipgeolocation.abstractapi.com/v1/?api_key=58d5c114755a4ac287efb175ded901cf&ip_address=${ipAddress}`
-      // );
-      const response = await limiter.schedule(() =>
-        axios.get(
-          `https://ipgeolocation.abstractapi.com/v1/?api_key=${EXPO_PUBLIC_ABSTRACT_KEY}&ip_address=${ipAddress}`
-        )
-      );
-      if (response.status === 200) {
-        return response.data;
-      } else {
-        throw new Error(
-          `Failed to fetch location: ${response.status}: ${response}`
-        );
-      }
-    } catch (error: any) {
-      Sentry.captureException(error);
+    const fetchLocation = async () => {
+      try {
+        // First, attempt to get the location from the Secure Store
+        const cachedLocation = await SecureStore.getItemAsync(ipAddress);
+        if (cachedLocation) {
+          console.log("Using cached location data for IP:", ipAddress);
+          return JSON.parse(cachedLocation);
+        }
 
-      return rejectWithValue(
-        error.message || "Failed to fetch location for IP"
+        const response = await axios.get(
+          `https://ipgeolocation.abstractapi.com/v1/?api_key=58d5c114755a4ac287efb175ded901cf&ip_address=${ipAddress}`
+        );
+        if (response.status === 200) {
+          await SecureStore.setItemAsync(
+            ipAddress,
+            JSON.stringify(response.data)
+          );
+          console.log("Saved to SecureStore: ", ipAddress);
+          return response.data;
+        } else {
+          throw new Error(
+            `Failed fetched data for ${ipAddress}: ${response.status}`
+          );
+        }
+      } catch (error: any) {
+        console.log("Using default location data due to error:", error.message);
+        return rejectWithValue(DEFAULT_LOCATION);
+      }
+    };
+    
+    return new Promise((resolve, reject) => {
+      requestThrottle.addToQueue(() =>
+        fetchLocation().then(resolve).catch(reject)
       );
-    }
   }
 );
 
