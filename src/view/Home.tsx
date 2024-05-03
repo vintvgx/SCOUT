@@ -22,7 +22,6 @@ import { AppDispatch, useAppSelector } from "../redux/store";
 import {
   addNewIssueID,
   checkServerStatus,
-  fetchIssues,
   fetchProjects,
 } from "../redux/slices/ProjectsSlice";
 import { StatusBar } from "expo-status-bar";

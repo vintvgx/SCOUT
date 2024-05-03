@@ -21,7 +21,10 @@ import { DEFAULT_LOCATION, INITIAL_REGION } from "../utils/constants";
 import { formatDate } from "../utils/functions";
 import { AppDispatch } from "../redux/store";
 import { useDispatch } from "react-redux";
-import { fetchLocationFromIP } from "../redux/slices/ProjectsSlice";
+import {
+  fetchLocationFromIP,
+  issuesSlice,
+} from "../redux/slices/ProjectsSlice";
 
 interface EventViewerProps {
   isVisible: boolean;
@@ -64,26 +67,23 @@ const EventViewer: React.FC<EventViewerProps> = ({
     console.log("Fetching location");
 
     const fetchAndSetLocations = async () => {
-      let allLocationsFetched = true;
       const promises = events.map(async (event) => {
         if (!event.location && event.user?.ip_address) {
-          allLocationsFetched = false;
-          return dispatch(fetchLocationFromIP(event.user.ip_address))
-            .then((actionResult) => ({
-              ...event,
-              location: actionResult.payload,
-            }))
-            .catch(() => ({ ...event, location: DEFAULT_LOCATION }));
+          const locationData = await dispatch(
+            fetchLocationFromIP(event.user.ip_address)
+          );
+          if (fetchLocationFromIP.fulfilled.match(locationData)) {
+            dispatch(
+              issuesSlice.actions.updateEventLocation({
+                projectId: event.projectID,
+                eventId: event.id,
+                location: locationData.payload,
+              })
+            );
+          }
         }
         return event;
       });
-
-      if (!allLocationsFetched) {
-        setLoadingLocations(true);
-        Promise.all(promises).then(() => {
-          setLoadingLocations(false);
-        });
-      }
     };
 
     if (events.length > 0) {
@@ -120,6 +120,10 @@ const EventViewer: React.FC<EventViewerProps> = ({
     return (
       <View style={styles(scheme).mapContainer}>
         <MapView
+          onPress={() => {
+            console.log("map pressed");
+            console.log(event.location);
+          }}
           style={styles(scheme).map}
           initialRegion={
             event.location
@@ -145,14 +149,14 @@ const EventViewer: React.FC<EventViewerProps> = ({
             />
           )}
         </MapView>
-        {loadingLocations && (
+        {/* {loadingLocations && (
           <View style={styles(scheme).mapLoadingOverlay}>
             <ActivityIndicator
               size="large"
               color={scheme === "dark" ? "#FFFFFF" : "#000000"}
             />
           </View>
-        )}
+        )} */}
       </View>
     );
   };

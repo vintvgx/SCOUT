@@ -36,7 +36,7 @@ const projectUrls: { [key: string]: string } = {
   vournal: "https://vournal-b93307c9ab1a.herokuapp.com",
 };
 
-const issuesSlice = createSlice({
+export const issuesSlice = createSlice({
   name: "issues",
   initialState,
   reducers: {
@@ -57,6 +57,37 @@ const issuesSlice = createSlice({
       );
       if (project) {
         project.errors.push(item);
+      }
+    },
+    updateEventLocation: (
+      state,
+      action: PayloadAction<{
+        projectId: string;
+        eventId: string;
+        location: Location;
+      }>
+    ) => {
+      console.log("Update event location action:", action.payload);
+      // Find the project
+      const project = state.projects.find(
+        (p) => p.id === action.payload.projectId
+      );
+      console.log("Project found:", project?.id, project?.name);
+      if (project) {
+        // Find the event within the project issues that have events
+        project.issues.forEach((issue) => {
+          if (issue.events) {
+            const event = issue.events.find(
+              (e) => e.id === action.payload.eventId
+            );
+            console.log("Event found:", event?.id, event?.title);
+            if (event) {
+              console.log("Updating event location");
+              // Update the event's location
+              return { ...event, location: action.payload.location };
+            }
+          }
+        });
       }
     },
     updateProject: (state, action: PayloadAction<Project>) => {
