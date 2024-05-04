@@ -11,7 +11,7 @@ import { SentryItem } from "../model/issue";
 import { SentryEvent } from "../model/event";
 import * as SecureStore from "expo-secure-store";
 import { AppDispatch } from "../redux/store";
-import { clearNewIssue } from "../redux/slices/ProjectsSlice";
+import { clearNewIssue } from "../redux/slices/SentryDataSlice";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA1Ioud4rwt4sIYrX-KGGfV3sOiqocxU3Y",

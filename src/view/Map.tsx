@@ -7,7 +7,7 @@ import { SentryItem } from "../model/issue";
 import { SentryEvent } from "../model/event";
 import { useAppSelector, AppDispatch } from "../redux/store";
 import { useDispatch } from "react-redux";
-import { fetchSentryIssuesWithLocation } from "../redux/slices/ProjectsSlice";
+import { fetchSentryIssuesWithLocation } from "../redux/slices/SentryDataSlice";
 import MapViewModal from "../components/MapViewModal";
 
 const Map = () => {

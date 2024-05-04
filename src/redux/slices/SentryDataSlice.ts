@@ -36,7 +36,7 @@ const projectUrls: { [key: string]: string } = {
   vournal: "https://vournal-b93307c9ab1a.herokuapp.com",
 };
 
-export const issuesSlice = createSlice({
+export const sentryDataSlice = createSlice({
   name: "issues",
   initialState,
   reducers: {
@@ -185,7 +185,7 @@ export const {
   clearNewIssue,
   clearNewIssues,
   setLoading,
-} = issuesSlice.actions;
+} = sentryDataSlice.actions;
 
 // Async thunk for fetching issues from Sentry
 export const fetchSentryIssues = createAsyncThunk<
@@ -249,14 +249,14 @@ export const fetchSentryIssues = createAsyncThunk<
           // Dispatch action to add issue or error to the state
           if (fetchedIssue.level === "error") {
             thunkAPI.dispatch(
-              issuesSlice.actions.addError({
+              sentryDataSlice.actions.addError({
                 projectId: fetchedIssue.project.id,
                 item: issueWithEvents,
               })
             );
           } else {
             thunkAPI.dispatch(
-              issuesSlice.actions.addIssue({
+              sentryDataSlice.actions.addIssue({
                 projectId: fetchedIssue.project.id,
                 item: issueWithEvents,
               })
@@ -270,7 +270,7 @@ export const fetchSentryIssues = createAsyncThunk<
         isLoaded: true,
       };
       await thunkAPI.dispatch(
-        issuesSlice.actions.updateProject(updatedProject)
+        sentryDataSlice.actions.updateProject(updatedProject)
       );
       thunkAPI.dispatch(setLoading(false));
     } catch (error: any) {
@@ -359,14 +359,14 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
           // Dispatch action to add issue or error to the state
           if (fetchedIssue.level === "error") {
             thunkAPI.dispatch(
-              issuesSlice.actions.addError({
+              sentryDataSlice.actions.addError({
                 projectId: fetchedIssue.project.id,
                 item: issueWithEvents,
               })
             );
           } else {
             thunkAPI.dispatch(
-              issuesSlice.actions.addIssue({
+              sentryDataSlice.actions.addIssue({
                 projectId: fetchedIssue.project.id,
                 item: issueWithEvents,
               })
@@ -381,7 +381,7 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
         isLoaded: true,
       };
       await thunkAPI.dispatch(
-        issuesSlice.actions.updateProject(updatedProject)
+        sentryDataSlice.actions.updateProject(updatedProject)
       );
       thunkAPI.dispatch(setLoading(false));
     } catch (error: any) {
@@ -523,4 +523,4 @@ export const fetchLocationFromIP = createAsyncThunk<Location, string>(
   }
 );
 
-export default issuesSlice.reducer;
+export default sentryDataSlice.reducer;

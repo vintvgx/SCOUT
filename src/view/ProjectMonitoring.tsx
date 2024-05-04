@@ -14,14 +14,14 @@ import {
 import IssueCard from "../components/IssueCard";
 import { SentryItem } from "../model/issue";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import { ErrorsScreen } from "../components/ErrorsScreen";
-import { IssuesScreen } from "../components/IssuesScreen";
+import { SentryErrorsView } from "../components/SentryErrors";
+import { SentryIssuesView } from "../components/SentryIssues";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
 import {
   fetchSentryIssues,
   resetLoadedData,
-} from "../redux/slices/ProjectsSlice";
+} from "../redux/slices/SentryDataSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -29,7 +29,7 @@ import { HomeStackParamList } from "../navigation/Navigation";
 
 const Tab = createMaterialTopTabNavigator();
 
-const ProjectIssues = ({ route }: { route: any }) => {
+const ProjectMonitoringView = ({ route }: { route: any }) => {
   const scheme = useColorScheme();
   const { data, projectName } = route.params;
 
@@ -95,11 +95,11 @@ const ProjectIssues = ({ route }: { route: any }) => {
         }}>
         <Tab.Screen
           name="Issues"
-          children={() => <IssuesScreen projectName={projectName} />}
+          children={() => <SentryIssuesView projectName={projectName} />}
         />
         <Tab.Screen
           name="Errors"
-          children={() => <ErrorsScreen projectName={projectName} />}
+          children={() => <SentryErrorsView projectName={projectName} />}
         />
       </Tab.Navigator>
     </SafeAreaView>
@@ -166,4 +166,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProjectIssues;
+export default ProjectMonitoringView;

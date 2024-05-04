@@ -23,7 +23,7 @@ import {
   addNewIssueID,
   checkServerStatus,
   fetchProjects,
-} from "../redux/slices/ProjectsSlice";
+} from "../redux/slices/SentryDataSlice";
 import { StatusBar } from "expo-status-bar";
 import { PulseLight } from "../components/PulseLight";
 import Header from "../components/Header";

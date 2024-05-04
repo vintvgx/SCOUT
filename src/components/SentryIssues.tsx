@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -10,42 +10,44 @@ import {
 } from "react-native";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import IssueCard from "./IssueCard";
-import { SentryEvent } from "../model/event";
-import { SentryItem } from "../model/issue";
 import EventViewer from "./EventViewer";
-import { handleOpenEventModal } from "../utils/functions";
+import { SentryItem } from "../model/issue"; // Assuming SentryEvent is correctly imported
+import { SentryEvent } from "../model/event";
 import format from "pretty-format";
+import { handleOpenEventModal } from "../utils/functions";
 import { useDispatch } from "react-redux";
 import {
   fetchSentryIssues,
   resetLoadedData,
-} from "../redux/slices/ProjectsSlice";
+} from "../redux/slices/SentryDataSlice";
 
-interface ErrorsScreenType {
+interface IssuesScreenType {
   projectName: string;
 }
 
-export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
-  const [isViewerVisible, setIsViewerVisible] = useState(false);
-  const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const scheme = useColorScheme();
-
-  const dispatch: AppDispatch = useDispatch();
-
+export const SentryIssuesView: React.FC<IssuesScreenType> = ({
+  projectName,
+}) => {
   const { projects, loading, error, newIssues } = useAppSelector(
     (state) => state.issues
   );
 
+  const scheme = useColorScheme();
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const dispatch: AppDispatch = useDispatch();
+
   // Ensure the project is defined and has issues
   const project = projects.find((p) => p.name === projectName);
   // A fallback for when project is undefined
-  const errors = project?.errors || [];
+  let issues = project?.issues || [];
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-
     // Dispatch fetchSentryIssues action here. Assuming project.name exists and fetchSentryIssues action is correctly defined.
+    // Replace 'project?.name' with the appropriate value if necessary
     if (project?.name) {
       dispatch(resetLoadedData(project?.name));
       dispatch(fetchSentryIssues(project?.name)).then(() =>
@@ -54,92 +56,90 @@ export const ErrorsScreen: React.FC<ErrorsScreenType> = ({ projectName }) => {
     }
   }, [dispatch, projectName]);
 
-  const sortedErrors = useMemo(() => {
+  const sortedIssues = useMemo(() => {
     // Clone and sort the issues array to avoid direct mutation
-    return [...errors].sort((a, b) => {
+    return [...issues].sort((a, b) => {
       const dateA = new Date(a.lastSeen).getTime();
       const dateB = new Date(b.lastSeen).getTime();
       return dateB - dateA; // For descending order
     });
-  }, [errors]);
+  }, [issues]);
 
-  if (loading)
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
-        }}>
-        <View style={styles.center_of_screen}>
-          <ActivityIndicator />
+  if (loading && sortedIssues.length === 0) {
+    if (loading && sortedIssues.length === 0) {
+      return (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+          }}>
+          <ActivityIndicator style={styles.center_of_screen} size="small" />
         </View>
-      </View>
-    );
-
-  if (error) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
-        }}>
-        <View style={styles.center_of_screen}>
-          <Text style={styles.errorText}>{error}</Text>
+      );
+    } else if (error) {
+      // Handle error state
+      return (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+          }}>
+          <Text style={styles.errorText}>Error: {error}</Text>
         </View>
-      </View>
-    );
-  }
-
-  if (!project) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
-        }}>
-        <View style={styles.center_of_screen}>
+      );
+    } else if (!project) {
+      // Handle case where project is not found
+      return (
+        <View
+          style={[
+            styles.center_of_screen,
+            { backgroundColor: scheme === "dark" ? "#121212" : "#FFF" },
+          ]}>
           <Text style={styles.errorText}>Project not found.</Text>
         </View>
-      </View>
-    );
+      );
+    } else if (!loading && sortedIssues.length === 0) {
+      // Handle case where there are no issues
+      return (
+        <View
+          style={[
+            styles.center_of_screen,
+            { backgroundColor: scheme === "dark" ? "#121212" : "#FFF" },
+          ]}>
+          <Text style={styles.errorText}>No issues found.</Text>
+        </View>
+      );
+    }
   }
-
-  // const errors = project.errors;
-  // const errors = project.errors;
 
   return (
     <View
       style={{
         flex: 1,
+        justifyContent: "center",
         backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
       }}>
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        {sortedErrors && sortedErrors.length > 0 ? (
-          sortedErrors.map((error, index) => (
+        {sortedIssues &&
+          sortedIssues.length > 0 &&
+          sortedIssues.map((issue, index) => (
             <IssueCard
-              key={error.id || index} // It's better to use issue.id if available
-              issue={error}
-              isNew={newIssues.includes(error.id)}
-              onPress={() => {
+              key={issue.id || index}
+              issue={issue}
+              isNew={newIssues.includes(issue.id)}
+              onPress={() =>
                 handleOpenEventModal(
-                  error,
+                  issue,
                   setSelectedEvents,
                   setIsViewerVisible,
                   dispatch
-                );
-              }}
+                )
+              }
             />
-          ))
-        ) : (
-          <View style={styles.center_of_screen}>
-            <Text style={styles.errorText}>
-              No errors found for this project.
-            </Text>
-          </View>
-        )}
+          ))}
       </ScrollView>
       <EventViewer
         events={selectedEvents}

@@ -23,8 +23,8 @@ import { AppDispatch } from "../redux/store";
 import { useDispatch } from "react-redux";
 import {
   fetchLocationFromIP,
-  issuesSlice,
-} from "../redux/slices/ProjectsSlice";
+  sentryDataSlice,
+} from "../redux/slices/SentryDataSlice";
 
 interface EventViewerProps {
   isVisible: boolean;
@@ -74,7 +74,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
           );
           if (fetchLocationFromIP.fulfilled.match(locationData)) {
             dispatch(
-              issuesSlice.actions.updateEventLocation({
+              sentryDataSlice.actions.updateEventLocation({
                 projectId: event.projectID,
                 eventId: event.id,
                 location: locationData.payload,
