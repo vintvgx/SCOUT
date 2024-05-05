@@ -268,6 +268,7 @@ export const fetchSentryIssues = createAsyncThunk<
       const updatedProject = {
         ...state.issues.projects[projectIndex],
         isLoaded: true,
+        serverStatus: "live",
       };
       await thunkAPI.dispatch(
         sentryDataSlice.actions.updateProject(updatedProject)

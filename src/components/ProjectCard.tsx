@@ -10,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { PulseLight } from "./PulseLight";
 import { Project } from "../model/project";
+import { useAppSelector } from "../redux/store";
 
 interface ProjectCardProps {
   project: Project;
@@ -34,12 +35,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onPress }) => {
     borderWidth: 0.2,
     // flexDirection: "row",
     // alignItems: "center",
-    height: 70,
+    height: 120,
   };
 
   const textStyle = {
     fontSize: 20,
     color: scheme === "dark" ? "#FFFFFF" : "#333333", // White or dark grey
+    flex: 1,
+  };
+
+  const dataTextStyle = {
+    fontSize: 14,
+    color: scheme === "dark" ? "#FFFFFF" : "#333333", // White or dark grey
+    fontWeight: "lighter",
     flex: 1,
   };
 
@@ -50,6 +58,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onPress }) => {
   };
 
   const getIconColor = () => (scheme === "dark" ? "#BB86FC" : "#BB86FC"); // Purple or blue
+
+  const { projects } = useAppSelector((state) => state.issues);
+
+  // Retrieve issues and errors from the project
+  let issues = project?.issues || [];
+  let errors = project?.errors || [];
 
   return (
     <TouchableOpacity
@@ -62,6 +76,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onPress }) => {
           alignContent: "center",
         }}>
         <Text style={{ ...textStyle, fontWeight: "bold" }}>{project.name}</Text>
+        <Text style={{ ...dataTextStyle, fontWeight: "bold" }}>
+          Issues: {issues.length}
+        </Text>
+        <Text style={{ ...dataTextStyle, fontWeight: "bold" }}>
+          Errors: {errors.length}
+        </Text>
+        <Text></Text>
       </View>
       <View style={styles.iconContainer}>
         <Ionicons
@@ -93,11 +114,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onPress }) => {
 const styles = StyleSheet.create({
   iconContainer: {
     marginRight: 10,
+    position: "absolute",
+    right: 10,
+    top: 10,
   },
   statusContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
+    position: "absolute",
+    right: 10,
+    bottom: 10,
   },
 });
 
