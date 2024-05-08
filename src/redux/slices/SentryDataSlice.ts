@@ -318,13 +318,13 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
         `https://sentry.io/api/0/projects/communite/${projectName}/issues/`,
         {
           headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+            Authorization: `Bearer ${EXPO_PUBLIC_SENTRY_KEY}`,
           },
         }
       );
 
       // Sequentially fetch events for each issue and attach location data
+
       response.data.forEach(async (fetchedIssue: SentryItem) => {
         // Fetch event data using issue id and the project id
         const eventActionResult = await thunkAPI.dispatch(
@@ -413,15 +413,16 @@ export const fetchProjects = createAsyncThunk(
       return rejectWithValue("Projects are already loaded."); // Or simply return without fetching
     }
     try {
+      console.log(`Bearer ${EXPO_PUBLIC_SENTRY_KEY}`);
       const response = await axios.get(
         "https://sentry.io/api/0/organizations/communite/projects/",
         {
           headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+            Authorization: `Bearer ${EXPO_PUBLIC_SENTRY_KEY}`,
           },
         }
       );
+      console.log("🚀 ~ response:", format(response.data));
 
       const projectsWithIssuesAndErrors = response.data.map(
         (project: { issues: any; errors: any }) => ({
@@ -434,6 +435,7 @@ export const fetchProjects = createAsyncThunk(
       return projectsWithIssuesAndErrors;
     } catch (error: any) {
       Sentry.captureException(error);
+      console.log("🚀 ~ error:", error.response.data);
 
       return rejectWithValue(error.response.data);
     }
@@ -451,8 +453,7 @@ export const fetchEvent = createAsyncThunk(
         `https://sentry.io/api/0/organizations/communite/issues/${issueId}/events/`,
         {
           headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+            Authorization: `Bearer ${EXPO_PUBLIC_SENTRY_KEY}`,
           },
         }
       );
@@ -524,12 +525,11 @@ export const fetchLocationFromIP = createAsyncThunk<Location, string>(
         return rejectWithValue(DEFAULT_LOCATION);
       }
     };
-
+    
     return new Promise((resolve, reject) => {
       requestThrottle.addToQueue(() =>
         fetchLocation().then(resolve).catch(reject)
       );
-    });
   }
 );
 
