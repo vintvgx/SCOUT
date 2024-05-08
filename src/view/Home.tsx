@@ -23,7 +23,8 @@ import {
   addNewIssueID,
   checkServerStatus,
   fetchProjects,
-} from "../redux/slices/ProjectsSlice";
+  fetchSentryIssues,
+} from "../redux/slices/SentryDataSlice";
 import { StatusBar } from "expo-status-bar";
 import { PulseLight } from "../components/PulseLight";
 import Header from "../components/Header";
@@ -31,6 +32,8 @@ import axios from "axios";
 import ProjectCard from "../components/ProjectCard";
 import format from "pretty-format";
 import * as Sentry from "@sentry/react-native";
+import { SentryItem } from "../model/issue";
+import { Project } from "../model/project";
 
 const Home = () => {
   const scheme = useColorScheme();
@@ -47,8 +50,13 @@ const Home = () => {
     dispatch(fetchProjects())
       .then((action) => {
         if (fetchProjects.fulfilled.match(action)) {
-          dispatch(checkServerStatus(action.payload));
+          if (action.payload.length > 0) {
+            action.payload.forEach((project: Project) => {
+              dispatch(fetchSentryIssues(project.name));
+            });
+          }
         }
+        // dispatch(checkServerStatus(action.payload));
       })
       .catch((error) => {
         console.error(
@@ -153,6 +161,10 @@ const Home = () => {
               />
             ))}
         </ScrollView>
+        <Text style={styles.lastUpdatedText}>
+          {/* Last Updated: {project.lastUpdated} */}
+          Last Updated: April 24, 2024 10:23 AM
+        </Text>
         {displayNotification && (
           <View>
             <Text>{expoPushToken}</Text>
@@ -169,5 +181,10 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+  },
+  lastUpdatedText: {
+    fontSize: 14,
+    color: "rgb(73, 73, 73, 0.15)",
+    marginLeft: 10,
   },
 });

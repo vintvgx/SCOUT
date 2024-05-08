@@ -18,6 +18,7 @@ interface ProjectsState {
   error: string | null;
   projectsError: any;
   newIssues: string[];
+  projectsLoaded: boolean;
 }
 
 const initialState: ProjectsState = {
@@ -28,6 +29,7 @@ const initialState: ProjectsState = {
   error: null,
   projectsError: null,
   newIssues: [],
+  projectsLoaded: false,
 };
 
 const projectUrls: { [key: string]: string } = {
@@ -36,7 +38,7 @@ const projectUrls: { [key: string]: string } = {
   vournal: "https://vournal-b93307c9ab1a.herokuapp.com",
 };
 
-export const issuesSlice = createSlice({
+export const sentryDataSlice = createSlice({
   name: "issues",
   initialState,
   reducers: {
@@ -164,6 +166,7 @@ export const issuesSlice = createSlice({
       .addCase(fetchProjects.fulfilled, (state, action) => {
         state.projects = action.payload;
         state.projectsLoading = false;
+        state.projectsLoaded = true;
       })
       .addCase(fetchProjects.rejected, (state, action) => {
         state.projectsLoading = false;
@@ -185,7 +188,7 @@ export const {
   clearNewIssue,
   clearNewIssues,
   setLoading,
-} = issuesSlice.actions;
+} = sentryDataSlice.actions;
 
 // Async thunk for fetching issues from Sentry
 export const fetchSentryIssues = createAsyncThunk<
@@ -249,14 +252,14 @@ export const fetchSentryIssues = createAsyncThunk<
           // Dispatch action to add issue or error to the state
           if (fetchedIssue.level === "error") {
             thunkAPI.dispatch(
-              issuesSlice.actions.addError({
+              sentryDataSlice.actions.addError({
                 projectId: fetchedIssue.project.id,
                 item: issueWithEvents,
               })
             );
           } else {
             thunkAPI.dispatch(
-              issuesSlice.actions.addIssue({
+              sentryDataSlice.actions.addIssue({
                 projectId: fetchedIssue.project.id,
                 item: issueWithEvents,
               })
@@ -268,9 +271,10 @@ export const fetchSentryIssues = createAsyncThunk<
       const updatedProject = {
         ...state.issues.projects[projectIndex],
         isLoaded: true,
+        serverStatus: "live",
       };
       await thunkAPI.dispatch(
-        issuesSlice.actions.updateProject(updatedProject)
+        sentryDataSlice.actions.updateProject(updatedProject)
       );
       thunkAPI.dispatch(setLoading(false));
     } catch (error: any) {
@@ -359,14 +363,14 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
           // Dispatch action to add issue or error to the state
           if (fetchedIssue.level === "error") {
             thunkAPI.dispatch(
-              issuesSlice.actions.addError({
+              sentryDataSlice.actions.addError({
                 projectId: fetchedIssue.project.id,
                 item: issueWithEvents,
               })
             );
           } else {
             thunkAPI.dispatch(
-              issuesSlice.actions.addIssue({
+              sentryDataSlice.actions.addIssue({
                 projectId: fetchedIssue.project.id,
                 item: issueWithEvents,
               })
@@ -381,7 +385,7 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
         isLoaded: true,
       };
       await thunkAPI.dispatch(
-        issuesSlice.actions.updateProject(updatedProject)
+        sentryDataSlice.actions.updateProject(updatedProject)
       );
       thunkAPI.dispatch(setLoading(false));
     } catch (error: any) {
@@ -401,7 +405,13 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
 
 export const fetchProjects = createAsyncThunk(
   "issues/fetchProjects",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
+    // Add the getState parameter
+    const state = getState() as RootState; // Use getState() to access the state
+    if (state.issues.projectsLoaded) {
+      console.log("Projects are already loaded.");
+      return rejectWithValue("Projects are already loaded."); // Or simply return without fetching
+    }
     try {
       console.log(`Bearer ${EXPO_PUBLIC_SENTRY_KEY}`);
       const response = await axios.get(
@@ -523,4 +533,4 @@ export const fetchLocationFromIP = createAsyncThunk<Location, string>(
   }
 );
 
-export default issuesSlice.reducer;
+export default sentryDataSlice.reducer;

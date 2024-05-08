@@ -6,7 +6,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
 import MapScreen from "../view/Map";
 import HomeScreen from "../view/Home";
-import ProjectIssuesScreen from "../view/ProjectIssues";
+import ProjectIssuesScreen from "../view/ProjectMonitoring";
 //@ts-ignore
 import Icon from "react-native-vector-icons/Ionicons";
 import { useColorScheme } from "react-native";

@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
-import issuesReducer from "./slices/ProjectsSlice";
+import issuesReducer from "./slices/SentryDataSlice";
 import registerReducer from "./slices/RegisterSlice";
 
 export const store = configureStore({
