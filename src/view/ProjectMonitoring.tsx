@@ -32,6 +32,12 @@ const Tab = createMaterialTopTabNavigator();
 const ProjectMonitoringView = ({ route }: { route: any }) => {
   const scheme = useColorScheme();
   const { data, projectName } = route.params;
+  const { projects } = useAppSelector((state) => state.issues);
+
+  const project = projects.find((p) => p.name === projectName);
+
+  const issuesTitle = `Issues (${project?.issues.length || 0})`;
+  const errorsTitle = `Errors (${project?.errors.length || 0})`;
 
   console.log("ProjectIssues: projectName", projectName);
 
@@ -94,11 +100,11 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
           },
         }}>
         <Tab.Screen
-          name="Issues"
+          name={issuesTitle}
           children={() => <SentryIssuesView projectName={projectName} />}
         />
         <Tab.Screen
-          name="Errors"
+          name={errorsTitle}
           children={() => <SentryErrorsView projectName={projectName} />}
         />
       </Tab.Navigator>

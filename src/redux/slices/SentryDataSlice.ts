@@ -18,6 +18,7 @@ interface ProjectsState {
   error: string | null;
   projectsError: any;
   newIssues: string[];
+  projectsLoaded: boolean;
 }
 
 const initialState: ProjectsState = {
@@ -28,6 +29,7 @@ const initialState: ProjectsState = {
   error: null,
   projectsError: null,
   newIssues: [],
+  projectsLoaded: false,
 };
 
 const projectUrls: { [key: string]: string } = {
@@ -164,6 +166,7 @@ export const sentryDataSlice = createSlice({
       .addCase(fetchProjects.fulfilled, (state, action) => {
         state.projects = action.payload;
         state.projectsLoading = false;
+        state.projectsLoaded = true;
       })
       .addCase(fetchProjects.rejected, (state, action) => {
         state.projectsLoading = false;
@@ -402,7 +405,13 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
 
 export const fetchProjects = createAsyncThunk(
   "issues/fetchProjects",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
+    // Add the getState parameter
+    const state = getState() as RootState; // Use getState() to access the state
+    if (state.issues.projectsLoaded) {
+      console.log("Projects are already loaded.");
+      return rejectWithValue("Projects are already loaded."); // Or simply return without fetching
+    }
     try {
       const response = await axios.get(
         "https://sentry.io/api/0/organizations/communite/projects/",

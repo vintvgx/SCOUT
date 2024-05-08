@@ -19,112 +19,117 @@ interface ProjectCardProps {
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, onPress }) => {
   const scheme = useColorScheme();
-
-  // Define styles based on theme
-  const cardStyle = {
-    backgroundColor: scheme === "dark" ? "#2C2C2E" : "#f2f2f2", // Dark grey or light grey
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: scheme === "dark" ? "#000000" : "#999999", // Black or lighter grey shadow
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: scheme === "dark" ? 0.25 : 0.15,
-    shadowRadius: 5,
-    elevation: 10,
-    borderColor: "rgb( 0, 0, 0, 0.2",
-    borderWidth: 0.2,
-    // flexDirection: "row",
-    // alignItems: "center",
-    height: 120,
-  };
-
-  const textStyle = {
-    fontSize: 20,
-    color: scheme === "dark" ? "#FFFFFF" : "#333333", // White or dark grey
-    flex: 1,
-  };
-
-  const dataTextStyle = {
-    fontSize: 14,
-    color: scheme === "dark" ? "#FFFFFF" : "#333333", // White or dark grey
-    fontWeight: "lighter",
-    flex: 1,
-  };
-
-  const statusTextStyle = {
-    fontSize: 16,
-    color: scheme === "dark" ? "#FFFFFF" : "#333333", // White or dark grey
-    marginRight: 5,
-  };
-
-  const getIconColor = () => (scheme === "dark" ? "#BB86FC" : "#BB86FC"); // Purple or blue
-
+  const getIconColor = () => (scheme === "dark" ? "#BB86FC" : "#BB86FC");
   const { projects } = useAppSelector((state) => state.issues);
-
-  // Retrieve issues and errors from the project
   let issues = project?.issues || [];
   let errors = project?.errors || [];
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[cardStyle, { flexDirection: "row", alignItems: "center" }]}>
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignContent: "center",
-        }}>
-        <Text style={{ ...textStyle, fontWeight: "bold" }}>{project.name}</Text>
-        <Text style={{ ...dataTextStyle, fontWeight: "bold" }}>
-          Issues: {issues.length}
-        </Text>
-        <Text style={{ ...dataTextStyle, fontWeight: "bold" }}>
-          Errors: {errors.length}
-        </Text>
-        <Text></Text>
-      </View>
-      <View style={styles.iconContainer}>
-        <Ionicons
-          name={
-            project.platform === "javascript-react"
-              ? "logo-react"
-              : "phone-portrait-outline"
-          }
-          size={24}
-          color={getIconColor()}
-        />
-      </View>
-      <View style={styles.statusContainer}>
-        {project.serverStatus ? (
-          <>
-            <Text style={statusTextStyle}>
-              {project.serverStatus === "live" ? "Online" : "Offline"}
+    <TouchableOpacity onPress={onPress} style={styles.container}>
+      <View style={styles.cardContainer}>
+        <View style={{ alignSelf: "flex-start" }}>
+          <Text style={styles.projectName}>{project.name}</Text>
+        </View>
+        <View style={styles.iconAndStatusContainer}>
+          <Ionicons
+            name={
+              project.platform === "javascript-react"
+                ? "logo-react"
+                : "phone-portrait-outline"
+            }
+            size={24}
+            color={getIconColor()}
+            style={styles.icon}
+          />
+        </View>
+        <View style={{ flexDirection: "row" }}>
+          <View style={styles.textContainer}>
+            {/* <Text style={styles.issuesText}>Issues {issues.length}</Text>
+            <Text style={styles.errorsText}>Errors {errors.length}</Text> */}
+            <Text style={styles.lastUpdatedText}>
+              {/* Last Updated: {project.lastUpdated} */}
+              Last Updated: April 24, 2024 10:23 AM
             </Text>
-            <PulseLight />
-          </>
-        ) : (
-          <ActivityIndicator size="small" color={getIconColor()} />
-        )}
+          </View>
+          <View style={styles.iconAndStatusContainer}>
+            <View style={styles.statusContainer}>
+              {project.serverStatus ? (
+                <>
+                  <Text style={styles.statusText}>
+                    {project.serverStatus === "live" ? "Online" : "Offline"}
+                  </Text>
+                  <PulseLight />
+                </>
+              ) : (
+                <ActivityIndicator size="small" color={getIconColor()} />
+              )}
+            </View>
+          </View>
+        </View>
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  iconContainer: {
-    marginRight: 10,
+  container: {
+    marginBottom: 15,
+  },
+  cardContainer: {
+    backgroundColor: "#333333",
+    borderRadius: 10,
+    padding: 15,
+    // flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    height: 120,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  projectName: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+  issuesText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+  errorsText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+  },
+  lastUpdatedText: {
+    fontSize: 14,
+    color: "#FFFFFF",
+    marginTop: 4,
+  },
+  iconAndStatusContainer: {
+    alignItems: "center",
     position: "absolute",
-    right: 10,
     top: 10,
+    right: 5,
+  },
+  platformText: {
+    fontSize: 16,
+    color: "#BB86FC", // Adjust color for better visibility and style
+    marginBottom: 5,
+  },
+  icon: {
+    marginHorizontal: 10,
   },
   statusContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
-    position: "absolute",
-    right: 10,
-    bottom: 10,
+  },
+  statusText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginRight: 5,
   },
 });
 
