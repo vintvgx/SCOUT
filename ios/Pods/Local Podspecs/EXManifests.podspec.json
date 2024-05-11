@@ -1,11 +1,11 @@
 {
   "name": "EXManifests",
-  "version": "0.13.2",
+  "version": "0.14.2",
   "summary": "Code to parse and use Expo and Expo Updates manifests.",
   "description": "Code to parse and use Expo and Expo Updates manifests.",
   "license": "MIT",
   "authors": "650 Industries, Inc.",
-  "homepage": "https://docs.expo.dev/versions/latest/sdk/module-template",
+  "homepage": "https://docs.expo.dev/versions/latest/sdk/manifests/",
   "platforms": {
     "ios": "13.4",
     "tvos": "13.4"

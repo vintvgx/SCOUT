@@ -1,11 +1,11 @@
 {
   "name": "EXUpdatesInterface",
-  "version": "0.15.3",
+  "version": "0.16.2",
   "summary": "Native interface for modules that optionally depend on expo-updates, e.g. expo-dev-launcher.",
   "description": "Native interface for modules that optionally depend on expo-updates, e.g. expo-dev-launcher.",
   "license": "MIT",
   "authors": "650 Industries, Inc.",
-  "homepage": "https://docs.expo.dev/versions/latest/sdk/module-template",
+  "homepage": "https://docs.expo.dev",
   "platforms": {
     "ios": "13.4",
     "tvos": "13.4"
@@ -24,6 +24,11 @@
   },
   "user_target_xcconfig": {
     "HEADER_SEARCH_PATHS": "\"${PODS_CONFIGURATION_BUILD_DIR}/EXUpdatesInterface/Swift Compatibility Header\""
+  },
+  "dependencies": {
+    "ExpoModulesCore": [
+
+    ]
   },
   "swift_version": "5.4"
 }

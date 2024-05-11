@@ -1,11 +1,11 @@
 {
   "name": "EXJSONUtils",
-  "version": "0.12.3",
+  "version": "0.13.1",
   "summary": "Utilities for reading NSDictionaries (iOS) and JSONObjects (Android).",
   "description": "Utilities for reading NSDictionaries (iOS) and JSONObjects (Android).",
   "license": "MIT",
   "authors": "650 Industries, Inc.",
-  "homepage": "https://docs.expo.dev/versions/latest/sdk/module-template",
+  "homepage": "https://docs.expo.dev",
   "platforms": {
     "ios": "13.4",
     "tvos": "13.4"
