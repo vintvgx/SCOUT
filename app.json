@@ -44,6 +44,7 @@
           "project": "scout"
         }
       ],
+      [
       "expo-build-properties",
         {
           "ios": {
@@ -53,7 +54,7 @@
             "newArchEnabled": true
           }
         }
+      ]
     ]
-    
   }
 }
