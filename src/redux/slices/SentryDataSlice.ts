@@ -68,26 +68,39 @@ export const sentryDataSlice = createSlice({
       }>
     ) => {
       console.log("Update event location action:", action.payload);
+
       // Find the project
-      const project = state.projects.find(
+      const projectIndex = state.projects.findIndex(
         (p) => p.id === action.payload.projectId
       );
-      console.log("Project found:", project?.id, project?.name);
-      if (project) {
-        // Find the event within the project issues that have events
-        project.issues.forEach((issue) => {
+      if (projectIndex !== -1) {
+        const project = state.projects[projectIndex];
+        console.log("Project found:", project.id, project.name);
+
+        // Update the project's issues
+        const updatedIssues: any[] = project.issues.map((issue) => {
           if (issue.events) {
-            const event = issue.events.find(
-              (e) => e.id === action.payload.eventId
-            );
-            console.log("Event found:", event?.id, event?.title);
-            if (event) {
-              console.log("Updating event location");
-              // Update the event's location
-              return { ...event, location: action.payload.location };
-            }
+            const updatedEvents = issue.events.map((event) => {
+              if (event.id === action.payload.eventId) {
+                return { ...event, location: action.payload.location };
+              }
+              return event;
+            });
+            return { ...issue, events: updatedEvents };
           }
+          return updatedIssues;
         });
+
+        // Create a new project object with the updated issues
+        const updatedProject = { ...project, issues: updatedIssues };
+        console.log("🚀 ~ updatedProject:", format(updatedProject));
+
+        // Update the state with the new projects array
+        state.projects = [
+          ...state.projects.slice(0, projectIndex),
+          updatedProject,
+          ...state.projects.slice(projectIndex + 1),
+        ];
       }
     },
     updateProject: (state, action: PayloadAction<Project>) => {

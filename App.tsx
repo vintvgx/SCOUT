@@ -34,7 +34,8 @@ Sentry.init({
 const App = () => {
   const [isSplashVisible, setSplashVisible] = useState(true);
   const fadeAnim = new Animated.Value(1);
-  const scheme = useColorScheme(); // Detects the theme
+  // const scheme = useColorScheme();
+  const scheme = "dark";
 
   const backgroundColor = scheme === "dark" ? "#000" : "#fff";
   const textColor = scheme === "dark" ? "#fff" : "#000";
