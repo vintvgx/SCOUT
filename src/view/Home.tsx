@@ -47,23 +47,9 @@ const Home = () => {
   const [displayNotification, setDisplayNotification] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchProjects())
-      .then((action) => {
-        if (fetchProjects.fulfilled.match(action)) {
-          if (action.payload.length > 0) {
-            action.payload.forEach((project: Project) => {
-              dispatch(fetchSentryIssues(project.name));
-            });
-          }
-        }
-        // dispatch(checkServerStatus(action.payload));
-      })
-      .catch((error) => {
-        console.error(
-          "Failed to fetch projects or check server status:",
-          error
-        );
-      });
+    dispatch(fetchProjects()).catch((error) => {
+      console.error("Failed to fetch projects or check server status:", error);
+    });
 
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
