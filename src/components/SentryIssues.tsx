@@ -32,7 +32,8 @@ export const SentryIssuesView: React.FC<IssuesScreenType> = ({
     (state) => state.issues
   );
 
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);

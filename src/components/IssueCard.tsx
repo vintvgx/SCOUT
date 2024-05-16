@@ -15,7 +15,8 @@ interface IssueCardProps {
 }
 
 const IssueCard = React.memo<IssueCardProps>(({ issue, onPress, isNew }) => {
-  const scheme = useColorScheme(); // Detects the color scheme (light or dark)
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const eventsCount = issue.events ? issue.events.length : "N/A";
 
   // Styles dynamically adjusted according to the theme

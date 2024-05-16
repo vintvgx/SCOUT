@@ -38,7 +38,8 @@ const EventViewer: React.FC<EventViewerProps> = ({
   onClose,
 }) => {
   const dispatch: AppDispatch = useDispatch();
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const animationValue = new Animated.Value(0);
   const [selectedEvent, setSelectedEvent] = useState<SentryEvent | null>(null);
   const [infoModalVisible, setInfoModalVisible] = useState(false);

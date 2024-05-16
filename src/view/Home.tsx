@@ -36,7 +36,8 @@ import { SentryItem } from "../model/issue";
 import { Project } from "../model/project";
 
 const Home = () => {
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const backgroundColor = scheme === "dark" ? "#222" : "#fff";
 
   const dispatch: AppDispatch = useDispatch();

@@ -30,7 +30,8 @@ import { HomeStackParamList } from "../navigation/Navigation";
 const Tab = createMaterialTopTabNavigator();
 
 const ProjectMonitoringView = ({ route }: { route: any }) => {
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const { data, projectName } = route.params;
   const { projects } = useAppSelector((state) => state.issues);
 

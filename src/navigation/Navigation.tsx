@@ -46,7 +46,8 @@ function HomeStackScreen() {
 }
 
 export default function AppNavigation() {
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const backgroundColor = scheme === "dark" ? "#222" : "#eee";
 
   const dispatch: AppDispatch = useDispatch();
