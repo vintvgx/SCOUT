@@ -51,6 +51,7 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
     console.log("FETCHED ISSUES FOR PROJECT", projectName);
 
     if (data) {
+      console.log("🚀 ~ useEffect ~ data:", data);
       dispatch(resetLoadedData(projectName));
       dispatch(fetchSentryIssues(projectName)).catch((error) =>
         console.error("Failed to fetch issue details:", error)
@@ -58,7 +59,7 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
     } else {
       dispatch(fetchSentryIssues(projectName));
     }
-  }, [dispatch, data, navigation]);
+  }, [dispatch, data]);
 
   return (
     <SafeAreaView
