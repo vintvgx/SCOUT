@@ -246,9 +246,30 @@ export const fetchSentryIssues = createAsyncThunk<
         // If the fetchEvent action was successful, process the events
         if (fetchEvent.fulfilled.match(eventActionResult)) {
           // Process each event to fetch location data
-          const eventsResult = await Promise.all(
+          const eventsWithLocation = await Promise.all(
             eventActionResult.payload.events.map(async (event: SentryEvent) => {
-              // Return the event
+              if (event.user?.ip_address) {
+                // Dispatch fetchLocationForIP and wait for the result
+                const locationActionResult = await thunkAPI.dispatch(
+                  fetchLocationFromIP(event.user.ip_address)
+                );
+
+                // If the fetchLocationForIP action was successful, attach the location data to the event
+                if (fetchLocationFromIP.fulfilled.match(locationActionResult)) {
+                  event.location = {
+                    ...locationActionResult.payload,
+                    status: "success",
+                  };
+                } else {
+                  console.error(
+                    "Failed to fetch location for event user IP:",
+                    locationActionResult.error
+                  );
+
+                  Sentry.captureException(locationActionResult.error);
+                }
+              }
+              // Return the event with or without location data
               return event;
             })
           );
@@ -256,7 +277,7 @@ export const fetchSentryIssues = createAsyncThunk<
           // Attach the events with location data to the issue
           const issueWithEvents = {
             ...fetchedIssue,
-            events: eventsResult,
+            events: eventsWithLocation,
           };
 
           // Dispatch action to add issue or error to the state
