@@ -27,7 +27,7 @@ Notifications.setNotificationHandler({
 
 Sentry.init({
   dsn: "https://528b0f80ff87e6b7af4e6b3321c27510@o4506865440849920.ingest.us.sentry.io/4507119672557568",
-  debug: true,
+  debug: false,
   tracesSampleRate: 1.0,
 });
 

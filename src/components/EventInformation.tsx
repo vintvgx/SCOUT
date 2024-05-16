@@ -41,6 +41,12 @@ const EventInformation: React.FC<EventInformationProps> = ({
                 <Text style={styles.eventID}>{selectedEvent?.id}</Text>
               </View>
               <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+                <View style={[styles.tagItem, { alignSelf: "center" }]}>
+                  <Text style={styles.tagKey}>IP</Text>
+                  <Text style={styles.tagValue}>
+                    : {selectedEvent?.user.ip_address}
+                  </Text>
+                </View>
                 <View style={styles.tagsContainer}>
                   {selectedEvent?.tags.map((tag, index) => (
                     <View key={index} style={styles.tagItem}>
