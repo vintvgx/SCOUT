@@ -14,7 +14,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onPress }) => {
   const [fadeAnim] = useState(new Animated.Value(0)); // Initial opacity value of 0
 
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const backgroundColor = scheme === "dark" ? "#222" : "#fff";
   const color = scheme === "dark" ? "#fff" : "#000";
 

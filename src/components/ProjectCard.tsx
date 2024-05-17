@@ -18,7 +18,8 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, onPress }) => {
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const getIconColor = () => (scheme === "dark" ? "#BB86FC" : "#BB86FC");
   const { projects } = useAppSelector((state) => state.issues);
   let issues = project?.issues || [];

@@ -38,7 +38,8 @@ const EventViewer: React.FC<EventViewerProps> = ({
   onClose,
 }) => {
   const dispatch: AppDispatch = useDispatch();
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const animationValue = new Animated.Value(0);
   const [selectedEvent, setSelectedEvent] = useState<SentryEvent | null>(null);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
@@ -63,33 +64,34 @@ const EventViewer: React.FC<EventViewerProps> = ({
     }
   }, [isVisible]);
 
-  useEffect(() => {
-    console.log("Fetching location");
+  // useEffect(() => {
+  //   console.log("Fetching location");
 
-    const fetchAndSetLocations = async () => {
-      const promises = events.map(async (event) => {
-        if (!event.location && event.user?.ip_address) {
-          const locationData = await dispatch(
-            fetchLocationFromIP(event.user.ip_address)
-          );
-          if (fetchLocationFromIP.fulfilled.match(locationData)) {
-            dispatch(
-              sentryDataSlice.actions.updateEventLocation({
-                projectId: event.projectID,
-                eventId: event.id,
-                location: locationData.payload,
-              })
-            );
-          }
-        }
-        return event;
-      });
-    };
+  //   const fetchAndSetLocations = async () => {
+  //     const promises = events.map(async (event) => {
+  //       if (!event.location && event.user?.ip_address) {
+  //         const locationData = await dispatch(
+  //           fetchLocationFromIP(event.user.ip_address)
+  //         );
+  //         if (fetchLocationFromIP.fulfilled.match(locationData)) {
+  //           dispatch(
+  //             sentryDataSlice.actions.updateEventLocation({
+  //               projectId: event.projectID,
+  //               eventId: event.id,
+  //               location: locationData.payload,
+  //             })
+  //           );
+  //         }
+  //       }
+  //       return event;
+  //     });
+  //     await Promise.all(promises); // Ensure all location updates are awaited
+  //   };
 
-    if (events.length > 0) {
-      fetchAndSetLocations();
-    }
-  }, [events, dispatch]);
+  //   if (events.length > 0) {
+  //     fetchAndSetLocations();
+  //   }
+  // }, [events, dispatch]);
 
   const modalContainerStyle = {
     ...styles(scheme).modalContainer,

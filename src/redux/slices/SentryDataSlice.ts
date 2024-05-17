@@ -68,26 +68,39 @@ export const sentryDataSlice = createSlice({
       }>
     ) => {
       console.log("Update event location action:", action.payload);
+
       // Find the project
-      const project = state.projects.find(
+      const projectIndex = state.projects.findIndex(
         (p) => p.id === action.payload.projectId
       );
-      console.log("Project found:", project?.id, project?.name);
-      if (project) {
-        // Find the event within the project issues that have events
-        project.issues.forEach((issue) => {
+      if (projectIndex !== -1) {
+        const project = state.projects[projectIndex];
+        console.log("Project found:", project.id, project.name);
+
+        // Update the project's issues
+        const updatedIssues: any[] = project.issues.map((issue) => {
           if (issue.events) {
-            const event = issue.events.find(
-              (e) => e.id === action.payload.eventId
-            );
-            console.log("Event found:", event?.id, event?.title);
-            if (event) {
-              console.log("Updating event location");
-              // Update the event's location
-              return { ...event, location: action.payload.location };
-            }
+            const updatedEvents = issue.events.map((event) => {
+              if (event.id === action.payload.eventId) {
+                return { ...event, location: action.payload.location };
+              }
+              return event;
+            });
+            return { ...issue, events: updatedEvents };
           }
+          return updatedIssues;
         });
+
+        // Create a new project object with the updated issues
+        const updatedProject = { ...project, issues: updatedIssues };
+        console.log("🚀 ~ updatedProject:", format(updatedProject));
+
+        // Update the state with the new projects array
+        state.projects = [
+          ...state.projects.slice(0, projectIndex),
+          updatedProject,
+          ...state.projects.slice(projectIndex + 1),
+        ];
       }
     },
     updateProject: (state, action: PayloadAction<Project>) => {
@@ -233,9 +246,30 @@ export const fetchSentryIssues = createAsyncThunk<
         // If the fetchEvent action was successful, process the events
         if (fetchEvent.fulfilled.match(eventActionResult)) {
           // Process each event to fetch location data
-          const eventsResult = await Promise.all(
+          const eventsWithLocation = await Promise.all(
             eventActionResult.payload.events.map(async (event: SentryEvent) => {
-              // Return the event
+              if (event.user?.ip_address) {
+                // Dispatch fetchLocationForIP and wait for the result
+                const locationActionResult = await thunkAPI.dispatch(
+                  fetchLocationFromIP(event.user.ip_address)
+                );
+
+                // If the fetchLocationForIP action was successful, attach the location data to the event
+                if (fetchLocationFromIP.fulfilled.match(locationActionResult)) {
+                  event.location = {
+                    ...locationActionResult.payload,
+                    status: "success",
+                  };
+                } else {
+                  console.error(
+                    "Failed to fetch location for event user IP:",
+                    locationActionResult.error
+                  );
+
+                  Sentry.captureException(locationActionResult.error);
+                }
+              }
+              // Return the event with or without location data
               return event;
             })
           );
@@ -243,7 +277,7 @@ export const fetchSentryIssues = createAsyncThunk<
           // Attach the events with location data to the issue
           const issueWithEvents = {
             ...fetchedIssue,
-            events: eventsResult,
+            events: eventsWithLocation,
           };
 
           // Dispatch action to add issue or error to the state
@@ -268,7 +302,6 @@ export const fetchSentryIssues = createAsyncThunk<
       const updatedProject = {
         ...state.issues.projects[projectIndex],
         isLoaded: true,
-        serverStatus: "live",
       };
       await thunkAPI.dispatch(
         sentryDataSlice.actions.updateProject(updatedProject)
@@ -420,6 +453,7 @@ export const fetchProjects = createAsyncThunk(
           issues: project.issues || [],
           errors: project.errors || [],
           isLoaded: false,
+          serverStatus: "live",
         })
       );
       return projectsWithIssuesAndErrors;

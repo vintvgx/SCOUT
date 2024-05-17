@@ -36,7 +36,8 @@ import { SentryItem } from "../model/issue";
 import { Project } from "../model/project";
 
 const Home = () => {
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const backgroundColor = scheme === "dark" ? "#222" : "#fff";
 
   const dispatch: AppDispatch = useDispatch();
@@ -47,23 +48,9 @@ const Home = () => {
   const [displayNotification, setDisplayNotification] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchProjects())
-      .then((action) => {
-        if (fetchProjects.fulfilled.match(action)) {
-          if (action.payload.length > 0) {
-            action.payload.forEach((project: Project) => {
-              dispatch(fetchSentryIssues(project.name));
-            });
-          }
-        }
-        // dispatch(checkServerStatus(action.payload));
-      })
-      .catch((error) => {
-        console.error(
-          "Failed to fetch projects or check server status:",
-          error
-        );
-      });
+    dispatch(fetchProjects()).catch((error) => {
+      console.error("Failed to fetch projects or check server status:", error);
+    });
 
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {

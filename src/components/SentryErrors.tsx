@@ -31,7 +31,8 @@ export const SentryErrorsView: React.FC<ErrorsScreenType> = ({
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
 
   const dispatch: AppDispatch = useDispatch();
 

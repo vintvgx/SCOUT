@@ -18,7 +18,8 @@ const Map = () => {
     longitudeDelta: 0.0421,
   };
 
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const { projects } = useAppSelector((state) => state.issues);
   const dispatch: AppDispatch = useDispatch();
   const [modalVisible, setModalVisible] = useState(false);

@@ -30,7 +30,8 @@ import { HomeStackParamList } from "../navigation/Navigation";
 const Tab = createMaterialTopTabNavigator();
 
 const ProjectMonitoringView = ({ route }: { route: any }) => {
-  const scheme = useColorScheme();
+  // const scheme = useColorScheme();
+  const scheme = "dark";
   const { data, projectName } = route.params;
   const { projects } = useAppSelector((state) => state.issues);
 
@@ -50,6 +51,7 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
     console.log("FETCHED ISSUES FOR PROJECT", projectName);
 
     if (data) {
+      console.log("🚀 ~ useEffect ~ data:", data);
       dispatch(resetLoadedData(projectName));
       dispatch(fetchSentryIssues(projectName)).catch((error) =>
         console.error("Failed to fetch issue details:", error)
@@ -57,7 +59,7 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
     } else {
       dispatch(fetchSentryIssues(projectName));
     }
-  }, [dispatch, data, navigation]);
+  }, [dispatch, data]);
 
   return (
     <SafeAreaView
