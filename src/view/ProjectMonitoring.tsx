@@ -27,6 +27,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/Navigation";
+import SentryIssuesAndErrors from "../components/SentryIssuesAndErrors";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -88,7 +89,7 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
           {projectName}
         </Text>
       </View>
-      <Tab.Navigator
+      {/* <Tab.Navigator
         screenOptions={{
           tabBarActiveTintColor: scheme === "dark" ? "#FFFFFF" : "#000000",
           tabBarInactiveTintColor: scheme === "dark" ? "#555" : "#888",
@@ -108,7 +109,8 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
           name={errorsTitle}
           children={() => <SentryErrorsView projectName={projectName} />}
         />
-      </Tab.Navigator>
+      </Tab.Navigator> */}
+      <SentryIssuesAndErrors projectName={projectName} />
     </SafeAreaView>
   );
 };
