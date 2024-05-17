@@ -20,12 +20,14 @@ import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
 import {
   fetchSentryIssues,
+  fetchSentryIssuesWithLocation,
   resetLoadedData,
 } from "../redux/slices/SentryDataSlice";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/Navigation";
+import SentryIssuesAndErrors from "../components/SentryIssuesAndErrors";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -40,24 +42,22 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
   const issuesTitle = `Issues (${project?.issues.length || 0})`;
   const errorsTitle = `Errors (${project?.errors.length || 0})`;
 
-  console.log("ProjectIssues: projectName", projectName);
-
   const dispatch: AppDispatch = useDispatch();
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
   // Fetch issue details by ID if issueId is present in the navigation parameters
   useEffect(() => {
-    console.log("FETCHED ISSUES FOR PROJECT", projectName);
-
     if (data) {
-      console.log("🚀 ~ useEffect ~ data:", data);
+      console.log("DATA INCLUDED: FETCHING ISSUES FOR PROJECT", projectName);
+      console.log("DATA:", data);
       dispatch(resetLoadedData(projectName));
-      dispatch(fetchSentryIssues(projectName)).catch((error) =>
+      dispatch(fetchSentryIssuesWithLocation(projectName)).catch((error) =>
         console.error("Failed to fetch issue details:", error)
       );
     } else {
-      dispatch(fetchSentryIssues(projectName));
+      console.log("FETCHING ISSUES FOR PROJECT", projectName);
+      dispatch(fetchSentryIssuesWithLocation(projectName));
     }
   }, [dispatch, data]);
 
@@ -89,7 +89,7 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
           {projectName}
         </Text>
       </View>
-      <Tab.Navigator
+      {/* <Tab.Navigator
         screenOptions={{
           tabBarActiveTintColor: scheme === "dark" ? "#FFFFFF" : "#000000",
           tabBarInactiveTintColor: scheme === "dark" ? "#555" : "#888",
@@ -109,7 +109,8 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
           name={errorsTitle}
           children={() => <SentryErrorsView projectName={projectName} />}
         />
-      </Tab.Navigator>
+      </Tab.Navigator> */}
+      <SentryIssuesAndErrors projectName={projectName} />
     </SafeAreaView>
   );
 };

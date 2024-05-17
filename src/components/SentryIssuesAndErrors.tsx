@@ -1,36 +1,33 @@
-import React, { useEffect, useMemo, useState } from "react";
 import {
-  View,
-  Text,
   ActivityIndicator,
-  StyleSheet,
-  ScrollView,
   RefreshControl,
-  useColorScheme,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-import { AppDispatch, useAppSelector } from "../redux/store";
-import IssueCard from "./IssueCard";
-import EventViewer from "./EventViewer";
-import { SentryItem } from "../model/issue"; // Assuming SentryEvent is correctly imported
+import React, { useMemo, useState } from "react";
 import { SentryEvent } from "../model/event";
-import format from "pretty-format";
-import { handleOpenEventModal } from "../utils/functions";
+import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
 import {
   fetchSentryIssues,
   resetLoadedData,
 } from "../redux/slices/SentryDataSlice";
+import IssueCard from "./IssueCard";
+import { handleOpenEventModal } from "../utils/functions";
+import EventViewer from "./EventViewer";
+import SentryCard from "./SentryCard";
 
-interface IssuesScreenType {
+interface SentryIssuesAndErrorsType {
   projectName: string;
 }
 
-export const SentryIssuesView: React.FC<IssuesScreenType> = ({
+const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
   projectName,
 }) => {
-  const dispatch: AppDispatch = useDispatch();
-  // const scheme = useColorScheme();
   const scheme = "dark";
+  const dispatch: AppDispatch = useDispatch();
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -41,7 +38,8 @@ export const SentryIssuesView: React.FC<IssuesScreenType> = ({
 
   const project = projects.find((p) => p.name === projectName); // Ensure the project is defined and has issues
 
-  let issues = project?.issues || []; // A fallback for when project is undefined
+  let issues = project?.issues || [];
+  let errors = project?.errors || [];
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -56,12 +54,12 @@ export const SentryIssuesView: React.FC<IssuesScreenType> = ({
 
   const sortedIssues = useMemo(() => {
     // Clone and sort the issues array to avoid direct mutation
-    return [...issues].sort((a, b) => {
+    return [...issues, ...errors].sort((a, b) => {
       const dateA = new Date(a.lastSeen).getTime();
       const dateB = new Date(b.lastSeen).getTime();
       return dateB - dateA; // For descending order
     });
-  }, [issues]);
+  }, [issues, errors]);
 
   if (loading && sortedIssues.length === 0) {
     if (loading && sortedIssues.length === 0) {
@@ -123,14 +121,14 @@ export const SentryIssuesView: React.FC<IssuesScreenType> = ({
         }>
         {sortedIssues &&
           sortedIssues.length > 0 &&
-          sortedIssues.map((issue, index) => (
-            <IssueCard
-              key={issue.id || index}
-              issue={issue}
-              isNew={newIssues.includes(issue.id)}
+          sortedIssues.map((item, index) => (
+            <SentryCard
+              key={item.id || index}
+              item={item}
+              isNew={newIssues.includes(item.id)}
               onPress={() =>
                 handleOpenEventModal(
-                  issue,
+                  item,
                   setSelectedEvents,
                   setIsViewerVisible,
                   dispatch
@@ -147,6 +145,8 @@ export const SentryIssuesView: React.FC<IssuesScreenType> = ({
     </View>
   );
 };
+
+export default SentryIssuesAndErrors;
 
 const styles = StyleSheet.create({
   center_of_screen: {

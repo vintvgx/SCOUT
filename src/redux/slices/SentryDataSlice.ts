@@ -30,12 +30,6 @@ const initialState: ProjectsState = {
   newIssues: [],
 };
 
-const projectUrls: { [key: string]: string } = {
-  "urban-ai": "https://urbanai.info",
-  portfolio: "https://kareemsaygbe.dev",
-  vournal: "https://vournal-b93307c9ab1a.herokuapp.com",
-};
-
 export const sentryDataSlice = createSlice({
   name: "issues",
   initialState,
@@ -206,7 +200,7 @@ export const fetchSentryIssues = createAsyncThunk<
   string,
   { rejectValue: string }
 >("issues/fetchSentryIssues", async (projectName, thunkAPI) => {
-  console.log("Fetching issues for: ", projectName);
+  console.log("DISPATCHED: fetchSentryIssues for", projectName);
 
   // Get the current state
   const state = thunkAPI.getState() as RootState;
@@ -328,7 +322,7 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
   string, // Type for projectName argument
   { rejectValue: string } // Type for thunkAPI (customize as needed)
 >("issues/fetchSentryIssuesWithLocation", async (projectName, thunkAPI) => {
-  console.log("Fetching issues for: ", projectName);
+  console.log("DISPATCHED: fetchSentryIssuesWithLocation for ", projectName);
 
   // Get the current state
   const state = thunkAPI.getState() as RootState;
@@ -417,7 +411,7 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
       await thunkAPI.dispatch(
         sentryDataSlice.actions.updateProject(updatedProject)
       );
-      thunkAPI.dispatch(setLoading(false));
+      await thunkAPI.dispatch(setLoading(false));
     } catch (error: any) {
       console.error(
         "Error fetching issues:",
@@ -525,7 +519,7 @@ export const fetchLocationFromIP = createAsyncThunk<Location, string>(
         // First, attempt to get the location from the Secure Store
         const cachedLocation = await SecureStore.getItemAsync(ipAddress);
         if (cachedLocation) {
-          console.log("Using cached location data for IP:", ipAddress);
+          // console.log("Using cached location data for IP:", ipAddress);
           return JSON.parse(cachedLocation);
         }
 
