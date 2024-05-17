@@ -20,6 +20,7 @@ import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
 import {
   fetchSentryIssues,
+  fetchSentryIssuesWithLocation,
   resetLoadedData,
 } from "../redux/slices/SentryDataSlice";
 import { Ionicons } from "@expo/vector-icons";
@@ -40,24 +41,22 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
   const issuesTitle = `Issues (${project?.issues.length || 0})`;
   const errorsTitle = `Errors (${project?.errors.length || 0})`;
 
-  console.log("ProjectIssues: projectName", projectName);
-
   const dispatch: AppDispatch = useDispatch();
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
   // Fetch issue details by ID if issueId is present in the navigation parameters
   useEffect(() => {
-    console.log("FETCHED ISSUES FOR PROJECT", projectName);
-
     if (data) {
-      console.log("🚀 ~ useEffect ~ data:", data);
+      console.log("DATA INCLUDED: FETCHING ISSUES FOR PROJECT", projectName);
+      console.log("DATA:", data);
       dispatch(resetLoadedData(projectName));
-      dispatch(fetchSentryIssues(projectName)).catch((error) =>
+      dispatch(fetchSentryIssuesWithLocation(projectName)).catch((error) =>
         console.error("Failed to fetch issue details:", error)
       );
     } else {
-      dispatch(fetchSentryIssues(projectName));
+      console.log("FETCHING ISSUES FOR PROJECT", projectName);
+      dispatch(fetchSentryIssuesWithLocation(projectName));
     }
   }, [dispatch, data]);
 

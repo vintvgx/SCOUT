@@ -206,7 +206,7 @@ export const fetchSentryIssues = createAsyncThunk<
   string,
   { rejectValue: string }
 >("issues/fetchSentryIssues", async (projectName, thunkAPI) => {
-  console.log("Fetching issues for: ", projectName);
+  console.log("DISPATCHEDfetchSentryIssues for: ", projectName);
 
   // Get the current state
   const state = thunkAPI.getState() as RootState;
@@ -525,7 +525,7 @@ export const fetchLocationFromIP = createAsyncThunk<Location, string>(
         // First, attempt to get the location from the Secure Store
         const cachedLocation = await SecureStore.getItemAsync(ipAddress);
         if (cachedLocation) {
-          console.log("Using cached location data for IP:", ipAddress);
+          // console.log("Using cached location data for IP:", ipAddress);
           return JSON.parse(cachedLocation);
         }
 
