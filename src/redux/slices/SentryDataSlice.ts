@@ -448,6 +448,7 @@ export const fetchProjects = createAsyncThunk(
           errors: project.errors || [],
           isLoaded: false,
           serverStatus: "live",
+          lastUpdated: new Date().toISOString(),
         })
       );
       return projectsWithIssuesAndErrors;

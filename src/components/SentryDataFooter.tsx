@@ -13,6 +13,17 @@ const SentryDataFooter: React.FC<SentryDataFooterProps> = ({ projectName }) => {
   const issues = project?.issues || [];
   const errors = project?.errors || [];
 
+  // Format lastUpdated date
+  const formattedLastUpdated = project?.lastUpdated
+    ? new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        month: "2-digit",
+        day: "2-digit",
+        year: "2-digit",
+      }).format(new Date(project.lastUpdated))
+    : "N/A";
+
   return (
     <LinearGradient
       colors={["#1E1E1E", "#202020"]}
@@ -26,9 +37,7 @@ const SentryDataFooter: React.FC<SentryDataFooterProps> = ({ projectName }) => {
         <Text style={styles.issueText}>
           Errors: <Text style={styles.valueText}>{errors.length}</Text>
         </Text>
-        <Text style={styles.issueText}>
-          New Issues: <Text style={styles.valueText}>{newIssues.length}</Text>
-        </Text>
+        <Text style={styles.issueText}>Updated {formattedLastUpdated}</Text>
       </View>
     </LinearGradient>
   );
