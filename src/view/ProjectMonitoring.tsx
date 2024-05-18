@@ -28,6 +28,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/Navigation";
 import SentryIssuesAndErrors from "../components/SentryIssuesAndErrors";
+import SentryDataFooter from "../components/SentryDataFooter";
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -111,6 +112,7 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
         />
       </Tab.Navigator> */}
       <SentryIssuesAndErrors projectName={projectName} />
+      <SentryDataFooter projectName={projectName} />
     </SafeAreaView>
   );
 };
