@@ -8,7 +8,9 @@ interface SentryDataFooterProps {
 }
 
 const SentryDataFooter: React.FC<SentryDataFooterProps> = ({ projectName }) => {
-  const { projects, newIssues } = useAppSelector((state) => state.issues);
+  const { projects, newIssues, loading } = useAppSelector(
+    (state) => state.issues
+  );
   const project = projects.find((p) => p.name === projectName);
   const issues = project?.issues || [];
   const errors = project?.errors || [];
@@ -37,7 +39,11 @@ const SentryDataFooter: React.FC<SentryDataFooterProps> = ({ projectName }) => {
         <Text style={styles.issueText}>
           Errors: <Text style={styles.valueText}>{errors.length}</Text>
         </Text>
-        <Text style={styles.issueText}>Updated {formattedLastUpdated}</Text>
+        {loading ? (
+          <Text style={styles.issueText}>Loading...</Text>
+        ) : (
+          <Text style={styles.issueText}>Updated {formattedLastUpdated}</Text>
+        )}
       </View>
     </LinearGradient>
   );
