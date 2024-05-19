@@ -313,6 +313,7 @@ export const fetchSentryIssues = createAsyncThunk<
     }
   } else {
     console.log(`Issues for project ${projectName} already loaded`);
+    thunkAPI.dispatch(setLoading(false));
   }
 });
 
@@ -407,6 +408,7 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
       const updatedProject = {
         ...state.issues.projects[projectIndex],
         isLoaded: true,
+        lastUpdated: new Date().toISOString(),
       };
       await thunkAPI.dispatch(
         sentryDataSlice.actions.updateProject(updatedProject)
@@ -424,6 +426,7 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
     }
   } else {
     console.log(`Issues for project ${projectName} already loaded`);
+    thunkAPI.dispatch(setLoading(false));
   }
 });
 

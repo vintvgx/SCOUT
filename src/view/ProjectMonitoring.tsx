@@ -36,7 +36,7 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
   // const scheme = useColorScheme();
   const scheme = "dark";
   const { data, projectName } = route.params;
-  const { projects } = useAppSelector((state) => state.issues);
+  const { projects, loading } = useAppSelector((state) => state.issues);
 
   const project = projects.find((p) => p.name === projectName);
 
