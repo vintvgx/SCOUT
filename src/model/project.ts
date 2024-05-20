@@ -9,6 +9,7 @@ export interface Project {
   errors: SentryItem[];
   issues: SentryItem[];
   isLoaded: boolean;
+  lastUpdated: string;
 }
 
 export interface IssueErrorPayload {
