@@ -148,10 +148,7 @@ const Home = () => {
               />
             ))}
         </ScrollView>
-        <Text style={styles.lastUpdatedText}>
-          {/* Last Updated: {project.lastUpdated} */}
-          Last Updated: April 24, 2024 10:23 AM
-        </Text>
+
         {displayNotification && (
           <View>
             <Text>{expoPushToken}</Text>

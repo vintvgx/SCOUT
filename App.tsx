@@ -50,20 +50,22 @@ const App = () => {
 
   if (isSplashVisible) {
     return (
-      <Animated.View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          opacity: fadeAnim,
-          backgroundColor,
-        }}>
-        <Image
-          source={require("./assets/icon.png")}
-          style={{ width: 100, height: 100 }}
-        />
-        <Text style={{ fontSize: 24 }}>SCOUT</Text>
-      </Animated.View>
+      <View style={{ flex: 1, backgroundColor: "#222" }}>
+        <Animated.View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: fadeAnim,
+            backgroundColor: "#222",
+          }}>
+          <Image
+            source={require("./assets/LOGO.png")}
+            style={{ width: 100, height: 100 }}
+          />
+          <Text style={{ fontSize: 24, color: "white" }}>SCOUT</Text>
+        </Animated.View>
+      </View>
     );
   }
 
