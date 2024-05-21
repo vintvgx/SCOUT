@@ -120,7 +120,11 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
       }}>
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            tintColor={"white"}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
         }>
         {sortedIssues &&
           sortedIssues.length > 0 &&
@@ -154,7 +158,12 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
                 style={[styles.errorText, { fontSize: 20, marginRight: 5 }]}>
                 Load Data
               </Text>
-              <Ionicons name="refresh" size={20} color="gray" />
+              <Ionicons
+                name="refresh"
+                size={20}
+                color="gray"
+                style={{ marginTop: 3 }}
+              />
             </TouchableOpacity>
           </View>
         )}

@@ -119,7 +119,11 @@ export const SentryIssuesView: React.FC<IssuesScreenType> = ({
       }}>
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            tintColor={"white"}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
         }>
         {sortedIssues &&
           sortedIssues.length > 0 &&

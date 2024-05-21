@@ -118,7 +118,11 @@ export const SentryErrorsView: React.FC<ErrorsScreenType> = ({
       }}>
       <ScrollView
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            tintColor={"white"}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
         }>
         {sortedErrors && sortedErrors.length > 0 ? (
           sortedErrors.map((error, index) => (

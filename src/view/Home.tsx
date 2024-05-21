@@ -128,6 +128,7 @@ const Home = () => {
           contentContainerStyle={[styles.container, { backgroundColor }]}
           refreshControl={
             <RefreshControl
+              tintColor={"white"}
               refreshing={projectsLoading}
               onRefresh={onRefresh}
             />
