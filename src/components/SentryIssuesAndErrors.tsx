@@ -4,6 +4,8 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  Touchable,
+  TouchableOpacity,
   View,
 } from "react-native";
 import React, { useMemo, useState } from "react";
@@ -18,6 +20,7 @@ import IssueCard from "./IssueCard";
 import { handleOpenEventModal } from "../utils/functions";
 import EventViewer from "./EventViewer";
 import SentryCard from "./SentryCard";
+import { Ionicons } from "@expo/vector-icons";
 
 interface SentryIssuesAndErrorsType {
   projectName: string;
@@ -136,6 +139,25 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
               }
             />
           ))}
+        {sortedIssues.length == 0 && (
+          <View style={[styles.center_of_screen]}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+                padding: 10,
+                borderRadius: 5,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+              onPress={onRefresh}>
+              <Text
+                style={[styles.errorText, { fontSize: 20, marginRight: 5 }]}>
+                Load Data
+              </Text>
+              <Ionicons name="refresh" size={20} color="gray" />
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
       <EventViewer
         events={selectedEvents}

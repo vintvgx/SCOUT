@@ -159,7 +159,10 @@ export const sentryDataSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchSentryIssuesWithLocation.fulfilled, (state) => {
-        // state.loading = false;
+        state.projects.map((project) => {
+          project.isLoaded = true;
+          project.lastUpdated = new Date().toISOString();
+        });
       })
       .addCase(fetchSentryIssuesWithLocation.rejected, (state, action) => {
         state.loading = false;
