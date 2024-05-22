@@ -38,6 +38,7 @@ export interface Location {
   region_code: string | null;
   region_type: string | null;
   country_name: string;
+  country: string;
   country_code: string;
   continent_name: string;
   continent_code: string;

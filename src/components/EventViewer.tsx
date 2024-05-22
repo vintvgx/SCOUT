@@ -211,6 +211,20 @@ const EventViewer: React.FC<EventViewerProps> = ({
                   </Text>
                 </View>
                 {renderMapView(event, index)}
+                <View style={{ alignSelf: "center", marginTop: 5 }}>
+                  <Text>
+                    {event.location ? (
+                      <Text style={styles(scheme).cityStateLocation}>
+                        {event.location.city}, {event.location.region},{" "}
+                        {event.location.country}
+                      </Text>
+                    ) : (
+                      <Text style={styles(scheme).unknownLocationText}>
+                        Location Unknown
+                      </Text>
+                    )}
+                  </Text>
+                </View>
               </View>
             ))}
           </ScrollView>
