@@ -61,9 +61,8 @@ const App = () => {
           }}>
           <Image
             source={require("./assets/LOGO.png")}
-            style={{ width: 100, height: 100 }}
+            style={{ width: 150, height: 150 }}
           />
-          <Text style={{ fontSize: 24, color: "white" }}>SCOUT</Text>
         </Animated.View>
       </View>
     );
