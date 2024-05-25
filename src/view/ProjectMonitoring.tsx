@@ -89,6 +89,9 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
           ]}>
           {projectName}
         </Text>
+        <TouchableOpacity>
+          <Ionicons name="options-outline" size={20} color="white" />
+        </TouchableOpacity>
       </View>
       <SentryIssuesAndErrors projectName={projectName} />
       <SentryDataFooter projectName={projectName} />
@@ -100,14 +103,14 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center", // Center the title container
+    justifyContent: "space-between", // Center the title container
     padding: 20,
     position: "relative", // Enable absolute positioning for children
   },
   backButton: {
-    position: "absolute", // Position absolutely to appear on the left
-    left: 10, // Distance from the left edge
-    padding: 10,
+    // position: "absolute", // Position absolutely to appear on the left
+    // left: 10, // Distance from the left edge
+    // padding: 10,
   },
   header: {
     fontSize: 22,

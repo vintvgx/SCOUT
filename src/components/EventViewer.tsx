@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Modal,
   ScrollView,
@@ -44,65 +44,46 @@ const EventViewer: React.FC<EventViewerProps> = ({
   const [selectedEvent, setSelectedEvent] = useState<SentryEvent | null>(null);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [loadingLocations, setLoadingLocations] = useState<boolean>(false);
-  // const [loadingLocations, setLoadingLocations] = useState<boolean[]>(
-  //   new Array(events.length).fill(false)
-  // );
+  const [updatedEvents, setUpdatedEvents] = useState<SentryEvent[]>([]);
 
   useEffect(() => {
+    console.log("🚀 ~ isVisible:", isVisible);
     if (isVisible) {
       Animated.timing(animationValue, {
         toValue: 1,
         duration: 300,
         useNativeDriver: true,
       }).start();
+      fetchEventLocations();
     } else {
       Animated.timing(animationValue, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
-      }).start();
+      }).start(() => {
+        // Reset the animation value after the modal is hidden
+        animationValue.setValue(0);
+      });
     }
+    console.log("🚀 ~ isVisible:", isVisible);
   }, [isVisible]);
 
-  // useEffect(() => {
-  //   console.log("Fetching location");
-
-  //   const fetchAndSetLocations = async () => {
-  //     const promises = events.map(async (event) => {
-  //       if (!event.location && event.user?.ip_address) {
-  //         const locationData = await dispatch(
-  //           fetchLocationFromIP(event.user.ip_address)
-  //         );
-  //         if (fetchLocationFromIP.fulfilled.match(locationData)) {
-  //           dispatch(
-  //             sentryDataSlice.actions.updateEventLocation({
-  //               projectId: event.projectID,
-  //               eventId: event.id,
-  //               location: locationData.payload,
-  //             })
-  //           );
-  //         }
-  //       }
-  //       return event;
-  //     });
-  //     await Promise.all(promises); // Ensure all location updates are awaited
-  //   };
-
-  //   if (events.length > 0) {
-  //     fetchAndSetLocations();
-  //   }
-  // }, [events, dispatch]);
-
-  useEffect(() => {
-    console.log("Fetching events locations");
-
+  const fetchEventLocations = useCallback(async () => {
     setLoadingLocations(true);
+    console.log("Fetching locations");
 
-    events.map((event) => {
-      if (!event.location && event.user?.ip_address) {
-        dispatch(fetchLocationFromIP(event.user.ip_address))
-          .then((locationData) => {
+    try {
+      const updated = await Promise.all(
+        events.map(async (event) => {
+          if (!event.location && event.user?.ip_address) {
+            const locationData = await dispatch(
+              fetchLocationFromIP(event.user.ip_address)
+            );
             if (fetchLocationFromIP.fulfilled.match(locationData)) {
+              const updatedEvent = {
+                ...event,
+                location: locationData.payload,
+              };
               dispatch(
                 sentryDataSlice.actions.updateEventLocation({
                   projectId: event.projectID,
@@ -110,16 +91,20 @@ const EventViewer: React.FC<EventViewerProps> = ({
                   location: locationData.payload,
                 })
               );
+              return updatedEvent;
             }
-          })
-          .catch((error) => {
-            console.error("Error fetching location data: ", error);
-          });
-      }
-    });
-
-    setLoadingLocations(false);
-  }, [events]);
+          }
+          return event;
+        })
+      );
+      setUpdatedEvents(updated);
+    } catch (error) {
+      console.error("Error fetching location data: ", error);
+    } finally {
+      setLoadingLocations(false);
+      console.log("Finished fetching locations");
+    }
+  }, [events, dispatch]);
 
   const modalContainerStyle = {
     ...styles(scheme).modalContainer,
@@ -149,26 +134,41 @@ const EventViewer: React.FC<EventViewerProps> = ({
 
     return (
       <View style={styles(scheme).mapContainer}>
-        <MapView
-          onPress={() => {
-            console.log("map pressed");
-            console.log(event.location);
-          }}
-          style={styles(scheme).map}
-          initialRegion={
-            event.location
-              ? {
-                  latitude: event.location.latitude,
-                  longitude: event.location.longitude,
-                  latitudeDelta: INITIAL_REGION.latitudeDelta,
-                  longitudeDelta: INITIAL_REGION.longitudeDelta,
-                }
-              : initialRegion
-          }
-          scrollEnabled={false}
-          zoomEnabled={false}
-          rotateEnabled={false}>
-          {event.location && (
+        {loadingLocations || !event.location ? (
+          <View style={styles(scheme).mapUnknown}>
+            {loadingLocations && (
+              <ActivityIndicator
+                size="large"
+                color={scheme === "dark" ? "#FFFFFF" : "#000000"}
+              />
+            )}
+            {!loadingLocations && !event.location && (
+              <TouchableOpacity
+                onPress={() => {
+                  console.log("LOCATION:", event);
+                }}>
+                <Text style={styles(scheme).unknownLocationText}>
+                  Location Unknown
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <MapView
+            onPress={() => {
+              console.log("map pressed");
+              console.log(event.location);
+            }}
+            style={styles(scheme).map}
+            initialRegion={{
+              latitude: event.location.latitude,
+              longitude: event.location.longitude,
+              latitudeDelta: INITIAL_REGION.latitudeDelta,
+              longitudeDelta: INITIAL_REGION.longitudeDelta,
+            }}
+            scrollEnabled={false}
+            zoomEnabled={false}
+            rotateEnabled={false}>
             <Marker
               coordinate={{
                 latitude: event.location.latitude,
@@ -177,15 +177,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
               title={event.title}
               description={event.message}
             />
-          )}
-        </MapView>
-        {loadingLocations && (
-          <View style={styles(scheme).mapLoadingOverlay}>
-            <ActivityIndicator
-              size="large"
-              color={scheme === "dark" ? "#FFFFFF" : "#000000"}
-            />
-          </View>
+          </MapView>
         )}
       </View>
     );
@@ -208,7 +200,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
             horizontal={true}
             pagingEnabled={true}
             showsHorizontalScrollIndicator={false}>
-            {events.map((event, index) => (
+            {updatedEvents.map((event, index) => (
               <View key={index} style={styles(scheme).eventContainer}>
                 <View style={styles(scheme).tagIcon}>
                   <TouchableOpacity onPress={() => handleInfoIconPress(event)}>
