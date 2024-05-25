@@ -53,12 +53,12 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
       console.log("DATA INCLUDED: FETCHING ISSUES FOR PROJECT", projectName);
       console.log("DATA:", data);
       dispatch(resetLoadedData(projectName));
-      dispatch(fetchSentryIssuesWithLocation(projectName)).catch((error) =>
+      dispatch(fetchSentryIssues(projectName)).catch((error) =>
         console.error("Failed to fetch issue details:", error)
       );
     } else {
       console.log("FETCHING ISSUES FOR PROJECT", projectName);
-      dispatch(fetchSentryIssuesWithLocation(projectName));
+      dispatch(fetchSentryIssues(projectName));
     }
   }, [dispatch, data]);
 
@@ -90,27 +90,6 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
           {projectName}
         </Text>
       </View>
-      {/* <Tab.Navigator
-        screenOptions={{
-          tabBarActiveTintColor: scheme === "dark" ? "#FFFFFF" : "#000000",
-          tabBarInactiveTintColor: scheme === "dark" ? "#555" : "#888",
-          tabBarIndicatorStyle: {
-            backgroundColor: "#BB86FC",
-          },
-          tabBarPressColor: "#4A90E2",
-          tabBarStyle: {
-            backgroundColor: scheme === "dark" ? "#121212" : "#FFFFFF",
-          },
-        }}>
-        <Tab.Screen
-          name={issuesTitle}
-          children={() => <SentryIssuesView projectName={projectName} />}
-        />
-        <Tab.Screen
-          name={errorsTitle}
-          children={() => <SentryErrorsView projectName={projectName} />}
-        />
-      </Tab.Navigator> */}
       <SentryIssuesAndErrors projectName={projectName} />
       <SentryDataFooter projectName={projectName} />
     </SafeAreaView>

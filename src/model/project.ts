@@ -8,6 +8,7 @@ export interface Project {
   serverStatus?: string | "live" | "down";
   errors: SentryItem[];
   issues: SentryItem[];
+  archivesFetched: boolean;
   isLoaded: boolean;
   lastUpdated: string;
 }

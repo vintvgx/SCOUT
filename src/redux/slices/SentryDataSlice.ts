@@ -61,7 +61,7 @@ export const sentryDataSlice = createSlice({
         location: Location;
       }>
     ) => {
-      console.log("Update event location action:", action.payload);
+      console.log("Updating event with location");
 
       // Find the project
       const projectIndex = state.projects.findIndex(
@@ -76,18 +76,25 @@ export const sentryDataSlice = createSlice({
           if (issue.events) {
             const updatedEvents = issue.events.map((event) => {
               if (event.id === action.payload.eventId) {
+                console.log(
+                  "Updating with location:",
+                  format(action.payload.location)
+                );
                 return { ...event, location: action.payload.location };
               }
               return event;
             });
+            console.log("Updated events:", format(updatedEvents[0]));
             return { ...issue, events: updatedEvents };
           }
-          return updatedIssues;
+          return issue;
         });
+
+        console.log("Updated issue[0]:", format(updatedIssues[0]));
 
         // Create a new project object with the updated issues
         const updatedProject = { ...project, issues: updatedIssues };
-        console.log("🚀 ~ updatedProject:", format(updatedProject));
+        // console.log("🚀 ~ updatedProject:", format(updatedProject.issues[0]));
 
         // Update the state with the new projects array
         state.projects = [
@@ -197,6 +204,39 @@ export const {
   setLoading,
 } = sentryDataSlice.actions;
 
+export const fetchProjects = createAsyncThunk(
+  "issues/fetchProjects",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        "https://sentry.io/api/0/organizations/communite/projects/",
+        {
+          headers: {
+            Authorization:
+              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+          },
+        }
+      );
+
+      const projectsWithIssuesAndErrors = response.data.map(
+        (project: { issues: any; errors: any }) => ({
+          ...project,
+          issues: project.issues || [],
+          errors: project.errors || [],
+          isLoaded: false,
+          serverStatus: "live",
+          lastUpdated: new Date().toISOString(),
+        })
+      );
+      return projectsWithIssuesAndErrors;
+    } catch (error: any) {
+      Sentry.captureException(error);
+
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 // Async thunk for fetching issues from Sentry
 export const fetchSentryIssues = createAsyncThunk<
   void,
@@ -243,29 +283,8 @@ export const fetchSentryIssues = createAsyncThunk<
         // If the fetchEvent action was successful, process the events
         if (fetchEvent.fulfilled.match(eventActionResult)) {
           // Process each event to fetch location data
-          const eventsWithLocation = await Promise.all(
+          const fetchedEvents = await Promise.all(
             eventActionResult.payload.events.map(async (event: SentryEvent) => {
-              if (event.user?.ip_address) {
-                // Dispatch fetchLocationForIP and wait for the result
-                const locationActionResult = await thunkAPI.dispatch(
-                  fetchLocationFromIP(event.user.ip_address)
-                );
-
-                // If the fetchLocationForIP action was successful, attach the location data to the event
-                if (fetchLocationFromIP.fulfilled.match(locationActionResult)) {
-                  event.location = {
-                    ...locationActionResult.payload,
-                    status: "success",
-                  };
-                } else {
-                  console.error(
-                    "Failed to fetch location for event user IP:",
-                    locationActionResult.error
-                  );
-
-                  Sentry.captureException(locationActionResult.error);
-                }
-              }
               // Return the event with or without location data
               return event;
             })
@@ -274,7 +293,7 @@ export const fetchSentryIssues = createAsyncThunk<
           // Attach the events with location data to the issue
           const issueWithEvents = {
             ...fetchedIssue,
-            events: eventsWithLocation,
+            events: fetchedEvents,
           };
 
           // Dispatch action to add issue or error to the state
@@ -433,38 +452,144 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
   }
 });
 
-export const fetchProjects = createAsyncThunk(
-  "issues/fetchProjects",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(
-        "https://sentry.io/api/0/organizations/communite/projects/",
-        {
-          headers: {
-            Authorization:
-              "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
-          },
-        }
-      );
+export const fetchArchivedSentryIssues = createAsyncThunk<
+  void,
+  string,
+  { rejectValue: string }
+>("issues/fetchArchivedSentryIssues", async (projectName, thunkAPI) => {
+  console.log("DISPATCHED: fetchArchivedSentryIssues for", projectName);
 
-      const projectsWithIssuesAndErrors = response.data.map(
-        (project: { issues: any; errors: any }) => ({
-          ...project,
-          issues: project.issues || [],
-          errors: project.errors || [],
-          isLoaded: false,
-          serverStatus: "live",
-          lastUpdated: new Date().toISOString(),
+  const state = thunkAPI.getState() as RootState;
+
+  const projectIndex = state.issues.projects.findIndex(
+    (proj) => proj.name === projectName
+  );
+
+  if (state.issues.projects[projectIndex].archivesFetched) {
+    console.log("Archived issues already fetched for project", projectName);
+    return;
+  }
+
+  try {
+    const response = await axios.get(
+      `https://sentry.io/api/0/projects/communite/${projectName}/issues/?scope=archived`,
+      {
+        headers: {
+          Authorization:
+            "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+        },
+      }
+    );
+
+    response.data.forEach(async (fetchedIssue: SentryItem) => {
+      const eventActionResult = await thunkAPI.dispatch(
+        fetchEvent({
+          issueId: fetchedIssue.id,
+          projectId: fetchedIssue.project.id,
         })
       );
-      return projectsWithIssuesAndErrors;
-    } catch (error: any) {
-      Sentry.captureException(error);
 
-      return rejectWithValue(error.response.data);
-    }
+      if (fetchEvent.fulfilled.match(eventActionResult)) {
+        const eventsWithLocation = await Promise.all(
+          eventActionResult.payload.events.map(async (event: SentryEvent) => {
+            if (event.user?.ip_address) {
+              const locationActionResult = await thunkAPI.dispatch(
+                fetchLocationFromIP(event.user.ip_address)
+              );
+
+              if (fetchLocationFromIP.fulfilled.match(locationActionResult)) {
+                event.location = {
+                  ...locationActionResult.payload,
+                  status: "success",
+                };
+              } else {
+                console.error(
+                  "Failed to fetch location for event user IP:",
+                  locationActionResult.error
+                );
+
+                Sentry.captureException(locationActionResult.error);
+              }
+            }
+            return event;
+          })
+        );
+
+        const issueWithEvents = {
+          ...fetchedIssue,
+          events: eventsWithLocation,
+        };
+
+        if (fetchedIssue.level === "error") {
+          thunkAPI.dispatch(
+            sentryDataSlice.actions.addError({
+              projectId: fetchedIssue.project.id,
+              item: issueWithEvents,
+            })
+          );
+        } else {
+          thunkAPI.dispatch(
+            sentryDataSlice.actions.addIssue({
+              projectId: fetchedIssue.project.id,
+              item: issueWithEvents,
+            })
+          );
+        }
+      }
+    });
+
+    const updatedProject = {
+      ...state.issues.projects[projectIndex],
+      archivesFetched: true,
+    };
+    await thunkAPI.dispatch(
+      sentryDataSlice.actions.updateProject(updatedProject)
+    );
+  } catch (error: any) {
+    console.error(
+      "Error fetching archived issues:",
+      error.response?.data || error.message
+    );
+    Sentry.captureException(error);
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "An error occurred"
+    );
   }
-);
+});
+
+export const archiveSentryIssue = createAsyncThunk<
+  void,
+  { issueId: string; projectName: string },
+  { rejectValue: string }
+>("issues/archiveSentryIssue", async ({ issueId, projectName }, thunkAPI) => {
+  console.log("DISPATCHED: archiveSentryIssue for", issueId);
+
+  try {
+    const response = await axios.put(
+      `https://sentry.io/api/0/projects/communite/${projectName}/issues/${issueId}/`,
+      {
+        status: "resolved",
+      },
+      {
+        headers: {
+          Authorization:
+            "Bearer 6e639307dff6ddc655a74d16f040d9e88c29ea9c151bc60b7ee5f819b19252b4",
+        },
+      }
+    );
+
+    console.log("Archived issue:", issueId);
+  } catch (error: any) {
+    console.error(
+      "Error archiving issue:",
+      error.response?.data || error.message
+    );
+    Sentry.captureException(error);
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "An error occurred while archiving issue"
+    );
+  }
+});
 
 export const fetchEvent = createAsyncThunk(
   "issues/fetchEvent",

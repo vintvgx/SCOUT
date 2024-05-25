@@ -143,7 +143,7 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
               }
             />
           ))}
-        {sortedIssues.length == 0 && (
+        {/* {sortedIssues.length == 0 && (
           <View style={[styles.center_of_screen]}>
             <TouchableOpacity
               style={{
@@ -166,7 +166,7 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
               />
             </TouchableOpacity>
           </View>
-        )}
+        )} */}
       </ScrollView>
       <EventViewer
         events={selectedEvents}

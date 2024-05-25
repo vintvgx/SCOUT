@@ -93,6 +93,34 @@ const EventViewer: React.FC<EventViewerProps> = ({
   //   }
   // }, [events, dispatch]);
 
+  useEffect(() => {
+    console.log("Fetching events locations");
+
+    setLoadingLocations(true);
+
+    events.map((event) => {
+      if (!event.location && event.user?.ip_address) {
+        dispatch(fetchLocationFromIP(event.user.ip_address))
+          .then((locationData) => {
+            if (fetchLocationFromIP.fulfilled.match(locationData)) {
+              dispatch(
+                sentryDataSlice.actions.updateEventLocation({
+                  projectId: event.projectID,
+                  eventId: event.id,
+                  location: locationData.payload,
+                })
+              );
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching location data: ", error);
+          });
+      }
+    });
+
+    setLoadingLocations(false);
+  }, [events]);
+
   const modalContainerStyle = {
     ...styles(scheme).modalContainer,
     opacity: animationValue,
@@ -151,14 +179,14 @@ const EventViewer: React.FC<EventViewerProps> = ({
             />
           )}
         </MapView>
-        {/* {loadingLocations && (
+        {loadingLocations && (
           <View style={styles(scheme).mapLoadingOverlay}>
             <ActivityIndicator
               size="large"
               color={scheme === "dark" ? "#FFFFFF" : "#000000"}
             />
           </View>
-        )} */}
+        )}
       </View>
     );
   };
@@ -211,6 +239,20 @@ const EventViewer: React.FC<EventViewerProps> = ({
                   </Text>
                 </View>
                 {renderMapView(event, index)}
+                <View style={{ alignSelf: "center", marginTop: 5 }}>
+                  <Text>
+                    {event.location ? (
+                      <Text style={styles(scheme).cityStateLocation}>
+                        {event.location.city}, {event.location.region},{" "}
+                        {event.location.country}
+                      </Text>
+                    ) : (
+                      <Text style={styles(scheme).unknownLocationText}>
+                        Location Unknown
+                      </Text>
+                    )}
+                  </Text>
+                </View>
               </View>
             ))}
           </ScrollView>
