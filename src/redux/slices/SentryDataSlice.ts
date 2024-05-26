@@ -61,49 +61,70 @@ export const sentryDataSlice = createSlice({
         location: Location;
       }>
     ) => {
-      console.log("Updating event with location");
+      const { projectId, eventId, location } = action.payload;
 
-      // Find the project
-      const projectIndex = state.projects.findIndex(
-        (p) => p.id === action.payload.projectId
-      );
-      if (projectIndex !== -1) {
-        const project = state.projects[projectIndex];
-        console.log("Project found:", project.id, project.name);
-
-        // Update the project's issues
-        const updatedIssues: any[] = project.issues.map((issue) => {
-          if (issue.events) {
-            const updatedEvents = issue.events.map((event) => {
-              if (event.id === action.payload.eventId) {
-                console.log(
-                  "Updating with location:",
-                  format(action.payload.location)
-                );
-                return { ...event, location: action.payload.location };
-              }
-              return event;
-            });
-            console.log("Updated events:", format(updatedEvents[0]));
-            return { ...issue, events: updatedEvents };
-          }
-          return issue;
+      const project = state.projects.find((p) => p.id === projectId);
+      if (project) {
+        project.issues.forEach((issue: any) => {
+          issue.events.forEach((event: any) => {
+            if (event.id === eventId) {
+              event.location = location;
+            }
+          });
         });
-
-        // console.log("Updated issue[0]:", format(updatedIssues[0]));
-
-        // Create a new project object with the updated issues
-        const updatedProject = { ...project, issues: updatedIssues };
-        // console.log("🚀 ~ updatedProject:", format(updatedProject.issues[0]));
-
-        // Update the state with the new projects array
-        state.projects = [
-          ...state.projects.slice(0, projectIndex),
-          updatedProject,
-          ...state.projects.slice(projectIndex + 1),
-        ];
       }
     },
+    // updateEventLocation: (
+    //   state,
+    //   action: PayloadAction<{
+    //     projectId: string;
+    //     eventId: string;
+    //     location: Location;
+    //   }>
+    // ) => {
+    //   console.log("Updating event with location");
+
+    //   // Find the project
+    //   const projectIndex = state.projects.findIndex(
+    //     (p) => p.id === action.payload.projectId
+    //   );
+    //   if (projectIndex !== -1) {
+    //     const project = state.projects[projectIndex];
+    //     console.log("Project found:", project.id, project.name);
+
+    //     // Update the project's issues
+    //     const updatedIssues: any[] = project.issues.map((issue) => {
+    //       if (issue.events) {
+    //         const updatedEvents = issue.events.map((event) => {
+    //           if (event.id === action.payload.eventId) {
+    //             console.log(
+    //               "Updating with location:",
+    //               format(action.payload.location)
+    //             );
+    //             return { ...event, location: action.payload.location };
+    //           }
+    //           return event;
+    //         });
+    //         console.log("Updated events:", format(updatedEvents[0]));
+    //         return { ...issue, events: updatedEvents };
+    //       }
+    //       return issue;
+    //     });
+
+    //     // console.log("Updated issue[0]:", format(updatedIssues[0]));
+
+    //     // Create a new project object with the updated issues
+    //     const updatedProject = { ...project, issues: updatedIssues };
+    //     // console.log("🚀 ~ updatedProject:", format(updatedProject.issues[0]));
+
+    //     // Update the state with the new projects array
+    //     state.projects = [
+    //       ...state.projects.slice(0, projectIndex),
+    //       updatedProject,
+    //       ...state.projects.slice(projectIndex + 1),
+    //     ];
+    //   }
+    // },
     updateProject: (state, action: PayloadAction<Project>) => {
       const { payload } = action;
       return {
@@ -198,6 +219,7 @@ export const {
   updateProject,
   clearData,
   addNewIssueID,
+  updateEventLocation,
   resetLoadedData,
   clearNewIssue,
   clearNewIssues,

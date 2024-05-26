@@ -24,6 +24,7 @@ import { useDispatch } from "react-redux";
 import {
   fetchLocationFromIP,
   sentryDataSlice,
+  updateEventLocation,
 } from "../redux/slices/SentryDataSlice";
 
 interface EventViewerProps {
@@ -74,81 +75,34 @@ const EventViewer: React.FC<EventViewerProps> = ({
 
   const fetchEventLocations = useCallback(async () => {
     setLoadingLocations(true);
-    console.log("Fetching locations");
-
     try {
       const updated = await Promise.all(
         events.map(async (event) => {
           if (!event.location && event.user?.ip_address) {
             const locationData = await dispatch(
               fetchLocationFromIP(event.user.ip_address)
+            ).unwrap();
+            console.log("🚀 ~ events.map ~ locationData:", locationData);
+
+            dispatch(
+              updateEventLocation({
+                projectId: event.projectID,
+                eventId: event.id,
+                location: locationData,
+              })
             );
-            if (fetchLocationFromIP.fulfilled.match(locationData)) {
-              const updatedEvent = {
-                ...event,
-                location: locationData.payload,
-              };
-              dispatch(
-                sentryDataSlice.actions.updateEventLocation({
-                  projectId: event.projectID,
-                  eventId: event.id,
-                  location: locationData.payload,
-                })
-              );
-              return updatedEvent;
-            }
+            return { ...event, location: locationData };
           }
           return event;
         })
       );
+      setUpdatedEvents(updated);
     } catch (error) {
-      console.error("Error fetching location data: ", error);
+      console.error("Error fetching location data:", error);
     } finally {
       setLoadingLocations(false);
-      console.log("Finished fetching locations");
     }
   }, [events, dispatch]);
-
-  const fetchEventLocationsWithoutCallback = async () => {
-    setLoadingLocations(true);
-    console.log("Fetching locations");
-
-    try {
-      const updated = await Promise.all(
-        events.map(async (event) => {
-          if (!event.location && event.user?.ip_address) {
-            const locationData = await dispatch(
-              fetchLocationFromIP(event.user.ip_address)
-            );
-            if (fetchLocationFromIP.fulfilled.match(locationData)) {
-              const updatedEvent = {
-                ...event,
-                location: locationData.payload,
-              };
-              dispatch(
-                sentryDataSlice.actions.updateEventLocation({
-                  projectId: event.projectID,
-                  eventId: event.id,
-                  location: locationData.payload,
-                })
-              );
-              return updatedEvent;
-            }
-          }
-          return event;
-        })
-      );
-    } catch (error) {
-      console.error("Error fetching location data: ", error);
-    } finally {
-      setLoadingLocations(false);
-      console.log("Finished fetching locations");
-    }
-  };
-
-  useEffect(() => {
-    setUpdatedEvents(events);
-  }, [events]);
 
   const modalContainerStyle = {
     ...styles(scheme).modalContainer,
@@ -189,7 +143,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
             {!loadingLocations && !event.location && (
               <TouchableOpacity
                 onPress={() => {
-                  console.log("LOCATION:", event);
+                  console.log("LOCATION:", format(event));
                 }}>
                 <Text style={styles(scheme).unknownLocationText}>
                   Location Unknown

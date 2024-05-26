@@ -26,6 +26,8 @@ interface SentryIssuesAndErrorsType {
   data: any;
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
   projectName,
   data,
@@ -58,6 +60,7 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
         console.log("FETCHING ISSUES FOR PROJECT", projectName);
         await dispatch(fetchSentryIssues(projectName));
       }
+      await sleep(500);
       setLoading(false);
     };
     asyncFetch();
@@ -89,7 +92,7 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
     });
   }, [issues]);
 
-  if (sortedIssues.length === 0 && loading) {
+  if (loading || refreshing) {
     return (
       <View
         style={{
@@ -99,47 +102,9 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
         <ActivityIndicator style={styles.center_of_screen} size="small" />
       </View>
     );
-  } else if (sortedIssues.length > 0 && issues.length > 0 && !loading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
-        }}>
-        <ScrollView
-          refreshControl={
-            <RefreshControl
-              tintColor={"white"}
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-            />
-          }>
-          {sortedIssues.map((item, index) => (
-            <SentryCard
-              key={item.id}
-              item={item}
-              isNew={newIssues.includes(item.id)}
-              onPress={() =>
-                handleOpenEventModal(
-                  item,
-                  setSelectedEvents,
-                  setIsViewerVisible,
-                  dispatch
-                )
-              }
-              onRemove={handleRemove}
-            />
-          ))}
-        </ScrollView>
-        <EventViewer
-          events={selectedEvents}
-          isVisible={isViewerVisible}
-          onClose={() => setIsViewerVisible(false)}
-        />
-      </View>
-    );
-  } else {
+  }
+
+  if (!loading && sortedIssues.length === 0) {
     return (
       <View
         style={[
@@ -150,6 +115,46 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
       </View>
     );
   }
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+      }}>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            tintColor={"white"}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }>
+        {sortedIssues.map((item, index) => (
+          <SentryCard
+            key={item.id}
+            item={item}
+            isNew={newIssues.includes(item.id)}
+            onPress={() =>
+              handleOpenEventModal(
+                item,
+                setSelectedEvents,
+                setIsViewerVisible,
+                dispatch
+              )
+            }
+            onRemove={handleRemove}
+          />
+        ))}
+      </ScrollView>
+      <EventViewer
+        events={selectedEvents}
+        isVisible={isViewerVisible}
+        onClose={() => setIsViewerVisible(false)}
+      />
+    </View>
+  );
 };
 
 export default SentryIssuesAndErrors;
