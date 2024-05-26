@@ -47,26 +47,30 @@ const EventViewer: React.FC<EventViewerProps> = ({
   const [updatedEvents, setUpdatedEvents] = useState<SentryEvent[]>([]);
 
   useEffect(() => {
-    console.log("🚀 ~ isVisible:", isVisible);
     if (isVisible) {
-      Animated.timing(animationValue, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-      fetchEventLocations();
+      const asyncEffect = async () => {
+        await fetchEventLocations();
+        Animated.timing(animationValue, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      };
+      asyncEffect();
     } else {
       Animated.timing(animationValue, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
       }).start(() => {
-        // Reset the animation value after the modal is hidden
         animationValue.setValue(0);
       });
     }
-    console.log("🚀 ~ isVisible:", isVisible);
   }, [isVisible]);
+
+  useEffect(() => {
+    setUpdatedEvents(events);
+  }, [events]);
 
   const fetchEventLocations = useCallback(async () => {
     setLoadingLocations(true);
@@ -97,7 +101,6 @@ const EventViewer: React.FC<EventViewerProps> = ({
           return event;
         })
       );
-      setUpdatedEvents(updated);
     } catch (error) {
       console.error("Error fetching location data: ", error);
     } finally {
@@ -106,17 +109,58 @@ const EventViewer: React.FC<EventViewerProps> = ({
     }
   }, [events, dispatch]);
 
+  const fetchEventLocationsWithoutCallback = async () => {
+    setLoadingLocations(true);
+    console.log("Fetching locations");
+
+    try {
+      const updated = await Promise.all(
+        events.map(async (event) => {
+          if (!event.location && event.user?.ip_address) {
+            const locationData = await dispatch(
+              fetchLocationFromIP(event.user.ip_address)
+            );
+            if (fetchLocationFromIP.fulfilled.match(locationData)) {
+              const updatedEvent = {
+                ...event,
+                location: locationData.payload,
+              };
+              dispatch(
+                sentryDataSlice.actions.updateEventLocation({
+                  projectId: event.projectID,
+                  eventId: event.id,
+                  location: locationData.payload,
+                })
+              );
+              return updatedEvent;
+            }
+          }
+          return event;
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching location data: ", error);
+    } finally {
+      setLoadingLocations(false);
+      console.log("Finished fetching locations");
+    }
+  };
+
+  useEffect(() => {
+    setUpdatedEvents(events);
+  }, [events]);
+
   const modalContainerStyle = {
     ...styles(scheme).modalContainer,
-    opacity: animationValue,
-    transform: [
-      {
-        translateY: animationValue.interpolate({
-          inputRange: [0, 1],
-          outputRange: [100, 0],
-        }),
-      },
-    ],
+    opacity: 1,
+    // transform: [
+    //   {
+    //     translateY: animationValue.interpolate({
+    //       inputRange: [0, 1],
+    //       outputRange: [100, 0],
+    //     }),
+    //   },
+    // ],
   };
 
   const handleInfoIconPress = (event: SentryEvent) => {
@@ -190,7 +234,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
       visible={isVisible}
       onRequestClose={onClose}>
       <View style={styles(scheme).modalBackdrop}>
-        <Animated.View style={modalContainerStyle}>
+        <View style={modalContainerStyle}>
           <View style={styles(scheme).header}>
             <Text style={styles(scheme).headerTitle}>
               {events.length > 0 ? events[0].title : "Event"}
@@ -253,7 +297,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
             onPress={onClose}>
             <Text style={styles(scheme).closeButtonText}>Close</Text>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
         {selectedEvent && (
           <EventInformation
             infoModalVisible={infoModalVisible}

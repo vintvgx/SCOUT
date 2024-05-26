@@ -19,6 +19,7 @@ import { SentryIssuesView } from "../components/SentryIssues";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
 import {
+  fetchArchivedSentryIssues,
   fetchSentryIssues,
   fetchSentryIssuesWithLocation,
   resetLoadedData,
@@ -47,20 +48,29 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
 
+  const [displayArchives, setDisplayArchives] = useState<boolean>(false);
+
   // Fetch issue details by ID if issueId is present in the navigation parameters
+  // useEffect(() => {
+  //   if (data) {
+  //     console.log("DATA INCLUDED: FETCHING ISSUES FOR PROJECT", projectName);
+  //     console.log("DATA:", data);
+  //     dispatch(resetLoadedData(projectName));
+  //     dispatch(fetchSentryIssues(projectName)).catch((error) =>
+  //       console.error("Failed to fetch issue details:", error)
+  //     );
+  //   } else {
+  //     console.log("FETCHING ISSUES FOR PROJECT", projectName);
+  //     dispatch(fetchSentryIssues(projectName));
+  //   }
+  // }, [dispatch, data]);
+
   useEffect(() => {
-    if (data) {
-      console.log("DATA INCLUDED: FETCHING ISSUES FOR PROJECT", projectName);
-      console.log("DATA:", data);
-      dispatch(resetLoadedData(projectName));
-      dispatch(fetchSentryIssues(projectName)).catch((error) =>
-        console.error("Failed to fetch issue details:", error)
-      );
-    } else {
+    if (project && displayArchives) {
       console.log("FETCHING ISSUES FOR PROJECT", projectName);
-      dispatch(fetchSentryIssues(projectName));
+      dispatch(fetchArchivedSentryIssues(projectName));
     }
-  }, [dispatch, data]);
+  }, [displayArchives]);
 
   return (
     <SafeAreaView
@@ -93,7 +103,7 @@ const ProjectMonitoringView = ({ route }: { route: any }) => {
           <Ionicons name="options-outline" size={20} color="white" />
         </TouchableOpacity>
       </View>
-      <SentryIssuesAndErrors projectName={projectName} />
+      <SentryIssuesAndErrors projectName={projectName} data={data} />
       <SentryDataFooter projectName={projectName} />
     </SafeAreaView>
   );

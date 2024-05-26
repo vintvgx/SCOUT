@@ -1,14 +1,13 @@
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
-  Touchable,
-  TouchableOpacity,
   View,
+  Animated,
 } from "react-native";
-import React, { useMemo, useState } from "react";
 import { SentryEvent } from "../model/event";
 import { AppDispatch, useAppSelector } from "../redux/store";
 import { useDispatch } from "react-redux";
@@ -16,121 +15,109 @@ import {
   fetchSentryIssues,
   resetLoadedData,
 } from "../redux/slices/SentryDataSlice";
-import IssueCard from "./IssueCard";
+import SentryCard from "./SentryCard";
 import { handleOpenEventModal } from "../utils/functions";
 import EventViewer from "./EventViewer";
-import SentryCard from "./SentryCard";
-import { Ionicons } from "@expo/vector-icons";
+import { Project } from "../model/project";
+import { SentryItem } from "../model/issue";
 
 interface SentryIssuesAndErrorsType {
   projectName: string;
+  data: any;
 }
 
 const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
   projectName,
+  data,
 }) => {
   const scheme = "dark";
   const dispatch: AppDispatch = useDispatch();
   const [isViewerVisible, setIsViewerVisible] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<SentryEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [issues, setIssues] = useState<SentryItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const { projects, loading, error, newIssues } = useAppSelector(
-    (state) => state.issues
+  const { newIssues } = useAppSelector((state) => state.issues);
+
+  const project = useAppSelector((state) =>
+    state.issues.projects.find((p) => p.name === projectName)
   );
 
-  const project = projects.find((p) => p.name === projectName); // Ensure the project is defined and has issues
+  useEffect(() => {
+    const asyncFetch = async () => {
+      setLoading(true);
+      if (data) {
+        console.log("DATA INCLUDED: FETCHING ISSUES FOR PROJECT", projectName);
+        console.log("DATA:", data);
+        dispatch(resetLoadedData(projectName));
+        await dispatch(fetchSentryIssues(projectName)).catch((error) =>
+          console.error("Failed to fetch issue details:", error)
+        );
+      } else {
+        console.log("FETCHING ISSUES FOR PROJECT", projectName);
+        await dispatch(fetchSentryIssues(projectName));
+      }
+      setLoading(false);
+    };
+    asyncFetch();
+  }, [dispatch, data]);
 
-  let issues = project?.issues || [];
-  let errors = project?.errors || [];
+  useEffect(() => {
+    if (project) {
+      setIssues([...project.issues, ...project.errors]);
+    }
+  }, [project]);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // Dispatch fetchSentryIssues action here. Assuming project.name exists and fetchSentryIssues action is correctly defined.
-    if (project?.name) {
-      dispatch(resetLoadedData(project?.name));
-      dispatch(fetchSentryIssues(project?.name)).then(() =>
-        setRefreshing(false)
-      );
+    if (projectName) {
+      dispatch(resetLoadedData(projectName));
+      dispatch(fetchSentryIssues(projectName)).then(() => setRefreshing(false));
     }
   }, [dispatch, projectName]);
 
+  const handleRemove = (id: string) => {
+    setIssues((prevIssues) => prevIssues.filter((issue) => issue.id !== id));
+  };
+
   const sortedIssues = useMemo(() => {
-    // Clone and sort the issues array to avoid direct mutation
-    return [...issues, ...errors].sort((a, b) => {
+    return issues.sort((a, b) => {
       const dateA = new Date(a.lastSeen).getTime();
       const dateB = new Date(b.lastSeen).getTime();
-      return dateB - dateA; // For descending order
+      return dateB - dateA;
     });
-  }, [issues, errors]);
+  }, [issues]);
 
-  if (loading && sortedIssues.length === 0) {
-    if (loading && sortedIssues.length === 0) {
-      return (
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
-          }}>
-          <ActivityIndicator style={styles.center_of_screen} size="small" />
-        </View>
-      );
-    } else if (error) {
-      // Handle error state
-      return (
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
-          }}>
-          <Text style={styles.errorText}>Error: {error}</Text>
-        </View>
-      );
-    } else if (!project) {
-      // Handle case where project is not found
-      return (
-        <View
-          style={[
-            styles.center_of_screen,
-            { backgroundColor: scheme === "dark" ? "#121212" : "#FFF" },
-          ]}>
-          <Text style={styles.errorText}>Project not found.</Text>
-        </View>
-      );
-    } else if (!loading && sortedIssues.length === 0) {
-      // Handle case where there are no issues
-      return (
-        <View
-          style={[
-            styles.center_of_screen,
-            { backgroundColor: scheme === "dark" ? "#121212" : "#FFF" },
-          ]}>
-          <Text style={styles.errorText}>No issues found.</Text>
-        </View>
-      );
-    }
-  }
-
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
-      }}>
-      <ScrollView
-        refreshControl={
-          <RefreshControl
-            tintColor={"white"}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
-        }>
-        {sortedIssues &&
-          sortedIssues.length > 0 &&
-          sortedIssues.map((item, index) => (
+  if (sortedIssues.length === 0 && loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+        }}>
+        <ActivityIndicator style={styles.center_of_screen} size="small" />
+      </View>
+    );
+  } else if (sortedIssues.length > 0 && issues.length > 0 && !loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
+        }}>
+        <ScrollView
+          refreshControl={
+            <RefreshControl
+              tintColor={"white"}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }>
+          {sortedIssues.map((item, index) => (
             <SentryCard
-              key={item.id || index}
+              key={item.id}
               item={item}
               isNew={newIssues.includes(item.id)}
               onPress={() =>
@@ -141,16 +128,28 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
                   dispatch
                 )
               }
+              onRemove={handleRemove}
             />
           ))}
-      </ScrollView>
-      <EventViewer
-        events={selectedEvents}
-        isVisible={isViewerVisible}
-        onClose={() => setIsViewerVisible(false)}
-      />
-    </View>
-  );
+        </ScrollView>
+        <EventViewer
+          events={selectedEvents}
+          isVisible={isViewerVisible}
+          onClose={() => setIsViewerVisible(false)}
+        />
+      </View>
+    );
+  } else {
+    return (
+      <View
+        style={[
+          styles.center_of_screen,
+          { backgroundColor: scheme === "dark" ? "#121212" : "#FFF" },
+        ]}>
+        <Text style={styles.errorText}>No issues found.</Text>
+      </View>
+    );
+  }
 };
 
 export default SentryIssuesAndErrors;

@@ -566,7 +566,7 @@ export const archiveSentryIssue = createAsyncThunk<
 
   try {
     const response = await axios.put(
-      `https://sentry.io/api/0/projects/communite/${projectName}/issues/${issueId}/`,
+      `https://sentry.io/api/0/organizations/communite/issues/${issueId}/`,
       {
         status: "resolved",
       },
