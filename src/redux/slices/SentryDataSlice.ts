@@ -90,7 +90,7 @@ export const sentryDataSlice = createSlice({
           return issue;
         });
 
-        console.log("Updated issue[0]:", format(updatedIssues[0]));
+        // console.log("Updated issue[0]:", format(updatedIssues[0]));
 
         // Create a new project object with the updated issues
         const updatedProject = { ...project, issues: updatedIssues };

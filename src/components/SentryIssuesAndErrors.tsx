@@ -143,30 +143,6 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
               }
             />
           ))}
-        {/* {sortedIssues.length == 0 && (
-          <View style={[styles.center_of_screen]}>
-            <TouchableOpacity
-              style={{
-                backgroundColor: scheme === "dark" ? "#121212" : "#FFF",
-                padding: 10,
-                borderRadius: 5,
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-              onPress={onRefresh}>
-              <Text
-                style={[styles.errorText, { fontSize: 20, marginRight: 5 }]}>
-                Load Data
-              </Text>
-              <Ionicons
-                name="refresh"
-                size={20}
-                color="gray"
-                style={{ marginTop: 3 }}
-              />
-            </TouchableOpacity>
-          </View>
-        )} */}
       </ScrollView>
       <EventViewer
         events={selectedEvents}

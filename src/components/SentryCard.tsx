@@ -5,8 +5,12 @@ import {
   Text,
   TouchableOpacity,
   useColorScheme,
+  Alert,
 } from "react-native";
 import { SentryItem } from "../model/issue";
+import { useDispatch } from "react-redux";
+import { archiveSentryIssue } from "../redux/slices/SentryDataSlice";
+import { AppDispatch } from "../redux/store";
 
 interface SentryCardProps {
   item: SentryItem;
@@ -15,13 +19,13 @@ interface SentryCardProps {
 }
 
 const SentryCard = React.memo<SentryCardProps>(({ item, onPress, isNew }) => {
-  // const scheme = useColorScheme();
   const scheme = "dark";
   const eventsCount = item.events ? item.events.length : "N/A";
+  const dispatch: AppDispatch = useDispatch();
 
   const cardStyle = [
     scheme === "dark" ? styles.cardDark : styles.cardLight,
-    isNew && styles.newIssue, // Highlight new issues distinctly
+    isNew && styles.newIssue,
   ];
 
   const detailsContainer = [
@@ -32,11 +36,40 @@ const SentryCard = React.memo<SentryCardProps>(({ item, onPress, isNew }) => {
   const detailStyle =
     scheme === "dark" ? styles.detailDark : styles.detailLight;
 
+  const handleArchive = () => {
+    Alert.alert(
+      "Confirm Archive",
+      "Are you sure you want to archive this issue?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Archive",
+          onPress: () => {
+            dispatch(
+              archiveSentryIssue({
+                issueId: item.id,
+                projectName: item.project.name,
+              })
+            );
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <TouchableOpacity onPress={onPress} style={cardStyle}>
-      <Text style={scheme === "dark" ? styles.titleDark : styles.titleLight}>
-        {item.title}
-      </Text>
+      <View style={styles.header}>
+        <Text style={scheme === "dark" ? styles.titleDark : styles.titleLight}>
+          {item.title}
+        </Text>
+        <TouchableOpacity onPress={handleArchive} style={styles.archiveButton}>
+          <Text style={styles.archiveText}>Archive</Text>
+        </TouchableOpacity>
+      </View>
       <View style={detailsContainer}>
         <Text style={detailStyle}>Events: {eventsCount}</Text>
         <Text style={detailStyle}>
@@ -46,9 +79,15 @@ const SentryCard = React.memo<SentryCardProps>(({ item, onPress, isNew }) => {
           Last Seen: {new Date(item.lastSeen).toLocaleString()}
         </Text>
       </View>
+
       {isNew && (
         <View style={styles.newTag}>
           <Text style={styles.newText}>NEW</Text>
+        </View>
+      )}
+      {item.status === "archived" && (
+        <View style={styles.newTag}>
+          <Text style={styles.newText}>ARCHIVED</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -71,15 +110,15 @@ const styles = StyleSheet.create({
     width: "98.5%",
   },
   cardLight: {
-    backgroundColor: "#F7F7F7", // Changed from white to light gray for better contrast
+    backgroundColor: "#F7F7F7",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
-    shadowColor: "#000", // Darker shadow for better contrast
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2, // Increased opacity for a more pronounced shadow
-    shadowRadius: 6, // Slightly larger radius for a softer spread
-    elevation: 10, // Slightly raised elevation for more depth
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 10,
   },
   newIssue: {
     borderColor: "#BB86FC",
@@ -99,7 +138,6 @@ const styles = StyleSheet.create({
   },
   detailsContainer: {
     paddingLeft: 10,
-    // borderLeftColor: "#BB86FC",
     borderLeftWidth: 4,
   },
   detailDark: {
@@ -121,6 +159,21 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   newText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  archiveButton: {
+    backgroundColor: "#333333",
+    borderRadius: 4,
+    padding: 4,
+  },
+  archiveText: {
     color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "bold",
