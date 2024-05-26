@@ -72,12 +72,17 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
     }
   }, [project]);
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
+    setLoading(true);
     setRefreshing(true);
     if (projectName) {
-      dispatch(resetLoadedData(projectName));
-      dispatch(fetchSentryIssues(projectName)).then(() => setRefreshing(false));
+      await dispatch(resetLoadedData(projectName));
+      await dispatch(fetchSentryIssues(projectName)).then(() =>
+        setRefreshing(false)
+      );
     }
+    await sleep(500);
+    setLoading(false);
   }, [dispatch, projectName]);
 
   const handleRemove = (id: string) => {
