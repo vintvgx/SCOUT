@@ -34,6 +34,7 @@ import format from "pretty-format";
 import * as Sentry from "@sentry/react-native";
 import { SentryItem } from "../model/issue";
 import { Project } from "../model/project";
+import SkeletonLoader from "../components/SentryCardSkeleton";
 
 const Home = () => {
   // const scheme = useColorScheme();

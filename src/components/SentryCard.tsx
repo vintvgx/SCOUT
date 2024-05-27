@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   useColorScheme,
   Alert,
+  Animated,
 } from "react-native";
 import { SentryItem } from "../model/issue";
 import { useDispatch } from "react-redux";
@@ -16,83 +17,136 @@ interface SentryCardProps {
   item: SentryItem;
   onPress: () => void;
   isNew: boolean;
+  onRemove: (id: string) => void;
 }
 
-const SentryCard = React.memo<SentryCardProps>(({ item, onPress, isNew }) => {
-  const scheme = "dark";
-  const eventsCount = item.events ? item.events.length : "N/A";
-  const dispatch: AppDispatch = useDispatch();
+const SentryCard = React.memo<SentryCardProps>(
+  ({ item, onPress, isNew, onRemove }) => {
+    const scheme = "dark";
+    const eventsCount = item.events ? item.events.length : "N/A";
+    const dispatch: AppDispatch = useDispatch();
+    const fadeAnim = useRef(new Animated.Value(1)).current; // Initial opacity value
+    const shakeAnim = useRef(new Animated.Value(0)).current;
 
-  const cardStyle = [
-    scheme === "dark" ? styles.cardDark : styles.cardLight,
-    isNew && styles.newIssue,
-  ];
+    const cardStyle = [
+      scheme === "dark" ? styles.cardDark : styles.cardLight,
+      isNew && styles.newIssue,
+    ];
 
-  const detailsContainer = [
-    styles.detailsContainer,
-    { borderLeftColor: item.level == "error" ? "#FF0000" : "#BB86FC" },
-  ];
+    const detailsContainer = [
+      styles.detailsContainer,
+      { borderLeftColor: item.level == "error" ? "#FF0000" : "#BB86FC" },
+    ];
 
-  const detailStyle =
-    scheme === "dark" ? styles.detailDark : styles.detailLight;
+    const detailStyle =
+      scheme === "dark" ? styles.detailDark : styles.detailLight;
 
-  const handleArchive = () => {
-    Alert.alert(
-      "Confirm Archive",
-      "Are you sure you want to archive this issue?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Archive",
-          onPress: () => {
-            dispatch(
-              archiveSentryIssue({
-                issueId: item.id,
-                projectName: item.project.name,
-              })
-            );
+    const handleArchive = () => {
+      Alert.alert(
+        "Confirm Archive",
+        "Are you sure you want to archive this issue?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
           },
-        },
-      ]
-    );
-  };
+          {
+            text: "Archive",
+            onPress: () => {
+              console.log(item.id);
+              dispatch(
+                archiveSentryIssue({
+                  issueId: item.id,
+                  projectName: item.project.name,
+                })
+              ).then((result) => {
+                if (archiveSentryIssue.fulfilled.match(result)) {
+                  // Trigger fade-out animation on success
+                  Animated.timing(fadeAnim, {
+                    toValue: 0,
+                    duration: 500,
+                    useNativeDriver: true,
+                  }).start(() => {
+                    onRemove(item.id); // Notify parent to remove the item
+                  });
+                } else {
+                  // Trigger shake animation on failure
+                  Animated.sequence([
+                    Animated.timing(shakeAnim, {
+                      toValue: 10,
+                      duration: 50,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(shakeAnim, {
+                      toValue: -10,
+                      duration: 50,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(shakeAnim, {
+                      toValue: 10,
+                      duration: 50,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(shakeAnim, {
+                      toValue: -10,
+                      duration: 50,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(shakeAnim, {
+                      toValue: 0,
+                      duration: 50,
+                      useNativeDriver: true,
+                    }),
+                  ]).start();
+                }
+              });
+            },
+          },
+        ]
+      );
+    };
 
-  return (
-    <TouchableOpacity onPress={onPress} style={cardStyle}>
-      <View style={styles.header}>
-        <Text style={scheme === "dark" ? styles.titleDark : styles.titleLight}>
-          {item.title}
-        </Text>
+    return (
+      <Animated.View
+        style={[
+          { transform: [{ translateX: shakeAnim }] },
+          { opacity: fadeAnim },
+          cardStyle,
+        ]}>
+        <TouchableOpacity onPress={onPress}>
+          <View style={styles.header}>
+            <Text
+              style={scheme === "dark" ? styles.titleDark : styles.titleLight}>
+              {item.title}
+            </Text>
+          </View>
+          <View style={detailsContainer}>
+            <Text style={detailStyle}>Events: {eventsCount}</Text>
+            <Text style={detailStyle}>
+              First Seen: {new Date(item.firstSeen).toLocaleString()}
+            </Text>
+            <Text style={detailStyle}>
+              Last Seen: {new Date(item.lastSeen).toLocaleString()}
+            </Text>
+          </View>
+        </TouchableOpacity>
         <TouchableOpacity onPress={handleArchive} style={styles.archiveButton}>
           <Text style={styles.archiveText}>Archive</Text>
         </TouchableOpacity>
-      </View>
-      <View style={detailsContainer}>
-        <Text style={detailStyle}>Events: {eventsCount}</Text>
-        <Text style={detailStyle}>
-          First Seen: {new Date(item.firstSeen).toLocaleString()}
-        </Text>
-        <Text style={detailStyle}>
-          Last Seen: {new Date(item.lastSeen).toLocaleString()}
-        </Text>
-      </View>
-
-      {isNew && (
-        <View style={styles.newTag}>
-          <Text style={styles.newText}>NEW</Text>
-        </View>
-      )}
-      {item.status === "archived" && (
-        <View style={styles.newTag}>
-          <Text style={styles.newText}>ARCHIVED</Text>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-});
+        {isNew && (
+          <View style={styles.newTag}>
+            <Text style={styles.newText}>NEW</Text>
+          </View>
+        )}
+        {item.status === "archived" && (
+          <View style={styles.newTag}>
+            <Text style={styles.newText}>ARCHIVED</Text>
+          </View>
+        )}
+      </Animated.View>
+    );
+  }
+);
 
 export default SentryCard;
 
@@ -172,6 +226,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#333333",
     borderRadius: 4,
     padding: 4,
+    position: "absolute",
+    right: 20,
+    bottom: 20,
   },
   archiveText: {
     color: "#FFFFFF",
