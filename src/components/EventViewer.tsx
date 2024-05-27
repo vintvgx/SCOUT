@@ -231,7 +231,11 @@ const EventViewer: React.FC<EventViewerProps> = ({
                 {renderMapView(event, index)}
                 <View style={{ alignSelf: "center", marginTop: 5 }}>
                   <Text>
-                    {event.location ? (
+                    {loadingLocations ? (
+                      <Text style={styles(scheme).cityStateLocation}>
+                        Loading Location
+                      </Text>
+                    ) : event.location && event.location.city ? (
                       <Text style={styles(scheme).cityStateLocation}>
                         {event.location.city}, {event.location.region},{" "}
                         {event.location.country}

@@ -16,6 +16,8 @@ import { Provider, useDispatch } from "react-redux";
 import store, { AppDispatch } from "./src/redux/store";
 import * as Sentry from "@sentry/react-native";
 import { setExpoPushToken } from "./src/redux/slices/RegisterSlice";
+import "react-native-gesture-handler";
+import "react-native-reanimated";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
