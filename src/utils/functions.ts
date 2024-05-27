@@ -114,6 +114,7 @@ export const handleOpenEventModal = (
   setIsViewerVisible: (isVisible: boolean) => void,
   dispatch: AppDispatch
 ) => {
+  console.log(format(issue));
   setSelectedEvents(issue.events || []);
   setIsViewerVisible(true);
   dispatch(clearNewIssue(issue.id));

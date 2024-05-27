@@ -82,8 +82,6 @@ const EventViewer: React.FC<EventViewerProps> = ({
             const locationData = await dispatch(
               fetchLocationFromIP(event.user.ip_address)
             ).unwrap();
-            console.log("🚀 ~ events.map ~ locationData:", locationData);
-
             dispatch(
               updateEventLocation({
                 projectId: event.projectID,
