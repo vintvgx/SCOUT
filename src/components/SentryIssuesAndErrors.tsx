@@ -60,7 +60,7 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
         console.log("FETCHING ISSUES FOR PROJECT", projectName);
         await dispatch(fetchSentryIssues(projectName));
       }
-      await sleep(500);
+      await sleep(1000);
       setLoading(false);
     };
     asyncFetch();
@@ -81,7 +81,7 @@ const SentryIssuesAndErrors: React.FC<SentryIssuesAndErrorsType> = ({
         setRefreshing(false)
       );
     }
-    await sleep(500);
+    await sleep(1000);
     setLoading(false);
   }, [dispatch, projectName]);
 
