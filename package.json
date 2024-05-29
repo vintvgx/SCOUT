@@ -11,8 +11,8 @@
     "testFinal": "jest",
     "updateSnapshots": "jest -u --coverage=false",
     "testsum": "jest --watch=false --coverage=false --silent --verbose",
-    "testCoverage": "jest --coverage && open coverage/lcov-report/index.html",
-    "openCoverage": "open coverage/lcov-report/index.html"
+    "testCov": "jest --coverage && open coverage/lcov-report/index.html",
+    "openCov": "open coverage/lcov-report/index.html"
   },
   "jest": {
     "preset": "jest-expo",
