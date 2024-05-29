@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1716950612609" clover="3.2.0">
-  <project timestamp="1716950612610" name="All files">
-    <metrics statements="745" coveredstatements="0" conditionals="355" coveredconditionals="0" methods="209" coveredmethods="0" elements="1309" coveredelements="0" complexity="0" loc="745" ncloc="745" packages="57" files="81" classes="81"/>
+<coverage generated="1716956297400" clover="3.2.0">
+  <project timestamp="1716956297400" name="All files">
+    <metrics statements="745" coveredstatements="38" conditionals="355" coveredconditionals="5" methods="209" coveredmethods="4" elements="1309" coveredelements="47" complexity="0" loc="745" ncloc="745" packages="57" files="81" classes="81"/>
     <package name="dpd.stats">
       <metrics statements="20" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="5" coveredmethods="0"/>
       <file name="App.tsx" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/App.tsx">
@@ -454,7 +454,7 @@
       </file>
     </package>
     <package name="dpd.stats.src.components">
-      <metrics statements="246" coveredstatements="0" conditionals="197" coveredconditionals="0" methods="79" coveredmethods="0"/>
+      <metrics statements="246" coveredstatements="13" conditionals="197" coveredconditionals="2" methods="79" coveredmethods="2"/>
       <file name="EventInformation.tsx" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/components/EventInformation.tsx">
         <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="4" coveredmethods="0"/>
         <line num="19" count="0" type="stmt"/>
@@ -513,16 +513,16 @@
         <line num="270" count="0" type="stmt"/>
       </file>
       <file name="Header.tsx" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/components/Header.tsx">
-        <metrics statements="9" coveredstatements="0" conditionals="4" coveredconditionals="0" methods="2" coveredmethods="0"/>
-        <line num="14" count="0" type="stmt"/>
-        <line num="15" count="0" type="stmt"/>
-        <line num="18" count="0" type="stmt"/>
-        <line num="19" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="20" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="22" count="0" type="stmt"/>
-        <line num="23" count="0" type="stmt"/>
-        <line num="30" count="0" type="stmt"/>
-        <line num="43" count="0" type="stmt"/>
+        <metrics statements="9" coveredstatements="9" conditionals="4" coveredconditionals="2" methods="2" coveredmethods="2"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="18" count="2" type="stmt"/>
+        <line num="19" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="20" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="22" count="2" type="stmt"/>
+        <line num="23" count="2" type="stmt"/>
+        <line num="30" count="2" type="stmt"/>
+        <line num="43" count="2" type="stmt"/>
       </file>
       <file name="IssueCard.tsx" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/components/IssueCard.tsx">
         <metrics statements="7" coveredstatements="0" conditionals="12" coveredconditionals="0" methods="1" coveredmethods="0"/>
@@ -543,15 +543,15 @@
         <line num="57" count="0" type="stmt"/>
       </file>
       <file name="ProjectCard.tsx" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/components/ProjectCard.tsx">
-        <metrics statements="8" coveredstatements="0" conditionals="18" coveredconditionals="0" methods="2" coveredmethods="0"/>
-        <line num="19" count="0" type="stmt"/>
+        <metrics statements="8" coveredstatements="2" conditionals="18" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <line num="19" count="1" type="stmt"/>
         <line num="20" count="0" type="stmt"/>
         <line num="23" count="0" type="stmt"/>
         <line num="40" count="0" type="stmt"/>
         <line num="46" count="0" type="stmt"/>
         <line num="52" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="54" count="0" type="stmt"/>
-        <line num="93" count="0" type="stmt"/>
+        <line num="93" count="1" type="stmt"/>
       </file>
       <file name="ProjectOptionModal.tsx" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/components/ProjectOptionModal.tsx">
         <metrics statements="3" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
@@ -568,13 +568,13 @@
         <line num="52" count="0" type="cond" truecount="0" falsecount="1"/>
       </file>
       <file name="PulseLight.tsx" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/components/PulseLight.tsx">
-        <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
-        <line num="6" count="0" type="stmt"/>
+        <metrics statements="6" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="0"/>
+        <line num="6" count="1" type="stmt"/>
         <line num="7" count="0" type="stmt"/>
         <line num="9" count="0" type="stmt"/>
         <line num="10" count="0" type="stmt"/>
         <line num="26" count="0" type="stmt"/>
-        <line num="40" count="0" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
       </file>
       <file name="SentryCard.tsx" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/components/SentryCard.tsx">
         <metrics statements="19" coveredstatements="0" conditionals="18" coveredconditionals="0" methods="5" coveredmethods="0"/>
@@ -791,7 +791,7 @@
       </file>
     </package>
     <package name="dpd.stats.src.redux.slices">
-      <metrics statements="188" coveredstatements="0" conditionals="68" coveredconditionals="0" methods="55" coveredmethods="0"/>
+      <metrics statements="188" coveredstatements="11" conditionals="68" coveredconditionals="0" methods="55" coveredmethods="0"/>
       <file name="RegisterSlice.ts" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/redux/slices/RegisterSlice.ts">
         <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="7" count="0" type="stmt"/>
@@ -800,9 +800,9 @@
         <line num="21" count="0" type="stmt"/>
       </file>
       <file name="SentryDataSlice.ts" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/redux/slices/SentryDataSlice.ts">
-        <metrics statements="184" coveredstatements="0" conditionals="68" coveredconditionals="0" methods="54" coveredmethods="0"/>
-        <line num="23" count="0" type="stmt"/>
-        <line num="33" count="0" type="stmt"/>
+        <metrics statements="184" coveredstatements="11" conditionals="68" coveredconditionals="0" methods="54" coveredmethods="0"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
         <line num="38" count="0" type="stmt"/>
         <line num="39" count="0" type="stmt"/>
         <line num="40" count="0" type="stmt"/>
@@ -854,8 +854,8 @@
         <line num="156" count="0" type="stmt"/>
         <line num="157" count="0" type="stmt"/>
         <line num="160" count="0" type="stmt"/>
-        <line num="176" count="0" type="stmt"/>
-        <line num="178" count="0" type="stmt"/>
+        <line num="176" count="1" type="stmt"/>
+        <line num="178" count="1" type="stmt"/>
         <line num="181" count="0" type="stmt"/>
         <line num="182" count="0" type="stmt"/>
         <line num="192" count="0" type="stmt"/>
@@ -863,7 +863,7 @@
         <line num="202" count="0" type="stmt"/>
         <line num="204" count="0" type="stmt"/>
         <line num="206" count="0" type="stmt"/>
-        <line num="212" count="0" type="stmt"/>
+        <line num="212" count="1" type="stmt"/>
         <line num="217" count="0" type="stmt"/>
         <line num="220" count="0" type="stmt"/>
         <line num="223" count="0" type="stmt"/>
@@ -889,7 +889,7 @@
         <line num="303" count="0" type="stmt"/>
         <line num="308" count="0" type="stmt"/>
         <line num="309" count="0" type="stmt"/>
-        <line num="314" count="0" type="stmt"/>
+        <line num="314" count="1" type="stmt"/>
         <line num="319" count="0" type="stmt"/>
         <line num="322" count="0" type="stmt"/>
         <line num="325" count="0" type="stmt"/>
@@ -918,7 +918,7 @@
         <line num="416" count="0" type="stmt"/>
         <line num="421" count="0" type="stmt"/>
         <line num="422" count="0" type="stmt"/>
-        <line num="426" count="0" type="stmt"/>
+        <line num="426" count="1" type="stmt"/>
         <line num="431" count="0" type="stmt"/>
         <line num="433" count="0" type="stmt"/>
         <line num="435" count="0" type="stmt"/>
@@ -948,7 +948,7 @@
         <line num="520" count="0" type="stmt"/>
         <line num="524" count="0" type="stmt"/>
         <line num="525" count="0" type="stmt"/>
-        <line num="531" count="0" type="stmt"/>
+        <line num="531" count="1" type="stmt"/>
         <line num="536" count="0" type="stmt"/>
         <line num="538" count="0" type="stmt"/>
         <line num="539" count="0" type="stmt"/>
@@ -956,19 +956,19 @@
         <line num="554" count="0" type="stmt"/>
         <line num="558" count="0" type="stmt"/>
         <line num="559" count="0" type="stmt"/>
-        <line num="565" count="0" type="stmt"/>
+        <line num="565" count="1" type="stmt"/>
         <line num="571" count="0" type="stmt"/>
         <line num="572" count="0" type="stmt"/>
         <line num="581" count="0" type="stmt"/>
         <line num="583" count="0" type="stmt"/>
         <line num="585" count="0" type="stmt"/>
-        <line num="592" count="0" type="stmt"/>
+        <line num="592" count="1" type="stmt"/>
         <line num="595" count="0" type="stmt"/>
         <line num="596" count="0" type="stmt"/>
         <line num="604" count="0" type="stmt"/>
         <line num="610" count="0" type="stmt"/>
         <line num="612" count="0" type="stmt"/>
-        <line num="617" count="0" type="stmt"/>
+        <line num="617" count="1" type="stmt"/>
         <line num="620" count="0" type="stmt"/>
         <line num="621" count="0" type="stmt"/>
         <line num="623" count="0" type="stmt"/>
@@ -988,11 +988,11 @@
       </file>
     </package>
     <package name="dpd.stats.src.utils">
-      <metrics statements="69" coveredstatements="0" conditionals="26" coveredconditionals="0" methods="10" coveredmethods="0"/>
+      <metrics statements="69" coveredstatements="9" conditionals="26" coveredconditionals="2" methods="10" coveredmethods="1"/>
       <file name="constants.ts" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/utils/constants.ts">
-        <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="4" count="0" type="stmt"/>
-        <line num="65" count="0" type="stmt"/>
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="65" count="1" type="stmt"/>
       </file>
       <file name="functions.ts" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/utils/functions.ts">
         <metrics statements="51" coveredstatements="0" conditionals="20" coveredconditionals="0" methods="4" coveredmethods="0"/>
@@ -1049,15 +1049,15 @@
         <line num="135" count="0" type="stmt"/>
       </file>
       <file name="throttleRequest.ts" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/utils/throttleRequest.ts">
-        <metrics statements="16" coveredstatements="0" conditionals="6" coveredconditionals="0" methods="6" coveredmethods="0"/>
-        <line num="3" count="0" type="stmt"/>
-        <line num="6" count="0" type="stmt"/>
-        <line num="9" count="0" type="stmt"/>
-        <line num="10" count="0" type="stmt"/>
-        <line num="13" count="0" type="stmt"/>
+        <metrics statements="16" coveredstatements="7" conditionals="6" coveredconditionals="2" methods="6" coveredmethods="1"/>
+        <line num="3" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
         <line num="14" count="0" type="stmt"/>
         <line num="15" count="0" type="stmt"/>
-        <line num="18" count="0" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
         <line num="19" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="20" count="0" type="stmt"/>
         <line num="22" count="0" type="stmt"/>
@@ -1065,17 +1065,17 @@
         <line num="24" count="0" type="stmt"/>
         <line num="25" count="0" type="stmt"/>
         <line num="26" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="33" count="0" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
       </file>
     </package>
     <package name="dpd.stats.src.view">
-      <metrics statements="75" coveredstatements="0" conditionals="30" coveredconditionals="0" methods="30" coveredmethods="0"/>
+      <metrics statements="75" coveredstatements="5" conditionals="30" coveredconditionals="1" methods="30" coveredmethods="1"/>
       <file name="Home.tsx" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/view/Home.tsx">
-        <metrics statements="37" coveredstatements="0" conditionals="10" coveredconditionals="0" methods="15" coveredmethods="0"/>
-        <line num="39" count="0" type="stmt"/>
-        <line num="41" count="0" type="stmt"/>
-        <line num="42" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="44" count="0" type="stmt"/>
+        <metrics statements="37" coveredstatements="5" conditionals="10" coveredconditionals="1" methods="15" coveredmethods="1"/>
+        <line num="39" count="1" type="stmt"/>
+        <line num="41" count="2" type="stmt"/>
+        <line num="42" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="44" count="2" type="stmt"/>
         <line num="46" count="0" type="stmt"/>
         <line num="47" count="0" type="stmt"/>
         <line num="48" count="0" type="stmt"/>
@@ -1108,7 +1108,7 @@
         <line num="139" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="142" count="0" type="stmt"/>
         <line num="146" count="0" type="stmt"/>
-        <line num="167" count="0" type="stmt"/>
+        <line num="167" count="1" type="stmt"/>
       </file>
       <file name="Map.tsx" path="/Users/vintvgx/Desktop/bandit.studios/studio.code/RN/dpd.stats/src/view/Map.tsx">
         <metrics statements="20" coveredstatements="0" conditionals="4" coveredconditionals="0" methods="10" coveredmethods="0"/>
