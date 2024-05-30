@@ -5,7 +5,7 @@ import { IssueErrorPayload, Project } from "../../model/project";
 import format from "pretty-format";
 import { Location, LocationData, SentryEvent } from "../../model/event";
 import { RootState } from "../store";
-import * as Sentry from "@sentry/react-native";
+// import * as Sentry from "@sentry/react-native";
 import { DEFAULT_LOCATION } from "../../utils/constants";
 import { requestThrottle } from "../../utils/throttleRequest";
 import * as SecureStore from "expo-secure-store";
@@ -201,7 +201,8 @@ export const fetchProjects = createAsyncThunk(
       );
       return projectsWithIssuesAndErrors;
     } catch (error: any) {
-      Sentry.captureException(error);
+      console.log(error);
+      // Sentry.captureException(error);
 
       return rejectWithValue(error.response.data);
     }
@@ -299,7 +300,8 @@ export const fetchSentryIssues = createAsyncThunk<
         "Error fetching issues:",
         error.response?.data || error.message
       );
-      Sentry.captureException(error);
+      // Sentry.captureException(error);
+      console.log(error);
       return thunkAPI.rejectWithValue(
         error.response?.data || "An error occurred"
       );
@@ -412,7 +414,8 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
         "Error fetching issues:",
         error.response?.data || error.message
       );
-      Sentry.captureException(error);
+      // Sentry.captureException(error);
+      console.log(error);
       return thunkAPI.rejectWithValue(
         error.response?.data || "An error occurred"
       );
@@ -479,7 +482,7 @@ export const fetchArchivedSentryIssues = createAsyncThunk<
                   locationActionResult.error
                 );
 
-                Sentry.captureException(locationActionResult.error);
+                // Sentry.captureException(locationActionResult.error);
               }
             }
             return event;
@@ -521,7 +524,7 @@ export const fetchArchivedSentryIssues = createAsyncThunk<
       "Error fetching archived issues:",
       error.response?.data || error.message
     );
-    Sentry.captureException(error);
+    // Sentry.captureException(error);
     return thunkAPI.rejectWithValue(
       error.response?.data || "An error occurred"
     );
@@ -555,7 +558,7 @@ export const archiveSentryIssue = createAsyncThunk<
       "Error archiving issue:",
       error.response?.data || error.message
     );
-    Sentry.captureException(error);
+    // Sentry.captureException(error);
     return thunkAPI.rejectWithValue(
       error.response?.data || "An error occurred while archiving issue"
     );
@@ -580,7 +583,8 @@ export const fetchEvent = createAsyncThunk(
       );
       return { issueId, events: response.data };
     } catch (error: any) {
-      Sentry.captureException(error);
+      // Sentry.captureException(error);
+      console.log(error);
 
       return rejectWithValue(
         error.response?.data || "An error occurred while fetching events"

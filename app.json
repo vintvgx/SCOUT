@@ -38,14 +38,7 @@
     "plugins": [
       "expo-secure-store",
       [
-      "@sentry/react-native/expo",
-        {
-          "organization": "communite",
-          "project": "scout"
-        }
-      ],
-      [
-      "expo-build-properties",
+        "expo-build-properties",
         {
           "ios": {
             "newArchEnabled": true

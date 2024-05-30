@@ -14,7 +14,7 @@ import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "./src/utils/functions";
 import { Provider, useDispatch } from "react-redux";
 import store, { AppDispatch } from "./src/redux/store";
-import * as Sentry from "@sentry/react-native";
+// import * as Sentry from "@sentry/react-native";
 import { setExpoPushToken } from "./src/redux/slices/RegisterSlice";
 import "react-native-gesture-handler";
 import "react-native-reanimated";
@@ -27,11 +27,11 @@ Notifications.setNotificationHandler({
   }),
 });
 
-Sentry.init({
-  dsn: "https://528b0f80ff87e6b7af4e6b3321c27510@o4506865440849920.ingest.us.sentry.io/4507119672557568",
-  debug: false,
-  tracesSampleRate: 1.0,
-});
+// Sentry.init({
+//   dsn: "https://528b0f80ff87e6b7af4e6b3321c27510@o4506865440849920.ingest.us.sentry.io/4507119672557568",
+//   debug: false,
+//   tracesSampleRate: 1.0,
+// });
 
 const App = () => {
   const [isSplashVisible, setSplashVisible] = useState(true);
@@ -80,7 +80,5 @@ const App = () => {
   );
 };
 
-export default Sentry.wrap(App);
-function useAppDispatch() {
-  throw new Error("Function not implemented.");
-}
+export default App;
+// export default Sentry.wrap(App);
