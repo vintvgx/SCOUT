@@ -289,6 +289,7 @@ export const fetchSentryIssues = createAsyncThunk<
 
       const updatedProject = {
         ...state.issues.projects[projectIndex],
+        lastUpdated: new Date().toISOString(),
         isLoaded: true,
       };
       await thunkAPI.dispatch(
