@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAppSelector } from "../redux/store";
 
@@ -57,6 +57,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     // borderRadius: 16,
     overflow: "hidden",
+    width: Dimensions.get("screen").width,
   },
   infoContainer: {
     flex: 1,

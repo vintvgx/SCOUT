@@ -9,9 +9,6 @@ db.settings({
   ignoreUndefinedProperties: true,
 });
 
-// const sentryToken = process.env.SENTRY_TOKEN;
-const sentryToken = functions.config().sentry.token;
-
 exports.sentryWebhook = functions.https.onRequest(async (req, res) => {
   const issue = req.body; // Assuming body-parser middleware is used
 
@@ -122,45 +119,6 @@ async function sendPushNotification(tokens, message) {
   }
 }
 
-exports.fetchSentryProjects = functions.https.onRequest(async (req, res) => {
-  try {
-    const response = await axios.get(
-      "https://sentry.io/api/0/organizations/communite/projects/",
-      {
-        headers: {
-          Authorization: sentryToken,
-        },
-      }
-    );
-    res.status(200).send(response.data);
-  } catch (error) {
-    console.error("Error fetching projects:", error);
-    res.status(500).send("Failed to fetch projects");
-  }
-});
-
-exports.fetchSentryIssues = functions.https.onCall(async (data, context) => {
-  const projectName = data.projectName; // Example if passed from client
-
-  try {
-    const response = await axios.get(
-      `https://sentry.io/api/0/projects/communite/${projectName}/issues/`,
-      { headers: { Authorization: sentryToken } }
-    );
-
-    // Returning issues to the caller
-    return { issues: response.data };
-  } catch (error) {
-    // Logging the error to Firebase console and returning an error message
-    console.error("Error fetching Sentry issues:", error);
-    throw new functions.https.HttpsError(
-      "unknown",
-      "Failed to fetch Sentry issues",
-      error.message
-    );
-  }
-});
-
 async function fetchTokens() {
   const db = admin.firestore();
   const tokens = [];
@@ -177,28 +135,5 @@ async function fetchTokens() {
     .catch((error) => {
       console.log("Error getting documents: ", error);
     });
-  return tokens;
-}
-
-async function fetchAllExpoPushTokens() {
-  const userCollectionRef = db.collection("user");
-  const snapshot = await userCollectionRef.get();
-  const tokens = [];
-
-  snapshot.forEach((doc) => {
-    const userData = doc.data();
-    // Assuming the expoPushToken field exists and it's either a string or an array of strings
-    if (userData.expoPushToken) {
-      if (Array.isArray(userData.expoPushToken)) {
-        // If it's an array, add all its elements
-        tokens.push(...userData.expoPushToken);
-      } else if (typeof userData.expoPushToken === "string") {
-        // If it's a string, add it directly
-        tokens.push(userData.expoPushToken);
-      }
-    }
-  });
-
-  console.log("Fetched tokens:", tokens);
   return tokens;
 }

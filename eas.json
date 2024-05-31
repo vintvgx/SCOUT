@@ -7,12 +7,14 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
+        "resourceClass": "large",
         "cocoapods": "1.15.2"
       }
     },
     "preview": {
       "distribution": "internal",
       "ios": {
+        "resourceClass": "large",
         "cocoapods": "1.15.2"
       }
     },

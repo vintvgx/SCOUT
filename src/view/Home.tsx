@@ -31,7 +31,7 @@ import Header from "../components/Header";
 import axios from "axios";
 import ProjectCard from "../components/ProjectCard";
 import format from "pretty-format";
-import * as Sentry from "@sentry/react-native";
+// import * as Sentry from "@sentry/react-native";
 import { SentryItem } from "../model/issue";
 import { Project } from "../model/project";
 import SkeletonLoader from "../components/SentryCardSkeleton";
@@ -108,11 +108,11 @@ const Home = () => {
         })
         .then((response) => {
           console.log("Response:", response.data);
-          Sentry.captureMessage("Push Notification sent successfully");
+          // Sentry.captureMessage("Push Notification sent successfully");
         });
     } catch (err: any) {
       console.error("POST Push Notification err:", err.message);
-      Sentry.captureException(err);
+      // Sentry.captureException(err);
     }
   };
 
