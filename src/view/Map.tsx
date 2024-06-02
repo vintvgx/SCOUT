@@ -27,8 +27,8 @@ const Map = () => {
 
   useEffect(() => {
     // Fetch issues for all projects
-    projects.forEach((project) => {
-      dispatch(fetchSentryIssuesWithLocation(project.name));
+    projects.map(async (project) => {
+      await dispatch(fetchSentryIssuesWithLocation(project.name));
     });
   }, []);
 

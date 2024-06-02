@@ -89,11 +89,18 @@ const EventViewer: React.FC<EventViewerProps> = ({
                 location: locationData,
               })
             );
-            return { ...event, location: locationData };
+            const updatedEvent = { ...event, location: locationData };
+            setUpdatedEvents((prevUpdatedEvents) =>
+              prevUpdatedEvents.map((e) =>
+                e.id === updatedEvent.id ? updatedEvent : e
+              )
+            );
+            return updatedEvent;
           }
           return event;
         })
       );
+      // If you want to make sure the final array is up-to-date:
       setUpdatedEvents(updated);
     } catch (error) {
       console.error("Error fetching location data:", error);

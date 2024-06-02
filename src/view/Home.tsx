@@ -74,6 +74,18 @@ const Home = () => {
       }
     );
 
+    // Listener for pending notifications on mount
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response && response.notification.request.content.data.issueId) {
+        const { data } = response.notification.request.content;
+        dispatch(addNewIssueID([data.issueId]));
+        console.log(
+          "Pending notifications. Added new issue id:",
+          response.notification.request.content
+        );
+      }
+    });
+
     // Cleanup
     return () => subscription.remove();
   }, [dispatch, navigation]);
