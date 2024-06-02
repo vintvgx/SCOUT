@@ -98,13 +98,10 @@ export const sentryDataSlice = createSlice({
       );
     },
     addNewIssueID: (state, action: PayloadAction<string[]>) => {
-      // Ensure no duplicates
       const newIssueIDs = action.payload;
-      newIssueIDs.forEach((id) => {
-        if (!state.newIssues.includes(id)) {
-          state.newIssues.push(id);
-        }
-      });
+      state.newIssues = Array.from(
+        new Set([...state.newIssues, ...newIssueIDs])
+      );
     },
     clearNewIssue: (state, action: PayloadAction<string>) => {
       const issueIdToRemove = action.payload;
@@ -289,6 +286,7 @@ export const fetchSentryIssues = createAsyncThunk<
 
       const updatedProject = {
         ...state.issues.projects[projectIndex],
+        lastUpdated: new Date().toISOString(),
         isLoaded: true,
       };
       await thunkAPI.dispatch(

@@ -89,11 +89,18 @@ const EventViewer: React.FC<EventViewerProps> = ({
                 location: locationData,
               })
             );
-            return { ...event, location: locationData };
+            const updatedEvent = { ...event, location: locationData };
+            setUpdatedEvents((prevUpdatedEvents) =>
+              prevUpdatedEvents.map((e) =>
+                e.id === updatedEvent.id ? updatedEvent : e
+              )
+            );
+            return updatedEvent;
           }
           return event;
         })
       );
+      // If you want to make sure the final array is up-to-date:
       setUpdatedEvents(updated);
     } catch (error) {
       console.error("Error fetching location data:", error);
@@ -207,24 +214,30 @@ const EventViewer: React.FC<EventViewerProps> = ({
                     />
                   </TouchableOpacity>
                 </View>
-                <Text style={styles(scheme).sectionHeader}>EVENT</Text>
-                <Text style={styles(scheme).id}>ID: {event.id}</Text>
-                <Text style={styles(scheme).date}>
-                  {formatDate(event.dateCreated)}
-                </Text>
-                <View style={{ marginBottom: 20 }}>
-                  <Text style={styles(scheme).sectionHeader}>User</Text>
-                  <Text style={styles(scheme).sectionContent}>
-                    {event.user.email
-                      ? event.user.email
-                      : event.user?.ip_address}
+                <View style={styles(scheme).dateAndTimeSection}>
+                  <Text style={styles(scheme).date}>
+                    {formatDate(event.dateCreated)}
                   </Text>
                 </View>
-                <View style={{ marginBottom: 20 }}>
-                  <Text style={styles(scheme).sectionHeader}>URL</Text>
-                  <Text style={styles(scheme).sectionContent}>
-                    {event.culprit}
-                  </Text>
+                <View style={{ marginTop: 30 }}>
+                  <View style={{ marginBottom: 10 }}>
+                    <Text style={styles(scheme).sectionHeader}>EVENT ID</Text>
+                    <Text style={styles(scheme).id}>{event.id}</Text>
+                  </View>
+                  <View style={{ marginBottom: 20 }}>
+                    <Text style={styles(scheme).sectionHeader}>User</Text>
+                    <Text style={styles(scheme).sectionContent}>
+                      {event.user.email
+                        ? event.user.email
+                        : event.user?.ip_address}
+                    </Text>
+                  </View>
+                  <View style={{ marginBottom: 20 }}>
+                    <Text style={styles(scheme).sectionHeader}>URL</Text>
+                    <Text style={styles(scheme).sectionContent}>
+                      {event.culprit}
+                    </Text>
+                  </View>
                 </View>
                 {renderMapView(event, index)}
                 <View style={{ alignSelf: "center", marginTop: 5 }}>
@@ -295,7 +308,7 @@ const styles = (scheme: any) =>
       borderTopLeftRadius: 10,
       borderTopRightRadius: 10,
       padding: 10,
-      marginBottom: 20,
+      marginBottom: 0,
     },
     headerTitle: {
       fontSize: 22,
@@ -305,7 +318,7 @@ const styles = (scheme: any) =>
     },
     tagIcon: {
       position: "absolute",
-      top: 10,
+      top: 50,
       right: 10,
       backgroundColor: "#6B46C1",
       padding: 8,
@@ -316,10 +329,19 @@ const styles = (scheme: any) =>
       color: scheme === "dark" ? "#FFFFFF" : "#000000",
       marginBottom: 10,
     },
+    dateAndTimeSection: {
+      position: "absolute",
+      top: 1,
+      marginLeft: 10,
+      marginTop: 8,
+      // marginBottom: 20,
+      // right: 10,
+    },
     date: {
       fontSize: 16,
-      color: scheme === "dark" ? "#FFFFFF" : "#000000",
+      color: scheme === "dark" ? "#8E8E93" : "#000000",
       marginBottom: 10,
+      fontWeight: "200",
     },
     sectionHeader: {
       fontSize: 18,

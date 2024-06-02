@@ -124,13 +124,30 @@ export const handleOpenEventModal = (
 
 export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = `0${date.getMonth() + 1}`.slice(-2); // Month is 0-indexed
-  const day = `0${date.getDate()}`.slice(-2);
-  const hours = `0${date.getUTCHours()}`.slice(-1);
-  const minutes = `0${date.getMinutes()}`.slice(-2);
-  const seconds = `0${date.getSeconds()}`.slice(-2);
-  const timeOfDay = date.getHours() >= 12 ? "PM" : "AM";
 
-  return `${month}.${day}.${year} ${hours}:${minutes}:${seconds} ${timeOfDay}`;
+  const year = date.getFullYear();
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const month = monthNames[date.getMonth()];
+  const day = date.getDate();
+
+  let hours = date.getHours();
+  const minutes = `0${date.getMinutes()}`.slice(-2);
+  const timeOfDay = hours >= 12 ? "PM" : "AM";
+
+  hours = hours % 12 || 12; // Convert to 12-hour format
+
+  return `${month} ${day}, ${year} at ${hours}:${minutes} ${timeOfDay}`;
 };
