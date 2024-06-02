@@ -116,7 +116,10 @@ const SentryCard = React.memo<SentryCardProps>(
         <TouchableOpacity onPress={onPress}>
           <View style={styles.header}>
             <Text
-              style={scheme === "dark" ? styles.titleDark : styles.titleLight}>
+              style={[
+                scheme === "dark" ? styles.titleDark : styles.titleLight,
+                isNew ? { width: "90%" } : { width: "auto" },
+              ]}>
               {item.title}
             </Text>
           </View>
@@ -134,8 +137,10 @@ const SentryCard = React.memo<SentryCardProps>(
           <Text style={styles.archiveText}>Archive</Text>
         </TouchableOpacity>
         {isNew && (
-          <View style={styles.newTag}>
-            <Text style={styles.newText}>NEW</Text>
+          <View style={styles.newTagContainer}>
+            <View style={styles.newTag}>
+              <Text style={styles.newText}>NEW</Text>
+            </View>
           </View>
         )}
         {item.status === "archived" && (
@@ -183,6 +188,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#FFFFFF",
     marginBottom: 12,
+    // width: "90%",
   },
   titleLight: {
     fontSize: 20,
@@ -204,18 +210,24 @@ const styles = StyleSheet.create({
     color: "#333333",
     marginBottom: 4,
   },
-  newTag: {
+  newTagContainer: {
     position: "absolute",
-    right: 10,
-    top: 10,
+    right: 0,
+    top: 15,
+    // transform: [{ rotate: "90deg" }],
+  },
+  newTag: {
     backgroundColor: "#BB86FC",
-    borderRadius: 4,
-    padding: 4,
+    // borderRadius: 4,
+    borderTopLeftRadius: 4,
+    borderBottomLeftRadius: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
   },
   newText: {
     color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: "bold",
+    fontWeight: "400",
   },
   header: {
     flexDirection: "row",
