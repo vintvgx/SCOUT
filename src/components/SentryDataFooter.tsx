@@ -27,10 +27,10 @@ const SentryDataFooter: React.FC<SentryDataFooterProps> = ({ projectName }) => {
     : "N/A";
 
   return (
-    <LinearGradient
-      colors={["#1E1E1E", "#202020"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
+    <View
+      // colors={["#1E1E1E", "#202020"]}
+      // start={{ x: 0, y: 0 }}
+      // end={{ x: 1, y: 0 }}
       style={styles.container}>
       <View style={styles.infoContainer}>
         <Text style={styles.issueText}>
@@ -45,7 +45,7 @@ const SentryDataFooter: React.FC<SentryDataFooterProps> = ({ projectName }) => {
           <Text style={styles.issueText}>Updated {formattedLastUpdated}</Text>
         )}
       </View>
-    </LinearGradient>
+    </View>
   );
 };
 

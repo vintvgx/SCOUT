@@ -1,4 +1,12 @@
-// App.tsx
+/**
+ * SCOUT is an analytic app that tracks errors and issues for my projects using Sentry.
+ * The app uses Sentry's API to grab and display data within the application,
+ * providing live updates and notifications.
+ * Description: An analytic app that tracks errors and issues for my application with live updates/notifications
+ * Build Version: 1.3.7
+ * Date: 6/2/2024
+ * COMMUNITE 2024
+ */
 import React, { useState, useEffect } from "react";
 import {
   View,
