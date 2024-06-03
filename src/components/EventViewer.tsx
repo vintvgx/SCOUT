@@ -1,18 +1,18 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import {
   Modal,
-  ScrollView,
+  FlatList,
   Text,
   View,
   StyleSheet,
   Dimensions,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   Animated,
   useColorScheme,
   ActivityIndicator,
+  ViewToken,
 } from "react-native";
-import { Location, LocationData, SentryEvent } from "../model/event";
+import { Location, SentryEvent } from "../model/event";
 import format from "pretty-format";
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -23,7 +23,6 @@ import { AppDispatch } from "../redux/store";
 import { useDispatch } from "react-redux";
 import {
   fetchLocationFromIP,
-  sentryDataSlice,
   updateEventLocation,
 } from "../redux/slices/SentryDataSlice";
 
@@ -39,25 +38,21 @@ const EventViewer: React.FC<EventViewerProps> = ({
   onClose,
 }) => {
   const dispatch: AppDispatch = useDispatch();
-  // const scheme = useColorScheme();
   const scheme = "dark";
   const animationValue = new Animated.Value(0);
   const [selectedEvent, setSelectedEvent] = useState<SentryEvent | null>(null);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [loadingLocations, setLoadingLocations] = useState<boolean>(false);
   const [updatedEvents, setUpdatedEvents] = useState<SentryEvent[]>([]);
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     if (isVisible) {
-      const asyncEffect = async () => {
-        await fetchEventLocations();
-        Animated.timing(animationValue, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      };
-      asyncEffect();
+      Animated.timing(animationValue, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
     } else {
       Animated.timing(animationValue, {
         toValue: 0,
@@ -73,53 +68,54 @@ const EventViewer: React.FC<EventViewerProps> = ({
     setUpdatedEvents(events);
   }, [events]);
 
-  const fetchEventLocations = useCallback(async () => {
-    setLoadingLocations(true);
-    try {
-      const updated = await Promise.all(
-        events.map(async (event) => {
-          if (!event.location && event.user?.ip_address) {
-            const locationData = await dispatch(
-              fetchLocationFromIP(event.user.ip_address)
-            ).unwrap();
-            dispatch(
-              updateEventLocation({
-                projectId: event.projectID,
-                eventId: event.id,
-                location: locationData,
-              })
-            );
-            const updatedEvent = { ...event, location: locationData };
-            setUpdatedEvents((prevUpdatedEvents) =>
-              prevUpdatedEvents.map((e) =>
-                e.id === updatedEvent.id ? updatedEvent : e
-              )
-            );
-            return updatedEvent;
-          }
-          return event;
-        })
-      );
-      // If you want to make sure the final array is up-to-date:
-      setUpdatedEvents(updated);
-    } catch (error) {
-      console.error("Error fetching location data:", error);
-    } finally {
-      setLoadingLocations(false);
-    }
-  }, [events, dispatch]);
+  const fetchEventLocation = useCallback(
+    async (event: SentryEvent) => {
+      if (!event.location && event.user?.ip_address) {
+        try {
+          setLoadingLocations(true);
+          const locationData = await dispatch(
+            fetchLocationFromIP(event.user.ip_address)
+          ).unwrap();
+          dispatch(
+            updateEventLocation({
+              projectId: event.projectID,
+              eventId: event.id,
+              location: locationData,
+            })
+          );
+          const updatedEvent = { ...event, location: locationData };
+          setUpdatedEvents((prevUpdatedEvents) =>
+            prevUpdatedEvents.map((e) =>
+              e.id === updatedEvent.id ? updatedEvent : e
+            )
+          );
+        } catch (error) {
+          console.error("Error fetching location data:", error);
+        } finally {
+          setLoadingLocations(false);
+        }
+      }
+    },
+    [dispatch]
+  );
+
+  const handleViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (viewableItems.length > 0) {
+        const event = viewableItems[0].item;
+        fetchEventLocation(event);
+      }
+    },
+    [fetchEventLocation]
+  );
+
+  const viewabilityConfig = {
+    itemVisiblePercentThreshold: 50,
+  };
 
   const modalContainerStyle = {
     ...styles(scheme).modalContainer,
     opacity: 1,
-    // transform: [
-    //   {
-    //     translateY: animationValue.interpolate({
-    //       inputRange: [0, 1],
-    //       outputRange: [100, 0],
-    //     }),
-    //   },
-    // ],
   };
 
   const handleInfoIconPress = (event: SentryEvent) => {
@@ -127,7 +123,7 @@ const EventViewer: React.FC<EventViewerProps> = ({
     setInfoModalVisible(true);
   };
 
-  const renderMapView = (event: SentryEvent, index: number) => {
+  const renderMapView = (event: SentryEvent) => {
     const initialRegion = {
       latitude: INITIAL_REGION.latitude,
       longitude: INITIAL_REGION.longitude,
@@ -199,14 +195,19 @@ const EventViewer: React.FC<EventViewerProps> = ({
               {events.length > 0 ? events[0].title : "Event"}
             </Text>
           </View>
-          <ScrollView
-            horizontal={true}
-            pagingEnabled={true}
-            showsHorizontalScrollIndicator={false}>
-            {updatedEvents.map((event, index) => (
-              <View key={index} style={styles(scheme).eventContainer}>
+          <FlatList
+            ref={flatListRef}
+            data={updatedEvents}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item, index) => index.toString()}
+            onViewableItemsChanged={handleViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+            renderItem={({ item }) => (
+              <View style={styles(scheme).eventContainer}>
                 <View style={styles(scheme).tagIcon}>
-                  <TouchableOpacity onPress={() => handleInfoIconPress(event)}>
+                  <TouchableOpacity onPress={() => handleInfoIconPress(item)}>
                     <Icon
                       name="information-circle-outline"
                       size={24}
@@ -216,40 +217,40 @@ const EventViewer: React.FC<EventViewerProps> = ({
                 </View>
                 <View style={styles(scheme).dateAndTimeSection}>
                   <Text style={styles(scheme).date}>
-                    {formatDate(event.dateCreated)}
+                    {formatDate(item.dateCreated)}
                   </Text>
                 </View>
                 <View style={{ marginTop: 30 }}>
                   <View style={{ marginBottom: 10 }}>
                     <Text style={styles(scheme).sectionHeader}>EVENT ID</Text>
-                    <Text style={styles(scheme).id}>{event.id}</Text>
+                    <Text style={styles(scheme).id}>{item.id}</Text>
                   </View>
                   <View style={{ marginBottom: 20 }}>
                     <Text style={styles(scheme).sectionHeader}>User</Text>
                     <Text style={styles(scheme).sectionContent}>
-                      {event.user.email
-                        ? event.user.email
-                        : event.user?.ip_address}
+                      {item.user.email
+                        ? item.user.email
+                        : item.user?.ip_address}
                     </Text>
                   </View>
                   <View style={{ marginBottom: 20 }}>
                     <Text style={styles(scheme).sectionHeader}>URL</Text>
                     <Text style={styles(scheme).sectionContent}>
-                      {event.culprit}
+                      {item.culprit}
                     </Text>
                   </View>
                 </View>
-                {renderMapView(event, index)}
+                {renderMapView(item)}
                 <View style={{ alignSelf: "center", marginTop: 5 }}>
                   <Text>
                     {loadingLocations ? (
                       <Text style={styles(scheme).cityStateLocation}>
                         Loading Location
                       </Text>
-                    ) : event.location && event.location.city ? (
+                    ) : item.location && item.location.city ? (
                       <Text style={styles(scheme).cityStateLocation}>
-                        {event.location.city}, {event.location.region},{" "}
-                        {event.location.country}
+                        {item.location.city}, {item.location.region},{" "}
+                        {item.location.country}
                       </Text>
                     ) : (
                       <Text style={styles(scheme).unknownLocationText}>
@@ -259,8 +260,8 @@ const EventViewer: React.FC<EventViewerProps> = ({
                   </Text>
                 </View>
               </View>
-            ))}
-          </ScrollView>
+            )}
+          />
           <TouchableOpacity
             style={styles(scheme).closeButton}
             onPress={onClose}>
@@ -334,8 +335,6 @@ const styles = (scheme: any) =>
       top: 1,
       marginLeft: 10,
       marginTop: 8,
-      // marginBottom: 20,
-      // right: 10,
     },
     date: {
       fontSize: 16,
@@ -377,17 +376,6 @@ const styles = (scheme: any) =>
       borderRadius: 10,
       backgroundColor: scheme === "dark" ? "#333" : "#DDD",
       opacity: 0.4,
-    },
-    mapLoadingOverlay: {
-      position: "absolute",
-      width: "100%",
-      height: "100%",
-      backgroundColor:
-        scheme === "dark"
-          ? "rgba(51, 51, 51, 0.8)"
-          : "rgba(221, 221, 221, 0.8)", // Darker or lighter overlay based on theme
-      justifyContent: "center",
-      alignItems: "center",
     },
     closeButton: {
       alignSelf: "stretch",

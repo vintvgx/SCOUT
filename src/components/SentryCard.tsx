@@ -124,12 +124,14 @@ const SentryCard = React.memo<SentryCardProps>(
             </Text>
           </View>
           <View style={detailsContainer}>
-            <Text style={detailStyle}>Events: {eventsCount}</Text>
-            <Text style={detailStyle}>
-              First Seen: {new Date(item.firstSeen).toLocaleString()}
+            <Text style={[detailStyle, { fontWeight: "bold" }]}>
+              Events: {eventsCount}
             </Text>
             <Text style={detailStyle}>
-              Last Seen: {new Date(item.lastSeen).toLocaleString()}
+              First Event: {new Date(item.firstSeen).toLocaleString()}
+            </Text>
+            <Text style={detailStyle}>
+              Latest Event: {new Date(item.lastSeen).toLocaleString()}
             </Text>
           </View>
         </TouchableOpacity>
