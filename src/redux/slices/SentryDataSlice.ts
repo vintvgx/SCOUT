@@ -230,7 +230,7 @@ export const fetchSentryIssues = createAsyncThunk<
     try {
       // fetch project issues
       const response = await axios.get(
-        `https://sentry.io/api/0/projects/communite/${projectName}/issues/`,
+        `https://sentry.io/api/0/projects/communite/${projectName}/issues/?query=is:unresolved`,
         {
           headers: {
             Authorization:
@@ -333,7 +333,7 @@ export const fetchSentryIssuesWithLocation = createAsyncThunk<
     try {
       // fetch project issues
       const response = await axios.get(
-        `https://sentry.io/api/0/projects/communite/${projectName}/issues/`,
+        `https://sentry.io/api/0/projects/communite/${projectName}/issues/?query=is:unresolved`,
         {
           headers: {
             Authorization:
@@ -444,7 +444,7 @@ export const fetchArchivedSentryIssues = createAsyncThunk<
 
   try {
     const response = await axios.get(
-      `https://sentry.io/api/0/projects/communite/${projectName}/issues/?scope=archived`,
+      `https://sentry.io/api/0/projects/communite/${projectName}/issues/?query=is:archived`,
       {
         headers: {
           Authorization:
