@@ -82,7 +82,7 @@ SCOUT is a React Native application designed to track issues and errors for your
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/yourusername/scout.git
+   git clone https://github.com/vintvgx/scout.git
    cd scout
    ```
 
